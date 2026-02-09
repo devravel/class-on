@@ -8,10 +8,10 @@ Estamos no estágio de **Discovery**, mapeando as funcionalidades do sistema atu
 
 ## 🛠️ Stack Tecnológica (MVP)
 
-- [cite_start]**Front-end:** Next.js + TypeScript + Tailwind CSS [cite: 61, 62, 65]
-- [cite_start]**Back-end:** NestJS + TypeScript [cite: 73, 74]
-- [cite_start]**Banco de Dados:** PostgreSQL (via Docker) [cite: 407, 408]
-- [cite_start]**Design:** Figma [cite: 68]
+- **Front-end:** Next.js + TypeScript + Tailwind CSS [cite: 61, 62, 65]
+- **Back-end:** NestJS + TypeScript [cite: 73, 74]
+- **Banco de Dados:** PostgreSQL (via Docker) [cite: 407, 408]
+- **Design:** Figma [cite: 68]
 
 ## 🐳 Como rodar o ambiente de desenvolvimento
 
