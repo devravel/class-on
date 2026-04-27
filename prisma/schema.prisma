@@ -1,0 +1,265 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model academic_years {
+  id         BigInt      @id
+  year       Int         @unique(map: "academic_years_year_unique")
+  start_date DateTime    @db.Date
+  end_date   DateTime    @db.Date
+  bimesters  bimesters[]
+  classes    classes[]
+}
+
+model announcement_reads {
+  id              BigInt        @id
+  announcement_id BigInt
+  user_id         BigInt
+  read_at         DateTime      @db.Timestamp(6)
+  announcements   announcements @relation(fields: [announcement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users         @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([announcement_id, user_id], map: "announcement_reads_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model announcements {
+  id                    BigInt                  @id
+  creator_id            BigInt
+  title                 String                  @db.VarChar(255)
+  message               String
+  status                String                  @db.VarChar(255)
+  created_at            DateTime                @db.Timestamp(6)
+  scope_type            String                  @db.VarChar(255)
+  target_type           String                  @db.VarChar(255)
+  announcement_reads    announcement_reads[]
+  users                 users                   @relation(fields: [creator_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  announcements_targets announcements_targets[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model announcements_targets {
+  id              BigInt        @id
+  announcement_id BigInt
+  class_id        BigInt?
+  student_id      BigInt?
+  announcements   announcements @relation(fields: [announcement_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  classes         classes?      @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students        students?     @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model assignments {
+  id         BigInt    @id
+  teacher_id BigInt
+  class_id   BigInt
+  subject_id BigInt
+  created_at DateTime  @db.Timestamp(6)
+  classes    classes   @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  subjects   subjects  @relation(fields: [subject_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers   teachers  @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grades     grades[]
+  lessons    lessons[]
+  tasks      tasks[]
+
+  @@unique([teacher_id, class_id, subject_id], map: "assignments_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model attendances {
+  id         BigInt   @id
+  student_id BigInt
+  lesson_id  BigInt
+  status     String   @db.VarChar(255)
+  created_at DateTime @db.Timestamp(6)
+  lessons    lessons  @relation(fields: [lesson_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students   students @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([student_id, lesson_id], map: "attendances_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model bimesters {
+  id             BigInt         @id
+  number         Int
+  status         String         @db.VarChar(255)
+  year_id        BigInt
+  academic_years academic_years @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grades         grades[]
+
+  @@unique([year_id, number], map: "bimesters_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model classes {
+  id                    BigInt                  @id
+  year_id               BigInt
+  series                Int
+  letter                String                  @db.VarChar(255)
+  shift                 String                  @db.VarChar(255)
+  announcements_targets announcements_targets[]
+  assignments           assignments[]
+  academic_years        academic_years          @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enrollments           enrollments[]
+
+  @@unique([year_id, series, letter, shift], map: "classes_unique_identity")
+}
+
+model conversations {
+  id         BigInt     @id
+  student_id BigInt
+  teacher_id BigInt
+  created_at DateTime   @db.Timestamp(6)
+  students   students   @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  teachers   teachers   @relation(fields: [teacher_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  messages   messages[]
+
+  @@unique([student_id, teacher_id], map: "conversations_student_teacher_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model enrollments {
+  id           BigInt   @id
+  student_id   BigInt
+  class_id     BigInt
+  final_result String   @db.VarChar(255)
+  created_at   DateTime @db.Timestamp(6)
+  classes      classes  @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  students     students @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  grades       grades[]
+
+  @@unique([student_id, class_id], map: "enrollments_unique")
+}
+
+model grades {
+  id            BigInt      @id
+  enrollment_id BigInt
+  assignment_id BigInt
+  bimester_id   BigInt
+  n1            Decimal     @db.Decimal(8, 2)
+  n2            Decimal     @db.Decimal(8, 2)
+  n3            Decimal     @db.Decimal(8, 2)
+  n4            Decimal     @db.Decimal(8, 2)
+  average       Decimal     @db.Decimal(8, 2)
+  created_at    DateTime    @db.Timestamp(6)
+  assignments   assignments @relation(fields: [assignment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bimesters     bimesters   @relation(fields: [bimester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enrollments   enrollments @relation(fields: [enrollment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([enrollment_id, assignment_id, bimester_id], map: "grades_unique")
+}
+
+model lessons {
+  id            BigInt        @id
+  assignment_id BigInt
+  date          DateTime      @db.Date
+  lesson_order  Int
+  content       String
+  created_at    DateTime      @db.Timestamp(6)
+  attendances   attendances[]
+  assignments   assignments   @relation(fields: [assignment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model messages {
+  id              BigInt        @id
+  conversation_id BigInt
+  sender_id       BigInt
+  content         String
+  status          String        @db.VarChar(255)
+  created_at      DateTime      @db.Timestamp(6)
+  conversations   conversations @relation(fields: [conversation_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users           users         @relation(fields: [sender_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model students {
+  id                    BigInt                  @id
+  user_id               BigInt                  @unique(map: "students_user_id_unique")
+  rm                    String                  @unique(map: "students_rm_unique") @db.VarChar(255)
+  full_name             String                  @db.VarChar(255)
+  status                String                  @db.VarChar(255)
+  announcements_targets announcements_targets[]
+  attendances           attendances[]
+  conversations         conversations[]
+  enrollments           enrollments[]
+  users                 users                   @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  task_submissions      task_submissions[]
+  task_targets          task_targets[]
+}
+
+model subjects {
+  id          BigInt        @id
+  name        String        @unique(map: "subjects_name_unique") @db.VarChar(255)
+  description String
+  assignments assignments[]
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model task_submissions {
+  id           BigInt   @id
+  task_id      BigInt
+  student_id   BigInt
+  status       String   @db.VarChar(255)
+  observation  String?
+  submitted_at DateTime @db.Timestamp(6)
+  created_at   DateTime @db.Timestamp(6)
+  students     students @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tasks        tasks    @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([task_id, student_id], map: "task_submissions_unique")
+}
+
+model task_targets {
+  id         BigInt   @id
+  task_id    BigInt
+  student_id BigInt
+  created_at DateTime @db.Timestamp(6)
+  students   students @relation(fields: [student_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tasks      tasks    @relation(fields: [task_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([task_id, student_id], map: "task_targets_unique")
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tasks {
+  id               BigInt             @id
+  assignment_id    BigInt
+  title            String             @db.VarChar(255)
+  description      String
+  status           String             @db.VarChar(255)
+  target_mode      String             @db.VarChar(255)
+  created_at       DateTime           @db.Timestamp(6)
+  task_submissions task_submissions[]
+  task_targets     task_targets[]
+  assignments      assignments        @relation(fields: [assignment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model teachers {
+  id                BigInt          @id
+  user_id           BigInt          @unique(map: "teachers_user_id_unique")
+  full_name         String          @db.VarChar(255)
+  registration_code String          @unique(map: "teachers_registration_code_unique") @db.VarChar(255)
+  assignments       assignments[]
+  conversations     conversations[]
+  users             users           @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model users {
+  id                 BigInt               @id
+  email              String               @unique(map: "users_email_unique") @db.VarChar(255)
+  password           String               @db.VarChar(255)
+  role               String               @db.VarChar(255)
+  is_active          Boolean
+  created_at         DateTime             @db.Timestamp(6)
+  announcement_reads announcement_reads[]
+  announcements      announcements[]
+  messages           messages[]
+  students           students?
+  teachers           teachers?
+}
