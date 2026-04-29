@@ -233,3 +233,9 @@ _A IA deve aplicar estes tokens em todos os componentes interativos:_
 
 - **PODE:** Definir layouts detalhados, dashboards, organização visual e microinterações.
 - **NÃO DEVE:** Quebrar padrões, inventar cores arbitrárias ou usar estilos inconsistentes com o sistema ClassOn.
+
+## Tela de Login esperada:
+
+docs/PROFESSOR.png
+docs/SECRETARIA.png
+docs/ALUNO.png

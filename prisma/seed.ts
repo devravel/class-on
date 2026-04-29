@@ -1,7 +1,10 @@
+import 'dotenv/config'
+import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../generated/prisma'
 import * as bcrypt from 'bcryptjs'
 
-const prisma = new PrismaClient()
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL! })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   console.log('Starting seed...')
@@ -32,7 +35,7 @@ async function main() {
       id: nextId,
       email: adminEmail,
       password: hashedPassword,
-      role: 'ADMIN',
+      role: 'SECRETARIA',
       is_active: true,
       created_at: new Date(),
     },
