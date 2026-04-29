@@ -14,25 +14,25 @@ export default function ProfessorPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-      <header className="flex items-center justify-between border-b border-gray-200 bg-white px-8 py-4 shadow-light">
+    <div className="min-h-screen bg-background font-sans">
+      <header className="flex items-center justify-between border-b border-border bg-surface px-8 py-4 shadow-light">
         <div className="flex items-center gap-3">
           <Image src="/assets/logo/no_name_logo.svg" alt="ClassOn" width={28} height={26} />
-          <span className="text-sm font-semibold text-gray-900">ClassOn — Professor</span>
+          <span className="text-sm font-semibold text-text-primary">ClassOn — Professor</span>
         </div>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">{user?.email}</span>
+          <span className="text-sm text-text-secondary">{user?.email}</span>
           <button
             onClick={handleSignOut}
-            className="rounded-[8px] bg-gray-200 px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-300 cursor-pointer"
+            className="cursor-pointer rounded-[8px] bg-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-300"
           >
             Sair
           </button>
         </div>
       </header>
       <main className="mx-auto max-w-7xl px-8 py-10">
-        <h1 className="text-2xl font-bold text-gray-900">Painel do Professor</h1>
-        <p className="mt-2 text-sm text-gray-600">Em construção.</p>
+        <h1 className="text-2xl font-bold text-text-primary">Painel do Professor</h1>
+        <p className="mt-2 text-sm text-text-secondary">Em construção.</p>
       </main>
     </div>
   )

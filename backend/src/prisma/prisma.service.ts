@@ -1,6 +1,10 @@
 import { Injectable, OnModuleInit, OnModuleDestroy } from '@nestjs/common'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../../../generated/prisma'
+import { createRequire } from 'node:module'
+import { join } from 'node:path'
+
+const requireFromBackend = createRequire(join(process.cwd(), 'package.json'))
+const { PrismaClient } = requireFromBackend('../generated/prisma') as typeof import('../../../generated/prisma')
 
 @Injectable()
 export class PrismaService extends PrismaClient implements OnModuleInit, OnModuleDestroy {

@@ -29,8 +29,8 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
   // Aguarda hidratação do contexto sem flash de conteúdo
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-100">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-600 border-t-transparent" />
       </div>
     )
   }

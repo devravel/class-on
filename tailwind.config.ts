@@ -9,29 +9,57 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        // Brand Colors
+        brand: {
+          100: 'var(--color-brand-100)',
+          200: 'var(--color-brand-200)',
+          300: 'var(--color-brand-300)',
+          400: 'var(--color-brand-400)',
+          500: 'var(--color-brand-500)',
+          600: 'var(--color-brand-600)',
+          700: 'var(--color-brand-700)',
+        },
+        neutral: {
+          100: 'var(--color-neutral-100)',
+          200: 'var(--color-neutral-200)',
+          300: 'var(--color-neutral-300)',
+          400: 'var(--color-neutral-400)',
+          500: 'var(--color-neutral-500)',
+          600: 'var(--color-neutral-600)',
+          700: 'var(--color-neutral-700)',
+          800: 'var(--color-neutral-800)',
+          900: 'var(--color-neutral-900)',
+          950: 'var(--color-neutral-950)',
+        },
+        success: 'var(--color-success)',
+        warning: 'var(--color-warning)',
+        danger: 'var(--color-danger)',
+        error: 'var(--color-danger)',
+        info: 'var(--color-info)',
+        background: 'var(--color-bg)',
+        surface: 'var(--color-surface)',
+        border: 'var(--color-border)',
+        text: {
+          primary: 'var(--color-text-primary)',
+          secondary: 'var(--color-text-secondary)',
+        },
+        // Aliases para compatibilidade com shadcn e classes existentes
         primary: {
-          DEFAULT: '#4299E1', // Blue 500
-          light: '#BEE3F8',   // Blue 200
-          dark: '#2B6CB0',    // Blue 700
+          DEFAULT: 'var(--color-brand-500)',
+          light: 'var(--color-brand-200)',
+          dark: 'var(--color-brand-700)',
         },
-        // Gray Scale (Design System)
         gray: {
-          100: '#F7FAFC',
-          200: '#EDF2F7',
-          300: '#E2E8F0',
-          400: '#CBD5E0',
-          500: '#A0AEC0',
-          600: '#718096',
-          700: '#4A5568',
-          800: '#2D3748',
-          900: '#1A202C',
+          100: 'var(--color-neutral-100)',
+          200: 'var(--color-neutral-200)',
+          300: 'var(--color-neutral-300)',
+          400: 'var(--color-neutral-400)',
+          500: 'var(--color-neutral-500)',
+          600: 'var(--color-neutral-600)',
+          700: 'var(--color-neutral-700)',
+          800: 'var(--color-neutral-800)',
+          900: 'var(--color-neutral-900)',
+          950: 'var(--color-neutral-950)',
         },
-        // Feedback States
-        success: '#48BB78',
-        warning: '#ED8936',
-        error: '#F56565',
-        info: '#4299E1',
       },
       fontFamily: {
         // Inter como fonte principal

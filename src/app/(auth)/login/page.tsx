@@ -103,14 +103,14 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
+    <div className="min-h-screen bg-neutral-100 font-sans">
       <div className="flex min-h-screen items-center justify-center p-6">
-        <Card className="w-full max-w-[400px] rounded-[12px] border-0 bg-gray-100 p-8 shadow-none ring-0">
+        <Card className="w-full max-w-[400px] rounded-[12px] border-0 bg-neutral-100 p-8 shadow-none ring-0">
           {step === 2 && (
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-[#4299E1] underline underline-offset-2 hover:text-primary-dark"
+              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
             >
               <ChevronLeft className="h-4 w-4" />
               Voltar
@@ -125,10 +125,10 @@ export default function LoginPage() {
               height={32}
               className="mx-auto mb-10"
             />
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-neutral-900">
               Bem-vindo(a) ao ClassOn!
             </h1>
-            <p className="mt-2 text-sm text-gray-600">
+            <p className="mt-2 text-sm text-neutral-600">
               {step === 1
                 ? "Selecione seu perfil para acessar:"
                 : "Para acessar sua conta, preencha os campos abaixo:"}
@@ -138,14 +138,14 @@ export default function LoginPage() {
           {step === 1 ? (
             <div className="mt-8 space-y-6">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-gray-700">
+                <Label className="text-sm font-semibold text-neutral-900">
                   Entrar como:
                 </Label>
                 <Select
                   value={profile}
                   onValueChange={(value: Profile) => setProfile(value)}
                 >
-                  <SelectTrigger className="h-11 cursor-pointer rounded-[8px] border-gray-300 bg-white">
+                  <SelectTrigger className="h-11 cursor-pointer rounded-[8px] border-neutral-300 bg-white">
                     <SelectValue placeholder="Selecione o perfil" />
                   </SelectTrigger>
                   <SelectContent>
@@ -159,7 +159,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 onClick={() => setStep(2)}
-                className="h-11 w-full cursor-pointer rounded-[8px] bg-[#2B6CB0] text-white hover:bg-[#255A93]"
+                className="h-11 w-full cursor-pointer rounded-[8px] bg-[var(--color-brand-700)] text-white hover:bg-[var(--color-brand-600)]"
               >
                 Continuar
               </Button>
@@ -175,7 +175,7 @@ export default function LoginPage() {
                   name="email"
                   render={({ field, fieldState }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-semibold text-gray-700">
+                      <FormLabel className="text-sm font-semibold text-neutral-900">
                         E-mail:
                       </FormLabel>
                       <FormControl>
@@ -184,7 +184,7 @@ export default function LoginPage() {
                           placeholder="Digite seu e-mail"
                           disabled={isLoading}
                           className={cn(
-                            "h-11 rounded-[8px] border-gray-300 bg-white placeholder:text-center",
+                            "h-11 rounded-[8px] border-neutral-300 bg-white placeholder:text-center",
                             fieldState.error &&
                               "border-error focus-visible:ring-error/30",
                           )}
@@ -201,7 +201,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field, fieldState }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-semibold text-gray-700">
+                      <FormLabel className="text-sm font-semibold text-neutral-900">
                         Senha:
                       </FormLabel>
                       <FormControl>
@@ -210,7 +210,7 @@ export default function LoginPage() {
                           placeholder="••••••••"
                           disabled={isLoading}
                           className={cn(
-                            "h-11 rounded-[8px] border-gray-300 bg-white placeholder:text-center",
+                            "h-11 rounded-[8px] border-neutral-300 bg-white placeholder:text-center",
                             fieldState.error &&
                               "border-error focus-visible:ring-error/30",
                           )}
@@ -228,7 +228,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full cursor-pointer rounded-[8px] bg-[#2B6CB0] text-white hover:bg-[#255A93]"
+                  className="h-11 w-full cursor-pointer rounded-lg bg-[var(--color-brand-700)] text-white hover:bg-[var(--color-brand-600)]"
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
