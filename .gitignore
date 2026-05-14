@@ -140,6 +140,9 @@ vite.config.ts.timestamp-*
 
 /generated/prisma
 
+# Prisma generated client
+backend/generated/
+
 # Backend NestJS
 /backend/node_modules
 /backend/dist

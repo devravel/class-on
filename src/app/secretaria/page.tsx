@@ -1,39 +1,188 @@
 'use client'
 
-import { useAuth } from '@/contexts/auth-context'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
+import {
+  BookOpen,
+  School,
+  ChevronRight,
+  Clock,
+  FileText,
+  GraduationCap,
+  Plus,
+  UserCheck,
+  UserPlus,
+  Users,
+} from 'lucide-react'
+
+import { KpiCard } from '@/components/dashboard/KpiCard'
+import { ListCard } from '@/components/dashboard/ListCard'
+import { QuickActions } from '@/components/dashboard/QuickActions'
+import { Section } from '@/components/dashboard/Section'
+import { PageContainer } from '@/components/layout/PageContainer'
+
+const kpis = [
+  {
+    id: 'alunos',
+    label: 'Total de Alunos',
+    value: '1.247',
+    icon: Users,
+    trend: '+23 este mês',
+    trendType: 'positive' as const,
+  },
+  {
+    id: 'professores',
+    label: 'Total de Professores',
+    value: '42',
+    icon: GraduationCap,
+    trend: '+2 este mês',
+    trendType: 'positive' as const,
+  },
+  {
+    id: 'turmas',
+    label: 'Total de Turmas',
+    value: '28',
+    icon: BookOpen,
+    trend: '5 com vagas disponíveis',
+    trendType: 'neutral' as const,
+  },
+  {
+    id: 'ano',
+    label: 'Ano Letivo',
+    value: '2025',
+    icon: School,
+    trend: 'Em andamento',
+    trendType: 'neutral' as const,
+  },
+]
+
+const recentClasses = [
+  { id: 1, name: '9º Ano A', shift: 'Matutino', students: 32, teacher: 'João Silva', subject: 'Matemática' },
+  { id: 2, name: '8º Ano B', shift: 'Vespertino', students: 28, teacher: 'Ana Lima', subject: 'Português' },
+  { id: 3, name: '7º Ano C', shift: 'Matutino', students: 30, teacher: 'Carlos Souza', subject: 'Ciências' },
+  { id: 4, name: '6º Ano A', shift: 'Noturno', students: 25, teacher: 'Maria Santos', subject: 'História' },
+  { id: 5, name: '1º EM A', shift: 'Matutino', students: 35, teacher: 'Pedro Costa', subject: 'Física' },
+]
+
+const announcements = [
+  { id: 1, title: 'Reunião pedagógica — 15/01', author: 'Coordenação', date: '03/01' },
+  { id: 2, title: 'Entrega de relatórios bimestrais', author: 'Direção', date: '02/01' },
+  { id: 3, title: 'Ano letivo 2025 — ciclo definido na secretaria', author: 'Secretaria', date: '01/01' },
+]
+
+const quickActions = [
+  { label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
+  { label: 'Cadastrar Professor', icon: UserCheck, href: '/secretaria/professores/novo', variant: 'outline' as const },
+  { label: 'Nova Turma', icon: Plus, href: '/secretaria/turmas/nova', variant: 'outline' as const },
+  { label: 'Emitir Relatório', icon: FileText, href: '/secretaria/relatorios', variant: 'outline' as const },
+]
+
+const shiftBadge: Record<string, string> = {
+  Matutino: 'bg-brand-100 text-brand-700',
+  Vespertino: 'bg-warning/10 text-warning',
+  Noturno: 'bg-neutral-200 text-neutral-700',
+}
 
 export default function SecretariaPage() {
-  const { user, signOut } = useAuth()
-  const router = useRouter()
-
-  function handleSignOut() {
-    signOut()
-    router.replace('/login')
-  }
-
   return (
-    <div className="min-h-screen bg-background font-sans">
-      <header className="flex items-center justify-between border-b border-border bg-surface px-8 py-4 shadow-light">
-        <div className="flex items-center gap-3">
-          <Image src="/assets/logo/no_name_logo.svg" alt="ClassOn" width={28} height={26} />
-          <span className="text-sm font-semibold text-text-primary">ClassOn — Secretaria</span>
+    <PageContainer>
+      {/* Page heading */}
+      <div className="mb-8">
+        <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
+        <p className="mt-1 text-sm text-text-secondary">
+          Visão geral do sistema — Ano Letivo 2025
+        </p>
+      </div>
+
+      {/* KPIs */}
+      <Section title="Indicadores Gerais" className="mb-8">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+          {kpis.map((kpi) => (
+            <KpiCard key={kpi.id} {...kpi} />
+          ))}
         </div>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-text-secondary">{user?.email}</span>
-          <button
-            onClick={handleSignOut}
-            className="cursor-pointer rounded-[8px] bg-neutral-200 px-3 py-1.5 text-sm font-medium text-neutral-700 hover:bg-neutral-300"
+      </Section>
+
+      {/* Turmas + Comunicados */}
+      <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Turmas recentes — 2/3 */}
+        <div className="lg:col-span-2">
+          <Section
+            title="Turmas Recentes"
+            action={
+              <a
+                href="/secretaria/turmas"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Ver todas <ChevronRight size={14} />
+              </a>
+            }
           >
-            Sair
-          </button>
+            <ListCard
+              items={recentClasses}
+              renderItem={(item) => (
+                <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <BookOpen size={16} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-text-primary">{item.name}</p>
+                      <p className="truncate text-xs text-text-secondary">
+                        Prof. {item.teacher} · {item.subject}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 items-center gap-3 pl-4">
+                    <span
+                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
+                    >
+                      {item.shift}
+                    </span>
+                    <span className="text-xs text-text-secondary">{item.students} alunos</span>
+                  </div>
+                </div>
+              )}
+            />
+          </Section>
         </div>
-      </header>
-      <main className="mx-auto max-w-7xl px-8 py-10">
-        <h1 className="text-2xl font-bold text-text-primary">Painel da Secretaria</h1>
-        <p className="mt-2 text-sm text-text-secondary">Em construção.</p>
-      </main>
-    </div>
+
+        {/* Comunicados — 1/3 */}
+        <div className="lg:col-span-1">
+          <Section
+            title="Comunicados"
+            action={
+              <a
+                href="/secretaria/comunicados"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Ver todos <ChevronRight size={14} />
+              </a>
+            }
+          >
+            <ListCard
+              items={announcements}
+              renderItem={(item) => (
+                <div className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-neutral-100">
+                  <p className="text-sm font-medium leading-snug text-text-primary">
+                    {item.title}
+                  </p>
+                  <span className="flex items-center gap-1 text-xs text-text-secondary">
+                    <Clock size={12} />
+                    {item.date} · {item.author}
+                  </span>
+                </div>
+              )}
+            />
+          </Section>
+        </div>
+      </div>
+
+      {/* Quick Actions */}
+      <Section
+        title="Ações Rápidas"
+        description="Acesso direto às principais funcionalidades"
+      >
+        <QuickActions actions={quickActions} />
+      </Section>
+    </PageContainer>
   )
 }

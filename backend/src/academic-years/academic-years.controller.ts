@@ -34,10 +34,22 @@ export class AcademicYearsController {
     return this.academicYearsService.findAll()
   }
 
+  @Get('active')
+  @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
+  findActive() {
+    return this.academicYearsService.findActive()
+  }
+
   @Get(':id')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
   findOne(@Param('id') id: string) {
     return this.academicYearsService.findOne(BigInt(id))
+  }
+
+  @Patch(':id/close')
+  @Roles('SECRETARIA')
+  closeYear(@Param('id') id: string) {
+    return this.academicYearsService.closeYear(BigInt(id))
   }
 
   @Patch(':id')

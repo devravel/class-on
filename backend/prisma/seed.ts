@@ -1,7 +1,7 @@
 import 'dotenv/config'
 import * as bcrypt from 'bcryptjs'
 import { PrismaPg } from '@prisma/adapter-pg'
-import { PrismaClient } from '../../generated/prisma'
+import { PrismaClient } from '../generated/prisma'
 
 type SeedUser = {
   email: string

@@ -7,11 +7,13 @@ datasource db {
   provider = "postgresql"
 }
 
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model academic_years {
   id         BigInt      @id
   year       Int         @unique(map: "academic_years_year_unique")
-  start_date DateTime    @db.Date
-  end_date   DateTime    @db.Date
+  status     String      @db.VarChar(255)
+  created_at DateTime    @db.Timestamp(6)
+  updated_at DateTime    @db.Timestamp(6)
   bimesters  bimesters[]
   classes    classes[]
 }

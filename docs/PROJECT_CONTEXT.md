@@ -266,7 +266,7 @@ Critério:
 
 ### Regras:
 
-- não dependem de calendário real
+- não são amarrados a datas automáticas no MVP
 - são controlados manualmente pela secretaria
 - podem estar:
   - ABERTO

@@ -116,6 +116,27 @@ Perfil acadêmico do professor.
 
 ---
 
+# 🎓 academic_years
+
+Ciclo acadêmico institucional identificado por `year` e `status` (sem datas de início/fim no MVP).
+
+## Campos
+- `id` (PK)
+- `year` (UNIQUE)
+- `status` (ex.: `ACTIVE`, `CLOSED`)
+- `created_at`
+- `updated_at`
+
+## Regras
+- no MVP o ano letivo não modela grade automática de datas de aula
+- controle principal por `status`, definido pela secretaria
+
+## Relacionamentos
+- 1:N com `bimesters`
+- 1:N com `classes`
+
+---
+
 # 🏫 classes
 
 Representa a turma por ano letivo.

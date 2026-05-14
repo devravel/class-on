@@ -1,4 +1,4 @@
-import { IsInt, IsISO8601, IsOptional, Min } from 'class-validator'
+import { IsInt, IsIn, IsOptional, Min } from 'class-validator'
 
 export class UpdateAcademicYearDto {
   @IsOptional()
@@ -7,10 +7,6 @@ export class UpdateAcademicYearDto {
   year?: number
 
   @IsOptional()
-  @IsISO8601({}, { message: 'start_date deve ser uma data válida no formato ISO 8601.' })
-  start_date?: string
-
-  @IsOptional()
-  @IsISO8601({}, { message: 'end_date deve ser uma data válida no formato ISO 8601.' })
-  end_date?: string
+  @IsIn(['ACTIVE', 'CLOSED'], { message: 'Status deve ser ACTIVE ou CLOSED.' })
+  status?: string
 }

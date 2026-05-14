@@ -12,8 +12,9 @@ ALTER TABLE "users" ADD CONSTRAINT "users_email_unique" UNIQUE("email");
 CREATE TABLE "academic_years"(
     "id" BIGINT NOT NULL,
     "year" INTEGER NOT NULL,
-    "start_date" DATE NOT NULL,
-    "end_date" DATE NOT NULL
+    "status" VARCHAR(255) NOT NULL,
+    "created_at" TIMESTAMP WITHOUT TIME ZONE NOT NULL,
+    "updated_at" TIMESTAMP WITHOUT TIME ZONE NOT NULL
 );
 ALTER TABLE "academic_years" ADD PRIMARY KEY("id");
 ALTER TABLE "academic_years" ADD CONSTRAINT "academic_years_year_unique" UNIQUE("year");
