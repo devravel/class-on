@@ -1,14 +1,8 @@
 "use client";
 
-import {
-  School,
-  CheckCircle,
-  LockKeyhole,
-  Plus,
-  XCircle,
-} from "lucide-react";
+import { School, CheckCircle, LockKeyhole, Plus, XCircle } from "lucide-react";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { CloseAcademicYearModal } from "@/components/academic-years/CloseAcademicYearModal";
 import { ListCard } from "@/components/dashboard/ListCard";
@@ -16,32 +10,11 @@ import { Section } from "@/components/dashboard/Section";
 import { PageContainer } from "@/components/layout/PageContainer";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { AcademicYear, ACADEMIC_YEAR_STATUS_LABELS } from "@/types/academic-year";
-
-// Mock data - será substituído pela integração real
-const academicYears: AcademicYear[] = [
-  {
-    id: "1",
-    year: 2026,
-    status: "ACTIVE",
-    created_at: "2026-01-15T10:00:00Z",
-    updated_at: "2026-01-15T10:00:00Z",
-  },
-  {
-    id: "2", 
-    year: 2025,
-    status: "CLOSED",
-    created_at: "2025-01-15T10:00:00Z",
-    updated_at: "2025-12-20T15:30:00Z",
-  },
-  {
-    id: "3",
-    year: 2024,
-    status: "CLOSED", 
-    created_at: "2024-01-15T10:00:00Z",
-    updated_at: "2024-12-20T15:30:00Z",
-  },
-];
+import {
+  AcademicYear,
+  ACADEMIC_YEAR_STATUS_LABELS,
+} from "@/types/academic-year";
+import { academicYearsApi } from "@/lib/api";
 
 const statusConfig = {
   ACTIVE: {
@@ -51,14 +24,36 @@ const statusConfig = {
   },
   CLOSED: {
     label: ACADEMIC_YEAR_STATUS_LABELS.CLOSED,
-    className: "border border-border bg-muted text-text-secondary", 
+    className: "border border-border bg-muted text-text-secondary",
     icon: XCircle,
   },
 };
 
 export default function AcademicYearsPage() {
+  const [academicYears, setAcademicYears] = useState<AcademicYear[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [isCloseYearModalOpen, setIsCloseYearModalOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<AcademicYear | null>(null);
+
+  // Carrega anos letivos da API
+  useEffect(() => {
+    loadAcademicYears();
+  }, []);
+
+  const loadAcademicYears = async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+      const data = await academicYearsApi.list();
+      setAcademicYears(data);
+    } catch (err) {
+      console.error("Erro ao carregar anos letivos:", err);
+      setError("Não foi possível carregar os anos letivos.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   const handleCloseYear = (year: AcademicYear) => {
     setSelectedYear(year);
@@ -68,6 +63,10 @@ export default function AcademicYearsPage() {
   const handleCloseModal = () => {
     setIsCloseYearModalOpen(false);
     setSelectedYear(null);
+  };
+
+  const handleYearClosed = () => {
+    loadAcademicYears();
   };
 
   return (
@@ -90,15 +89,30 @@ export default function AcademicYearsPage() {
         </Link>
       </div>
 
+      {/* Loading state */}
+      {isLoading && (
+        <div className="flex items-center justify-center py-12">
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">
+          {error}
+        </div>
+      )}
+
       {/* Lista de anos letivos */}
-      <Section
-        title="Anos Letivos Cadastrados"
-        description="Lista de todos os anos letivos cadastrados no sistema"
-      >
-        <ListCard
-          items={academicYears}
-          emptyMessage="Nenhum ano letivo encontrado."
-          renderItem={(item) => {
+      {!isLoading && !error && (
+        <Section
+          title="Anos Letivos Cadastrados"
+          description="Lista de todos os anos letivos cadastrados no sistema"
+        >
+          <ListCard
+            items={academicYears}
+            emptyMessage="Nenhum ano letivo encontrado."
+            renderItem={(item) => {
             const config = statusConfig[item.status];
             const StatusIcon = config.icon;
 
@@ -111,9 +125,6 @@ export default function AcademicYearsPage() {
                   <div className="min-w-0">
                     <p className="text-base font-semibold text-text-primary">
                       Ano Letivo {item.year}
-                    </p>
-                    <p className="text-sm text-text-secondary">
-                      Controle institucional manual
                     </p>
                   </div>
                 </div>
@@ -142,12 +153,14 @@ export default function AcademicYearsPage() {
             );
           }}
         />
-      </Section>
+        </Section>
+      )}
 
       <CloseAcademicYearModal
         open={isCloseYearModalOpen}
         onClose={handleCloseModal}
         academicYear={selectedYear}
+        onYearClosed={handleYearClosed}
       />
     </PageContainer>
   );

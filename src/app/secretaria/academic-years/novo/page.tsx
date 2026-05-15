@@ -3,14 +3,19 @@
 import { ArrowLeft, CheckCircle, Save, XCircle } from 'lucide-react'
 import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
 
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CreateAcademicYearRequest } from '@/types/academic-year'
+import { academicYearsApi } from '@/lib/api'
 
 export default function NovoAnoLetivoPage() {
+  const router = useRouter()
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState<CreateAcademicYearRequest & { yearInput: string }>({
     yearInput: '',
     year: 0,
@@ -32,17 +37,30 @@ export default function NovoAnoLetivoPage() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     
     if (!formData.year || formData.year < 2000) {
-      alert('Por favor, informe um ano válido (a partir de 2000)')
+      setError('Por favor, informe um ano válido (a partir de 2000)')
       return
     }
 
-    // TODO: Implementar integração com API
-    console.log('Dados do formulário:', { year: formData.year, status: formData.status })
-    alert('Ano letivo criado com sucesso! (simulação)')
+    try {
+      setIsSubmitting(true)
+      setError(null)
+      
+      await academicYearsApi.create({
+        year: formData.year,
+        status: formData.status
+      })
+      
+      router.push('/secretaria/academic-years')
+    } catch (err: any) {
+      console.error('Erro ao criar ano letivo:', err)
+      setError(err.message || 'Não foi possível criar o ano letivo. Tente novamente.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -71,6 +89,13 @@ export default function NovoAnoLetivoPage() {
       >
         <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            {/* Error message */}
+            {error && (
+              <div className="p-4 bg-destructive/10 border border-destructive/20 rounded-component text-sm text-destructive">
+                {error}
+              </div>
+            )}
+
             {/* Ano */}
             <div>
               <label 
@@ -151,13 +176,13 @@ export default function NovoAnoLetivoPage() {
             <div className="flex items-center justify-end gap-3 pt-4 border-t border-border">
               <Link
                 href="/secretaria/academic-years"
-                className={cn(buttonVariants({ variant: 'outline' }))}
+                className={cn(buttonVariants({ variant: 'outline' }), isSubmitting && 'pointer-events-none opacity-50')}
               >
                 Cancelar
               </Link>
-              <Button type="submit">
+              <Button type="submit" disabled={isSubmitting}>
                 <Save size={16} />
-                Criar Ano Letivo
+                {isSubmitting ? 'Criando...' : 'Criar Ano Letivo'}
               </Button>
             </div>
           </form>

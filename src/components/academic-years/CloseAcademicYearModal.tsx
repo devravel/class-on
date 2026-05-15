@@ -11,11 +11,12 @@ import {
   XCircle,
   type LucideIcon,
 } from "lucide-react";
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { AcademicYear } from "@/types/academic-year";
+import { academicYearsApi } from "@/lib/api";
 
 interface YearSummaryItem {
   label: string;
@@ -33,6 +34,7 @@ interface CloseAcademicYearModalProps {
   open: boolean;
   onClose: () => void;
   academicYear: AcademicYear | null;
+  onYearClosed?: () => void;
 }
 
 // Mock data - será substituído pela integração real
@@ -63,8 +65,11 @@ export function CloseAcademicYearModal({
   open,
   onClose,
   academicYear,
+  onYearClosed,
 }: CloseAcademicYearModalProps) {
   const dialogRef = useRef<HTMLDivElement>(null);
+  const [isClosing, setIsClosing] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -133,6 +138,23 @@ export function CloseAcademicYearModal({
 
   const hasPendingValidation = validationItems.some((item) => !item.completed);
   const yearSummary = getYearSummary(academicYear.year);
+
+  const handleCloseYear = async () => {
+    if (!academicYear) return;
+
+    try {
+      setIsClosing(true);
+      setError(null);
+      await academicYearsApi.close(academicYear.id);
+      onYearClosed?.();
+      onClose();
+    } catch (err) {
+      console.error("Erro ao fechar ano letivo:", err);
+      setError("Não foi possível encerrar o ano letivo. Tente novamente.");
+    } finally {
+      setIsClosing(false);
+    }
+  };
 
   return (
     <div
@@ -324,6 +346,12 @@ export function CloseAcademicYearModal({
                 </div>
               </div>
             </div>
+
+            {error && (
+              <div className="rounded-card bg-destructive/10 p-4 text-sm text-destructive ring-1 ring-destructive/20">
+                {error}
+              </div>
+            )}
           </div>
         </div>
 
@@ -334,6 +362,7 @@ export function CloseAcademicYearModal({
               variant="outline"
               size="lg"
               onClick={onClose}
+              disabled={isClosing}
               className="cursor-pointer"
             >
               Cancelar
@@ -342,20 +371,15 @@ export function CloseAcademicYearModal({
               type="button"
               variant="destructive"
               size="lg"
-              disabled={hasPendingValidation}
+              disabled={hasPendingValidation || isClosing}
               aria-describedby={
                 hasPendingValidation
                   ? "close-academic-year-checklist-heading"
                   : undefined
               }
-              onClick={() => {
-                // TODO: Implementar integração com API
-                console.log(`Fechando ano letivo ${academicYear.year}`);
-                alert(`Ano letivo ${academicYear.year} fechado com sucesso! (simulação)`);
-                onClose();
-              }}
+              onClick={handleCloseYear}
             >
-              Confirmar Fechamento
+              {isClosing ? "Encerrando..." : "Confirmar Fechamento"}
             </Button>
           </div>
         </footer>
