@@ -12,12 +12,19 @@ import {
   UserPlus,
   Users,
 } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useState } from 'react'
 
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { buttonVariants } from '@/components/ui/button'
+import { academicYearsApi } from '@/lib/api'
+import { ApiError } from '@/lib/api-client'
+import { cn } from '@/lib/utils'
+import { AcademicYear } from '@/types/academic-year'
 
 const kpis = [
   {
@@ -42,14 +49,6 @@ const kpis = [
     value: '28',
     icon: BookOpen,
     trend: '5 com vagas disponíveis',
-    trendType: 'neutral' as const,
-  },
-  {
-    id: 'ano',
-    label: 'Ano Letivo',
-    value: '2025',
-    icon: School,
-    trend: 'Em andamento',
     trendType: 'neutral' as const,
   },
 ]
@@ -82,13 +81,71 @@ const shiftBadge: Record<string, string> = {
 }
 
 export default function SecretariaPage() {
+  const [activeAcademicYear, setActiveAcademicYear] = useState<AcademicYear | null>(null)
+  const [isAcademicYearLoading, setIsAcademicYearLoading] = useState(true)
+  const [academicYearError, setAcademicYearError] = useState<string | null>(null)
+
+  useEffect(() => {
+    let isMounted = true
+
+    const loadActiveAcademicYear = async () => {
+      try {
+        setIsAcademicYearLoading(true)
+        setAcademicYearError(null)
+
+        const data = await academicYearsApi.getActive()
+
+        if (isMounted) {
+          setActiveAcademicYear(data)
+        }
+      } catch (error) {
+        if (!isMounted) {
+          return
+        }
+
+        setActiveAcademicYear(null)
+
+        if (error instanceof ApiError && error.status === 404) {
+          return
+        }
+
+        console.error('Erro ao carregar ano letivo ativo:', error)
+        setAcademicYearError('Não foi possível carregar o ano letivo.')
+      } finally {
+        if (isMounted) {
+          setIsAcademicYearLoading(false)
+        }
+      }
+    }
+
+    loadActiveAcademicYear()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
+
+  const academicYearValue = isAcademicYearLoading
+    ? 'Carregando...'
+    : activeAcademicYear
+      ? activeAcademicYear.year
+      : 'Nenhum ano cadastrado no momento'
+
+  const academicYearTrend = isAcademicYearLoading
+    ? 'Buscando ano ativo'
+    : activeAcademicYear
+      ? 'Em andamento'
+      : academicYearError
+
   return (
     <PageContainer>
       {/* Page heading */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
         <p className="mt-1 text-sm text-text-secondary">
-          Visão geral do sistema — Ano Letivo 2025
+          {activeAcademicYear
+            ? `Visão geral do sistema — Ano Letivo ${activeAcademicYear.year}`
+            : 'Visão geral do sistema'}
         </p>
       </div>
 
@@ -98,6 +155,25 @@ export default function SecretariaPage() {
           {kpis.map((kpi) => (
             <KpiCard key={kpi.id} {...kpi} />
           ))}
+          <KpiCard
+            label="Ano Letivo"
+            value={academicYearValue}
+            icon={School}
+            trend={academicYearTrend ?? undefined}
+            trendType={academicYearError ? 'negative' : 'neutral'}
+            valueClassName={!isAcademicYearLoading && !activeAcademicYear ? 'text-base leading-snug' : undefined}
+            action={
+              !isAcademicYearLoading && !activeAcademicYear && !academicYearError ? (
+                <Link
+                  href="/secretaria/academic-years/novo"
+                  className={cn(buttonVariants({ size: 'sm' }), 'w-fit')}
+                >
+                  <Plus size={14} />
+                  Cadastrar novo ano
+                </Link>
+              ) : undefined
+            }
+          />
         </div>
       </Section>
 

@@ -55,9 +55,10 @@ export default function NovoAnoLetivoPage() {
       })
       
       router.push('/secretaria/academic-years')
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error('Erro ao criar ano letivo:', err)
-      setError(err.message || 'Não foi possível criar o ano letivo. Tente novamente.')
+      const message = err instanceof Error ? err.message : undefined
+      setError(message || 'Não foi possível criar o ano letivo. Tente novamente.')
     } finally {
       setIsSubmitting(false)
     }

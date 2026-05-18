@@ -2,14 +2,8 @@
 
 import {
   AlertTriangle,
-  BookOpen,
-  CheckCircle2,
-  GraduationCap,
   LockKeyhole,
-  School,
-  Users,
   XCircle,
-  type LucideIcon,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
@@ -18,39 +12,12 @@ import { cn } from "@/lib/utils";
 import { AcademicYear } from "@/types/academic-year";
 import { academicYearsApi } from "@/lib/api";
 
-interface YearSummaryItem {
-  label: string;
-  value: string;
-  icon: LucideIcon;
-}
-
-interface ValidationItem {
-  id: string;
-  label: string;
-  completed: boolean;
-}
-
 interface CloseAcademicYearModalProps {
   open: boolean;
   onClose: () => void;
   academicYear: AcademicYear | null;
   onYearClosed?: () => void;
 }
-
-// Mock data - será substituído pela integração real
-const getYearSummary = (year: number): YearSummaryItem[] => [
-  { label: "Ano letivo ativo", value: year.toString(), icon: School },
-  { label: "Turmas vinculadas", value: "28", icon: BookOpen },
-  { label: "Alunos matriculados", value: "1.247", icon: Users },
-  { label: "Professores ativos", value: "42", icon: GraduationCap },
-];
-
-const validationItems: ValidationItem[] = [
-  { id: "bimestres", label: "Todos os bimestres fechados", completed: true },
-  { id: "notas", label: "Notas finalizadas", completed: true },
-  { id: "resultados", label: "Resultados finais definidos", completed: true },
-  { id: "pendencias", label: "Nenhuma pendência acadêmica", completed: false },
-];
 
 const focusableSelector =
   'button:not([disabled]), [href]:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -136,9 +103,6 @@ export function CloseAcademicYearModal({
     return null;
   }
 
-  const hasPendingValidation = validationItems.some((item) => !item.completed);
-  const yearSummary = getYearSummary(academicYear.year);
-
   const handleCloseYear = async () => {
     if (!academicYear) return;
 
@@ -215,108 +179,6 @@ export function CloseAcademicYearModal({
 
         <div className="min-h-0 flex-1 overflow-y-auto overscroll-y-contain px-6 py-6 sm:px-8 sm:py-8">
           <div className="flex flex-col gap-8 lg:gap-10">
-            <div className="grid gap-8 lg:grid-cols-[1.1fr_0.9fr] lg:items-start lg:gap-8">
-              <section aria-labelledby="close-academic-year-summary-heading">
-                <div className="mb-4">
-                  <h3
-                    id="close-academic-year-summary-heading"
-                    className="text-base font-semibold text-text-primary"
-                  >
-                    Resumo geral
-                  </h3>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    Dados consolidados do ano letivo que será encerrado.
-                  </p>
-                </div>
-
-                <div className="grid gap-3 sm:grid-cols-2 sm:gap-4">
-                  {yearSummary.map((item) => {
-                    const Icon = item.icon;
-
-                    return (
-                      <div
-                        key={item.label}
-                        className="rounded-card bg-background p-4 ring-1 ring-border transition-colors sm:p-5"
-                      >
-                        <div className="mb-3 flex h-10 w-10 items-center justify-center rounded-component bg-primary/10 sm:mb-4">
-                          <Icon
-                            size={18}
-                            className="text-primary"
-                            aria-hidden
-                          />
-                        </div>
-                        <p className="text-sm text-text-secondary">
-                          {item.label}
-                        </p>
-                        <p className="mt-1 text-xl font-bold text-text-primary sm:text-2xl">
-                          {item.value}
-                        </p>
-                      </div>
-                    );
-                  })}
-                </div>
-              </section>
-
-              <section aria-labelledby="close-academic-year-checklist-heading">
-                <div className="mb-4">
-                  <h3
-                    id="close-academic-year-checklist-heading"
-                    className="text-base font-semibold text-text-primary"
-                  >
-                    Checklist de validações
-                  </h3>
-                  <p className="mt-1 text-sm text-text-secondary">
-                    O encerramento só fica disponível com todas as etapas
-                    concluídas.
-                  </p>
-                </div>
-
-                <div className="overflow-hidden rounded-card ring-1 ring-border">
-                  <ul className="divide-y divide-border">
-                    {validationItems.map((item) => (
-                      <li key={item.id}>
-                        <div className="flex items-center justify-between gap-4 bg-surface px-4 py-3.5 sm:px-4 sm:py-4">
-                          <div className="flex min-w-0 items-center gap-3">
-                            <span
-                              className={cn(
-                                "flex h-8 w-8 shrink-0 items-center justify-center rounded-full",
-                                item.completed
-                                  ? "bg-success/10 text-success"
-                                  : "bg-warning/10 text-warning",
-                              )}
-                              aria-hidden
-                            >
-                              {item.completed ? (
-                                <CheckCircle2 size={17} />
-                              ) : (
-                                <AlertTriangle size={17} />
-                              )}
-                            </span>
-                            <span className="text-sm font-medium leading-snug text-text-primary">
-                              {item.label}
-                            </span>
-                          </div>
-                          <span
-                            className={cn(
-                              "shrink-0 rounded-full px-2.5 py-1 text-xs font-semibold",
-                              item.completed
-                                ? "bg-success/10 text-success"
-                                : "bg-warning/10 text-warning",
-                            )}
-                          >
-                            <span className="sr-only">
-                              Status da validação:{" "}
-                            </span>
-                            {item.completed ? "Concluído" : "Pendente"}
-                          </span>
-                        </div>
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              </section>
-            </div>
-
             <div
               className="rounded-card bg-danger/10 p-4 ring-1 ring-danger/20 sm:p-5"
               role="region"
@@ -371,12 +233,7 @@ export function CloseAcademicYearModal({
               type="button"
               variant="destructive"
               size="lg"
-              disabled={hasPendingValidation || isClosing}
-              aria-describedby={
-                hasPendingValidation
-                  ? "close-academic-year-checklist-heading"
-                  : undefined
-              }
+              disabled={isClosing}
               onClick={handleCloseYear}
             >
               {isClosing ? "Encerrando..." : "Confirmar Fechamento"}

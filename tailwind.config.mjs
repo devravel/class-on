@@ -1,6 +1,5 @@
-import type { Config } from 'tailwindcss'
-
-const config: Config = {
+/** @type {import('tailwindcss').Config} */
+const config = {
   content: [
     './src/pages/**/*.{js,ts,jsx,tsx,mdx}',
     './src/components/**/*.{js,ts,jsx,tsx,mdx}',
@@ -67,48 +66,48 @@ const config: Config = {
       },
       borderRadius: {
         // Design System border radius tokens
-        'component': '8px',  // inputs, badges, botões
-        'card': '12px',      // cards de conteúdo
-        'modal': '16px',     // modais e diálogos
+        component: '8px', // inputs, badges, botões
+        card: '12px', // cards de conteúdo
+        modal: '16px', // modais e diálogos
         // Mantendo valores padrão do Tailwind
         DEFAULT: '8px',
-        'sm': '4px',
-        'md': '8px',
-        'lg': '12px',
-        'xl': '16px',
+        sm: '4px',
+        md: '8px',
+        lg: '12px',
+        xl: '16px',
         '2xl': '24px',
-        'full': '9999px',
+        full: '9999px',
       },
       boxShadow: {
         // Design System shadows
-        'light': '0 1px 3px 0 rgb(0 0 0 / 0.1)',
-        'medium': '0 4px 6px -1px rgb(0 0 0 / 0.1)',
+        light: '0 1px 3px 0 rgb(0 0 0 / 0.1)',
+        medium: '0 4px 6px -1px rgb(0 0 0 / 0.1)',
       },
       fontSize: {
         // Design System typography scale
-        'xs': '12px',
-        'sm': '14px',
-        'md': '16px',
-        'lg': '18px',
-        'xl': '20px',
+        xs: '12px',
+        sm: '14px',
+        md: '16px',
+        lg: '18px',
+        xl: '20px',
         '2xl': '24px',
         '3xl': '32px',
       },
       spacing: {
         // Design System spacing tokens
-        '1': '4px',   // micro
-        '2': '8px',   // micro
-        '3': '12px',  // micro
-        '4': '16px',  // default
-        '6': '24px',  // default
-        '8': '32px',  // macro
-        '10': '40px', // macro
-        '12': '48px', // macro
-        '16': '64px', // macro
+        1: '4px', // micro
+        2: '8px', // micro
+        3: '12px', // micro
+        4: '16px', // default
+        6: '24px', // default
+        8: '32px', // macro
+        10: '40px', // macro
+        12: '48px', // macro
+        16: '64px', // macro
       },
     },
   },
   plugins: [],
-} satisfies Config
+}
 
 export default config

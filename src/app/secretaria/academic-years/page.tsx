@@ -36,11 +36,6 @@ export default function AcademicYearsPage() {
   const [isCloseYearModalOpen, setIsCloseYearModalOpen] = useState(false);
   const [selectedYear, setSelectedYear] = useState<AcademicYear | null>(null);
 
-  // Carrega anos letivos da API
-  useEffect(() => {
-    loadAcademicYears();
-  }, []);
-
   const loadAcademicYears = async () => {
     try {
       setIsLoading(true);
@@ -54,6 +49,11 @@ export default function AcademicYearsPage() {
       setIsLoading(false);
     }
   };
+
+  // Carrega anos letivos da API
+  useEffect(() => {
+    loadAcademicYears();
+  }, []);
 
   const handleCloseYear = (year: AcademicYear) => {
     setSelectedYear(year);

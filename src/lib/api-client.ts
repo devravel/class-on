@@ -40,9 +40,9 @@ export const apiClient = {
 
     const url = `${API_BASE_URL}${endpoint}`
 
-    const requestHeaders: HeadersInit = {
+    const requestHeaders: Record<string, string> = {
       'Content-Type': 'application/json',
-      ...headers,
+      ...(headers as Record<string, string>),
     }
 
     // Adiciona token automaticamente se a requisição requer autenticação

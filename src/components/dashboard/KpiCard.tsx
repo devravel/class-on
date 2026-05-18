@@ -1,3 +1,4 @@
+import { type ReactNode } from 'react'
 import { type LucideIcon } from 'lucide-react'
 
 import { cn } from '@/lib/utils'
@@ -8,7 +9,9 @@ interface KpiCardProps {
   icon: LucideIcon
   trend?: string
   trendType?: 'positive' | 'negative' | 'neutral'
+  action?: ReactNode
   className?: string
+  valueClassName?: string
 }
 
 export function KpiCard({
@@ -17,7 +20,9 @@ export function KpiCard({
   icon: Icon,
   trend,
   trendType = 'neutral',
+  action,
   className,
+  valueClassName,
 }: KpiCardProps) {
   return (
     <div
@@ -29,7 +34,7 @@ export function KpiCard({
       <div className="flex items-start justify-between">
         <div className="flex flex-col gap-1">
           <span className="text-sm font-medium text-text-secondary">{label}</span>
-          <span className="text-3xl font-bold text-text-primary">{value}</span>
+          <span className={cn('text-3xl font-bold text-text-primary', valueClassName)}>{value}</span>
         </div>
         <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-primary/10">
           <Icon size={20} className="text-primary" />
@@ -48,6 +53,8 @@ export function KpiCard({
           {trend}
         </span>
       )}
+
+      {action && <div>{action}</div>}
     </div>
   )
 }
