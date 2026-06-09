@@ -109,19 +109,19 @@ O desenvolvimento seguirá abordagem por módulos:
 
 ### Ordem sugerida:
 
-1. Auth / usuários  
-2. Turmas  
-3. Alunos  
-4. Professores  
-5. Disciplinas  
-6. Bimestres  
-7. Notas  
-8. Horários e frequência  
-9. Tarefas  
-10. Comunicados  
-11. Conversas privadas  
-12. Dashboard / RBAC  
-13. Integrações futuras com IA  
+1. Auth / usuários
+2. Turmas
+3. Alunos
+4. Professores
+5. Disciplinas
+6. Bimestres
+7. Notas
+8. Horários e frequência
+9. Tarefas
+10. Comunicados
+11. Conversas privadas
+12. Dashboard / RBAC
+13. Integrações futuras com IA
 
 ---
 
@@ -254,7 +254,7 @@ Critério:
 
 ### Estrutura:
 
-- até 4 instrumentos de avaliação
+- minimos 3 ou 4 instrumentos de avaliação
 - média bimestral calculada automaticamente
 
 ---
@@ -356,10 +356,10 @@ Critério:
 
 ## ⚠️ Decisões Ainda em Aberto
 
-- [ ] Estrutura detalhada de boletim e histórico exportável  
-- [ ] Estratégia visual final dos dashboards  
-- [ ] Módulos de IA do MVP de apresentação  
-- [ ] Estrutura futura de relatórios gerenciais  
+- [ ] Estrutura detalhada de boletim e histórico exportável
+- [ ] Estratégia visual final dos dashboards
+- [ ] Módulos de IA do MVP de apresentação
+- [ ] Estrutura futura de relatórios gerenciais
 
 ---
 
@@ -367,9 +367,9 @@ Critério:
 
 Construir um sistema:
 
-- coerente  
-- bem modelado  
-- apresentável como TCC  
-- com arquitetura próxima do mundo real  
-- sem complexidade desnecessária  
-- preparado para evolução com IA  
+- coerente
+- bem modelado
+- apresentável como TCC
+- com arquitetura próxima do mundo real
+- sem complexidade desnecessária
+- preparado para evolução com IA
