@@ -7,6 +7,7 @@ import { PrismaModule } from './prisma/prisma.module'
 import { AuthModule } from './auth/auth.module'
 import { AcademicYearsModule } from './academic-years/academic-years.module'
 import { ClassesModule } from './classes/classes.module'
+import { TeachersModule } from './teachers/teachers.module'
 
 @Module({
   imports: [
@@ -15,6 +16,7 @@ import { ClassesModule } from './classes/classes.module'
     AuthModule,
     AcademicYearsModule,
     ClassesModule,
+    TeachersModule,
   ],
   providers: [
     {
