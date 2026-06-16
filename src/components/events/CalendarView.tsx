@@ -1,12 +1,15 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import FullCalendar from '@fullcalendar/react'
 import dayGridPlugin from '@fullcalendar/daygrid'
 import timeGridPlugin from '@fullcalendar/timegrid'
 import interactionPlugin from '@fullcalendar/interaction'
+import type { DateClickArg } from '@fullcalendar/interaction'
+import type { EventClickArg } from '@fullcalendar/core'
 import { CalendarEvent, eventsApi } from '@/lib/api/events'
-import { ApiError } from '@/lib/api-client'
+import { mapEventApiError, toastCalendarRetryInfo } from '@/lib/events/feedback'
+import { AlertCircle } from 'lucide-react'
 
 interface CalendarViewProps {
   classId?: string
@@ -20,56 +23,72 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  const loadEvents = async () => {
+  const loadEvents = useCallback(async () => {
     try {
       setIsLoading(true)
       setError(null)
-      
+
       const data = await eventsApi.getCalendar(classId)
       setEvents(data)
     } catch (err) {
       console.error('Erro ao carregar eventos:', err)
-      if (err instanceof ApiError) {
-        setError(err.message)
-      } else {
-        setError('Erro ao carregar eventos')
-      }
+      const mapped = mapEventApiError(err)
+      setError(`${mapped.title}: ${mapped.description}`)
     } finally {
       setIsLoading(false)
     }
-  }
-
-  useEffect(() => {
-    loadEvents()
   }, [classId])
 
-  const handleEventClick = (clickInfo: any) => {
+  useEffect(() => {
+    void loadEvents()
+  }, [loadEvents])
+
+  const handleEventClick = (clickInfo: EventClickArg) => {
     const eventData = clickInfo.event
+    const startRaw =
+      typeof eventData.startStr === 'string' && eventData.startStr
+        ? eventData.startStr
+        : eventData.start?.toISOString?.() || ''
+    const endRaw =
+      typeof eventData.endStr === 'string' && eventData.endStr
+        ? eventData.endStr
+        : eventData.end?.toISOString?.() || ''
+    const rawProps = eventData.extendedProps as Partial<CalendarEvent['extendedProps']> | undefined
     const calendarEvent: CalendarEvent = {
-      id: eventData.id,
-      title: eventData.title,
-      start: eventData.start?.toISOString() || '',
-      end: eventData.end?.toISOString() || '',
-      allDay: eventData.allDay,
-      extendedProps: eventData.extendedProps,
+      id: String(eventData.id),
+      title: String(eventData.title),
+      start: startRaw,
+      end: endRaw,
+      allDay: Boolean(eventData.allDay),
+      extendedProps: {
+        description: rawProps?.description ?? '',
+        creator: rawProps?.creator ?? '',
+        status: rawProps?.status ?? 'ACTIVE',
+        scope_type: rawProps?.scope_type ?? 'ALL_SCHOOL',
+      },
     }
     
     onEventClick?.(calendarEvent)
   }
 
-  const handleDateClick = (dateInfo: any) => {
+  const handleDateClick = (dateInfo: DateClickArg) => {
     onDateClick?.(dateInfo.date)
   }
 
   if (error) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50">
-        <div className="text-center">
-          <p className="text-sm text-text-secondary mb-2">Erro ao carregar calendário</p>
-          <p className="text-xs text-danger">{error}</p>
+      <div className="flex h-96 items-center justify-center rounded-lg border border-danger/20 bg-danger/5 px-4">
+        <div className="max-w-md text-center">
+          <AlertCircle className="mx-auto mb-2 size-8 text-danger" aria-hidden />
+          <p className="text-sm font-medium text-text-primary mb-1">Não foi possível carregar o calendário</p>
+          <p className="text-xs text-text-secondary leading-relaxed">{error}</p>
           <button
-            onClick={loadEvents}
-            className="mt-3 text-xs text-primary hover:underline"
+            type="button"
+            onClick={() => {
+              toastCalendarRetryInfo()
+              void loadEvents()
+            }}
+            className="mt-4 text-sm font-medium text-primary hover:underline"
           >
             Tentar novamente
           </button>

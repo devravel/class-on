@@ -5,8 +5,8 @@ import Link from 'next/link'
 import { Calendar, Clock, ChevronRight } from 'lucide-react'
 import { Section } from '@/components/dashboard/Section'
 import { ListCard } from '@/components/dashboard/ListCard'
-import { eventsApi, CalendarEvent } from '@/lib/api/events'
-import { ApiError } from '@/lib/api-client'
+import { eventsApi } from '@/lib/api/events'
+import { mapEventApiError, parseLocalDateFromApi } from '@/lib/events/feedback'
 
 interface UpcomingEventsCardProps {
   role: 'SECRETARIA' | 'PROFESSOR' | 'ALUNO'
@@ -41,18 +41,21 @@ export function UpcomingEventsCard({
         const calendarEvents = await eventsApi.getCalendar()
         
         // Filtrar apenas eventos futuros e próximos 30 dias
-        const now = new Date()
-        const thirtyDaysFromNow = new Date(now.getTime() + (30 * 24 * 60 * 60 * 1000))
-        
+        const todayStart = new Date()
+        todayStart.setHours(0, 0, 0, 0)
+        const thirtyDaysFromNow = new Date(todayStart.getTime() + 30 * 24 * 60 * 60 * 1000)
+
         const upcomingEvents = calendarEvents
           .filter((event) => {
-            const eventDate = new Date(event.start)
-            return eventDate >= now && eventDate <= thirtyDaysFromNow
+            const eventDate = parseLocalDateFromApi(event.start)
+            return eventDate >= todayStart && eventDate <= thirtyDaysFromNow
           })
           .map((event) => {
-            const eventDate = new Date(event.start)
-            const diffTime = eventDate.getTime() - now.getTime()
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
+            const eventDate = parseLocalDateFromApi(event.start)
+            const startOfEventDay = new Date(eventDate)
+            startOfEventDay.setHours(0, 0, 0, 0)
+            const diffMs = startOfEventDay.getTime() - todayStart.getTime()
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24))
 
             return {
               id: event.id,
@@ -69,11 +72,8 @@ export function UpcomingEventsCard({
         setEvents(upcomingEvents)
       } catch (err) {
         console.error('Erro ao carregar próximos eventos:', err)
-        if (err instanceof ApiError) {
-          setError(err.message)
-        } else {
-          setError('Erro ao carregar eventos')
-        }
+        const mapped = mapEventApiError(err)
+        setError(`${mapped.title}: ${mapped.description}`)
       } finally {
         setIsLoading(false)
       }
@@ -83,15 +83,15 @@ export function UpcomingEventsCard({
   }, [limit])
 
   const formatEventDate = (dateStr: string, allDay: boolean) => {
-    const date = new Date(dateStr)
-    
+    const date = allDay ? parseLocalDateFromApi(dateStr) : new Date(dateStr)
+
     if (allDay) {
       return date.toLocaleDateString('pt-BR', {
         day: '2-digit',
         month: '2-digit',
       })
     }
-    
+
     return date.toLocaleString('pt-BR', {
       day: '2-digit',
       month: '2-digit',
@@ -132,8 +132,9 @@ export function UpcomingEventsCard({
   if (error) {
     return (
       <Section title="Próximos Eventos">
-        <div className="flex h-24 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50">
-          <p className="text-sm text-danger">{error}</p>
+        <div className="flex h-24 flex-col items-center justify-center gap-1 rounded-lg border border-danger/20 bg-danger/5 px-3 py-4">
+          <p className="text-sm font-medium text-text-primary text-center">Não foi possível carregar os eventos</p>
+          <p className="text-xs text-text-secondary text-center leading-relaxed">{error}</p>
         </div>
       </Section>
     )

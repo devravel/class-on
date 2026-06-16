@@ -4,6 +4,7 @@ import { CalendarEvent } from '@/lib/api/events'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { Badge } from '@/components/ui/badge'
 import { Calendar, Clock, User, Tag } from 'lucide-react'
+import { formatEventRangeLabel } from '@/lib/events/feedback'
 
 interface EventDialogProps {
   event: CalendarEvent | null
@@ -14,29 +15,26 @@ interface EventDialogProps {
 export function EventDialog({ event, isOpen, onClose }: EventDialogProps) {
   if (!event) return null
 
-  const formatDate = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleDateString('pt-BR', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric',
-    })
-  }
+  const { dateLine, isMultiDay } = formatEventRangeLabel(event.start, event.end, event.allDay)
 
-  const formatTime = (dateStr: string) => {
-    const date = new Date(dateStr)
-    return date.toLocaleTimeString('pt-BR', {
+  const formatTimeRange = () => {
+    const s = new Date(event.start)
+    const e = new Date(event.end)
+    return `${s.toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit',
-    })
+    })} – ${e.toLocaleTimeString('pt-BR', {
+      hour: '2-digit',
+      minute: '2-digit',
+    })}`
   }
 
   const getScopeLabel = (scope: string) => {
     const labels: Record<string, string> = {
-      'ALL_SCHOOL': 'Toda Escola',
-      'TEACHERS': 'Professores',
-      'STUDENTS': 'Alunos',
-      'SPECIFIC_CLASSES': 'Turmas Específicas',
+      ALL_SCHOOL: 'Toda Escola',
+      TEACHERS: 'Professores',
+      STUDENTS: 'Alunos',
+      SPECIFIC_CLASSES: 'Turmas Específicas',
     }
     return labels[scope] || scope
   }
@@ -76,51 +74,45 @@ export function EventDialog({ event, isOpen, onClose }: EventDialogProps) {
         </DialogHeader>
 
         <div className="space-y-4">
-          {/* Descrição */}
           <div>
             <p className="text-sm text-text-secondary leading-relaxed">
               {event.extendedProps.description}
             </p>
           </div>
 
-          {/* Data e Hora */}
           <div className="space-y-2">
             <div className="flex items-center gap-2 text-sm">
-              <Calendar size={16} className="text-text-secondary" />
+              <Calendar size={16} className="text-text-secondary shrink-0" />
               <span className="text-text-primary">
-                {formatDate(event.start)}
-                {event.start !== event.end && ` - ${formatDate(event.end)}`}
+                {dateLine}
+                {event.allDay && isMultiDay ? ' (dias inteiros)' : event.allDay ? ' (dia inteiro)' : ''}
               </span>
             </div>
-            
+
             {!event.allDay && (
               <div className="flex items-center gap-2 text-sm">
-                <Clock size={16} className="text-text-secondary" />
-                <span className="text-text-primary">
-                  {formatTime(event.start)} - {formatTime(event.end)}
-                </span>
+                <Clock size={16} className="text-text-secondary shrink-0" />
+                <span className="text-text-primary">{formatTimeRange()}</span>
               </div>
             )}
 
             {event.allDay && (
               <div className="flex items-center gap-2 text-sm">
-                <Clock size={16} className="text-text-secondary" />
-                <span className="text-text-primary">Dia inteiro</span>
+                <Clock size={16} className="text-text-secondary shrink-0" />
+                <span className="text-text-primary">Sem horário — dia(s) inteiro(s)</span>
               </div>
             )}
           </div>
 
-          {/* Criador */}
           <div className="flex items-center gap-2 text-sm">
-            <User size={16} className="text-text-secondary" />
+            <User size={16} className="text-text-secondary shrink-0" />
             <span className="text-text-primary">
               Criado por: {event.extendedProps.creator}
             </span>
           </div>
 
-          {/* Escopo */}
           <div className="flex items-center gap-2 text-sm">
-            <Tag size={16} className="text-text-secondary" />
+            <Tag size={16} className="text-text-secondary shrink-0" />
             <span className="text-text-primary">
               {getScopeLabel(event.extendedProps.scope_type)}
             </span>

@@ -44,7 +44,7 @@ export default function ProfessorCalendarioPage() {
               Eventos das suas turmas e eventos gerais da escola
             </p>
           </div>
-          <Button onClick={() => setIsFormOpen(true)}>
+          <Button onClick={() => { setInitialFormDate(undefined); setIsFormOpen(true); }}>
             <Plus size={16} />
             Novo Evento
           </Button>
@@ -90,9 +90,13 @@ export default function ProfessorCalendarioPage() {
       />
 
       {/* Event Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+      <Dialog open={isFormOpen} onOpenChange={(open) => {
+        setIsFormOpen(open)
+        if (!open) setInitialFormDate(undefined)
+      }}>
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <EventForm
+            key={initialFormDate ? initialFormDate.getTime() : 'novo'}
             initialDate={initialFormDate}
             onSuccess={handleFormSuccess}
             onCancel={() => setIsFormOpen(false)}

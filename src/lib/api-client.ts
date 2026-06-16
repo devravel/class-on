@@ -72,11 +72,19 @@ export const apiClient = {
           }
         }
 
-        throw new ApiError(
-          errorData.message || `HTTP Error ${response.status}`,
-          response.status,
-          errorData
-        )
+        const raw = (errorData as { message?: unknown }).message
+        let message: string
+        if (Array.isArray(raw)) {
+          message = raw
+            .map((m) => (typeof m === 'string' ? m : JSON.stringify(m)))
+            .join(' ')
+        } else if (typeof raw === 'string') {
+          message = raw
+        } else {
+          message = `HTTP Error ${response.status}`
+        }
+
+        throw new ApiError(message, response.status, errorData)
       }
 
       // Retorna JSON se houver conteúdo

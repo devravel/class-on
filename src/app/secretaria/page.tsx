@@ -23,9 +23,11 @@ import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { buttonVariants } from '@/components/ui/button'
 import { academicYearsApi } from '@/lib/api'
+import { announcementsApi } from '@/lib/api/announcements'
 import { ApiError } from '@/lib/api-client'
 import { cn } from '@/lib/utils'
 import { AcademicYear } from '@/types/academic-year'
+import { Announcement } from '@/types/announcement'
 
 const kpis = [
   {
@@ -62,11 +64,6 @@ const recentClasses = [
   { id: 5, name: '1º EM A', shift: 'Matutino', students: 35, teacher: 'Pedro Costa', subject: 'Física' },
 ]
 
-const announcements = [
-  { id: 1, title: 'Reunião pedagógica — 15/01', author: 'Coordenação', date: '03/01' },
-  { id: 2, title: 'Entrega de relatórios bimestrais', author: 'Direção', date: '02/01' },
-  { id: 3, title: 'Ano letivo 2025 — ciclo definido na secretaria', author: 'Secretaria', date: '01/01' },
-]
 
 const quickActions = [
   { label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
@@ -85,6 +82,8 @@ export default function SecretariaPage() {
   const [activeAcademicYear, setActiveAcademicYear] = useState<AcademicYear | null>(null)
   const [isAcademicYearLoading, setIsAcademicYearLoading] = useState(true)
   const [academicYearError, setAcademicYearError] = useState<string | null>(null)
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
 
   useEffect(() => {
     let isMounted = true
@@ -119,7 +118,25 @@ export default function SecretariaPage() {
       }
     }
 
+    const loadAnnouncements = async () => {
+      try {
+        setIsAnnouncementsLoading(true)
+        const data = await announcementsApi.findAll()
+        
+        if (isMounted) {
+          setAnnouncements(Array.isArray(data) ? data.slice(0, 4) : [])
+        }
+      } catch (error) {
+        console.error('Failed to fetch announcements:', error)
+      } finally {
+        if (isMounted) {
+          setIsAnnouncementsLoading(false)
+        }
+      }
+    }
+
     loadActiveAcademicYear()
+    loadAnnouncements()
 
     return () => {
       isMounted = false
@@ -237,20 +254,31 @@ export default function SecretariaPage() {
               </a>
             }
           >
-            <ListCard
-              items={announcements.slice(0, 4)} // Reduzir para caber no layout
-              renderItem={(item) => (
-                <div className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-neutral-100">
-                  <p className="text-sm font-medium leading-snug text-text-primary">
-                    {item.title}
-                  </p>
-                  <span className="flex items-center gap-1 text-xs text-text-secondary">
-                    <Clock size={12} />
-                    {item.date} · {item.author}
-                  </span>
+            {isAnnouncementsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
+                  <p className="mt-2 text-xs text-neutral-500">Carregando...</p>
                 </div>
-              )}
-            />
+              </div>
+            ) : (
+              <ListCard
+                items={announcements}
+                renderItem={(item) => (
+                  <div className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-neutral-100">
+                    <p className="text-sm font-medium leading-snug text-text-primary">
+                      {item.title}
+                    </p>
+                    <span className="flex items-center gap-1 text-xs text-text-secondary">
+                      <Clock size={12} />
+                      {new Date(item.created_at).toLocaleDateString('pt-BR')} · 
+                      {item.users.teachers?.[0]?.full_name || item.users.email}
+                    </span>
+                  </div>
+                )}
+                emptyMessage="Nenhum comunicado recente"
+              />
+            )}
           </Section>
         </div>
       </div>

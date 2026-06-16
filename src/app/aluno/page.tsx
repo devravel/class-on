@@ -13,6 +13,9 @@ import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
+import { announcementsApi } from '@/lib/api/announcements'
+import { Announcement } from '@/types/announcement'
+import { useState, useEffect } from 'react'
 
 const recentGrades = [
   { id: 1, subject: 'Matemática', grade: 8.5, bimester: '2º Bimestre', status: 'approved' },
@@ -35,11 +38,6 @@ const pendingTasks = [
   { id: 3, title: 'Relatório de experimento', subject: 'Ciências', dueDate: '05/01', status: 'late' },
 ]
 
-const announcements = [
-  { id: 1, title: 'Prova de Matemática — semana que vem', date: '03/01', author: 'Prof. João Silva' },
-  { id: 2, title: 'Entrega de autorização para visita', date: '02/01', author: 'Secretaria' },
-  { id: 3, title: 'Ano letivo 2025 — ciclo institucional ativo', date: '01/01', author: 'Secretaria' },
-]
 
 const gradeColor: Record<string, string> = {
   approved: 'text-success',
@@ -60,7 +58,25 @@ const taskLabel: Record<string, string> = {
 }
 
 export default function AlunoPage() {
+  const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
   const lateCount = pendingTasks.filter((t) => t.status === 'late').length
+
+  useEffect(() => {
+    const loadAnnouncements = async () => {
+      try {
+        setIsAnnouncementsLoading(true)
+        const data = await announcementsApi.findAll()
+        setAnnouncements(Array.isArray(data) ? data.slice(0, 3) : [])
+      } catch (error) {
+        console.error('Failed to fetch announcements:', error)
+      } finally {
+        setIsAnnouncementsLoading(false)
+      }
+    }
+
+    loadAnnouncements()
+  }, [])
 
   return (
     <PageContainer>
@@ -213,25 +229,36 @@ export default function AlunoPage() {
               </a>
             }
           >
-            <ListCard
-              items={announcements.slice(0, 3)} // Reduzir para caber no layout
-              renderItem={(item) => (
-                <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-100">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                    <Megaphone size={14} className="text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <p className="text-sm font-medium leading-snug text-text-primary">
-                      {item.title}
-                    </p>
-                    <span className="flex items-center gap-1 text-xs text-text-secondary">
-                      <Clock size={10} />
-                      {item.date} · {item.author}
-                    </span>
-                  </div>
+            {isAnnouncementsLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="text-center">
+                  <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
+                  <p className="mt-2 text-xs text-neutral-500">Carregando...</p>
                 </div>
-              )}
-            />
+              </div>
+            ) : (
+              <ListCard
+                items={announcements}
+                renderItem={(item) => (
+                  <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-100">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <Megaphone size={14} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium leading-snug text-text-primary">
+                        {item.title}
+                      </p>
+                      <span className="flex items-center gap-1 text-xs text-text-secondary">
+                        <Clock size={10} />
+                        {new Date(item.created_at).toLocaleDateString('pt-BR')} · 
+                        {item.users.teachers?.[0]?.full_name || item.users.email}
+                      </span>
+                    </div>
+                  </div>
+                )}
+                emptyMessage="Nenhum comunicado recente"
+              />
+            )}
           </Section>
         </div>
       </div>

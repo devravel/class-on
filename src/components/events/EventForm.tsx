@@ -11,24 +11,49 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreateEventDto, eventsApi } from '@/lib/api/events'
 import { Class, classesApi } from '@/lib/api/classes'
-import { ApiError } from '@/lib/api-client'
 import { useAuth } from '@/contexts/auth-context'
+import { toastEventCreateError, toastEventCreated } from '@/lib/events/feedback'
+import { toast } from 'sonner'
 
-const eventSchema = z.object({
-  title: z.string()
-    .min(5, 'Título deve ter no mínimo 5 caracteres')
-    .max(255, 'Título deve ter no máximo 255 caracteres'),
-  description: z.string()
-    .min(10, 'Descrição deve ter no mínimo 10 caracteres')
-    .max(5000, 'Descrição deve ter no máximo 5000 caracteres'),
-  start_date: z.string()
-    .min(1, 'Data de início é obrigatória'),
-  end_date: z.string()
-    .min(1, 'Data de fim é obrigatória'),
-  all_day: z.boolean(),
-  scope_type: z.enum(['ALL_SCHOOL', 'TEACHERS', 'STUDENTS', 'SPECIFIC_CLASSES']),
-  class_ids: z.array(z.string()).optional(),
-})
+const eventSchema = z
+  .object({
+    title: z
+      .string()
+      .min(5, 'Título deve ter no mínimo 5 caracteres')
+      .max(255, 'Título deve ter no máximo 255 caracteres'),
+    description: z
+      .string()
+      .min(10, 'Descrição deve ter no mínimo 10 caracteres')
+      .max(5000, 'Descrição deve ter no máximo 5000 caracteres'),
+    start_date: z.string().min(1, 'Data de início é obrigatória'),
+    end_date: z.string().min(1, 'Data de fim é obrigatória'),
+    all_day: z.boolean(),
+    scope_type: z.enum(['ALL_SCHOOL', 'TEACHERS', 'STUDENTS', 'SPECIFIC_CLASSES']),
+    class_ids: z.array(z.string()).optional(),
+  })
+  .superRefine((data, ctx) => {
+    if (data.all_day) {
+      const s = data.start_date.slice(0, 10)
+      const e = data.end_date.slice(0, 10)
+      if (s > e) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['end_date'],
+          message: 'A data de término deve ser a mesma que a de início ou posterior.',
+        })
+      }
+    } else {
+      const a = new Date(data.start_date)
+      const b = new Date(data.end_date)
+      if (a > b) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['end_date'],
+          message: 'A data e hora de término devem ser iguais ou posteriores às de início.',
+        })
+      }
+    }
+  })
 
 type EventFormData = z.infer<typeof eventSchema>
 
@@ -49,18 +74,20 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
     handleSubmit,
     watch,
     setValue,
+    getValues,
     formState: { errors },
   } = useForm<EventFormData>({
     resolver: zodResolver(eventSchema),
     defaultValues: {
       all_day: false,
       scope_type: 'ALL_SCHOOL',
-      start_date: initialDate ? formatDateForInput(initialDate) : '',
-      end_date: initialDate ? formatDateForInput(initialDate) : '',
+      start_date: initialDate ? formatDatetimeLocal(initialDate) : '',
+      end_date: initialDate ? formatDatetimeLocal(initialDate) : '',
     },
   })
 
   const scopeType = watch('scope_type')
+  const allDay = watch('all_day')
 
   const loadClasses = async () => {
     try {
@@ -69,58 +96,65 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
       setClasses(data)
     } catch (err) {
       console.error('Erro ao carregar turmas:', err)
+      toast.error('Não foi possível carregar as turmas', {
+        description: 'Atualize a página ou tente novamente em instantes.',
+      })
     } finally {
       setLoadingClasses(false)
     }
   }
 
-  // Carregar turmas quando scope_type for SPECIFIC_CLASSES
   const handleScopeTypeChange = (value: string) => {
-    setValue('scope_type', value as any)
+    setValue('scope_type', value as EventFormData['scope_type'])
     if (value === 'SPECIFIC_CLASSES' && classes.length === 0) {
       loadClasses()
     }
-    // Limpar class_ids quando mudar scope
     setValue('class_ids', [])
+  }
+
+  const buildCreatePayload = (data: EventFormData): CreateEventDto => {
+    if (data.all_day) {
+      const startYmd = data.start_date.slice(0, 10)
+      const endYmd = data.end_date.slice(0, 10)
+      return {
+        title: data.title,
+        description: data.description,
+        start_date: startYmd,
+        end_date: endYmd,
+        all_day: true,
+        scope_type: data.scope_type,
+        ...(data.scope_type === 'SPECIFIC_CLASSES' && { class_ids: data.class_ids }),
+      }
+    }
+    return {
+      title: data.title,
+      description: data.description,
+      start_date: normalizeDatetimeLocalForApi(data.start_date),
+      end_date: normalizeDatetimeLocalForApi(data.end_date),
+      all_day: false,
+      scope_type: data.scope_type,
+      ...(data.scope_type === 'SPECIFIC_CLASSES' && { class_ids: data.class_ids }),
+    }
   }
 
   const onSubmit = async (data: EventFormData) => {
     try {
       setIsSubmitting(true)
 
-      // Validar se start_date <= end_date
-      if (new Date(data.start_date) > new Date(data.end_date)) {
-        throw new Error('Data de início deve ser anterior ou igual à data de fim')
-      }
-
-      // Validar class_ids para SPECIFIC_CLASSES
       if (data.scope_type === 'SPECIFIC_CLASSES' && (!data.class_ids || data.class_ids.length === 0)) {
-        throw new Error('Selecione pelo menos uma turma')
+        toast.error('Selecione as turmas', {
+          description: 'Para eventos em turmas específicas, escolha ao menos uma turma.',
+        })
+        return
       }
 
-      const createData: CreateEventDto = {
-        title: data.title,
-        description: data.description,
-        start_date: data.start_date,
-        end_date: data.end_date,
-        all_day: data.all_day,
-        scope_type: data.scope_type,
-        ...(data.scope_type === 'SPECIFIC_CLASSES' && { class_ids: data.class_ids }),
-      }
-
+      const createData = buildCreatePayload(data)
       await eventsApi.create(createData)
+      toastEventCreated()
       onSuccess?.()
     } catch (err) {
       console.error('Erro ao criar evento:', err)
-      let message = 'Erro ao criar evento'
-      
-      if (err instanceof ApiError) {
-        message = err.message
-      } else if (err instanceof Error) {
-        message = err.message
-      }
-      
-      alert(message) // TODO: Replace with proper toast notification
+      toastEventCreateError(err)
     } finally {
       setIsSubmitting(false)
     }
@@ -133,7 +167,7 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
         { value: 'SPECIFIC_CLASSES', label: 'Turmas Específicas' },
       ]
     }
-    
+
     return [
       { value: 'ALL_SCHOOL', label: 'Toda Escola' },
       { value: 'TEACHERS', label: 'Apenas Professores' },
@@ -151,11 +185,7 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
           <div>
             <Label htmlFor="title">Título</Label>
-            <Input
-              id="title"
-              {...register('title')}
-              placeholder="Digite o título do evento"
-            />
+            <Input id="title" {...register('title')} placeholder="Digite o título do evento" />
             {errors.title && (
               <p className="text-sm text-danger mt-1">{errors.title.message}</p>
             )}
@@ -177,10 +207,12 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
 
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="start_date">Data/Hora de Início</Label>
+              <Label htmlFor="start_date">{allDay ? 'Data de início' : 'Data e hora de início'}</Label>
               <Input
                 id="start_date"
-                type="datetime-local"
+                type={allDay ? 'date' : 'datetime-local'}
+                step={allDay ? undefined : 60}
+                disabled={isSubmitting}
                 {...register('start_date')}
               />
               {errors.start_date && (
@@ -189,10 +221,12 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
             </div>
 
             <div>
-              <Label htmlFor="end_date">Data/Hora de Fim</Label>
+              <Label htmlFor="end_date">{allDay ? 'Data de término' : 'Data e hora de término'}</Label>
               <Input
                 id="end_date"
-                type="datetime-local"
+                type={allDay ? 'date' : 'datetime-local'}
+                step={allDay ? undefined : 60}
+                disabled={isSubmitting}
                 {...register('end_date')}
               />
               {errors.end_date && (
@@ -205,20 +239,41 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
             <input
               id="all_day"
               type="checkbox"
-              {...register('all_day')}
               className="h-4 w-4 rounded border-neutral-300 text-primary focus:ring-primary"
+              checked={!!allDay}
+              disabled={isSubmitting}
+              onChange={(e) => {
+                const checked = e.target.checked
+                const curStart = getValues('start_date')
+                const curEnd = getValues('end_date')
+                if (checked) {
+                  const s = toYmdFromField(curStart)
+                  const e = toYmdFromField(curEnd || curStart)
+                  setValue('start_date', s)
+                  setValue('end_date', e < s ? s : e)
+                } else {
+                  const s = toYmdFromField(curStart)
+                  const e = toYmdFromField(curEnd || curStart)
+                  const endY = e < s ? s : e
+                  setValue('start_date', `${s}T09:00`)
+                  setValue('end_date', `${endY}T10:00`)
+                }
+                setValue('all_day', checked, { shouldValidate: true, shouldDirty: true })
+              }}
             />
             <Label htmlFor="all_day" className="text-sm">
               Evento de dia inteiro
             </Label>
           </div>
+          {allDay && (
+            <p className="text-xs text-text-secondary -mt-2">
+              Horários são ignorados: o evento ocupa o(s) dia(s) civil(is) selecionado(s).
+            </p>
+          )}
 
           <div>
             <Label>Escopo do Evento</Label>
-            <Select 
-              value={scopeType} 
-              onValueChange={handleScopeTypeChange}
-            >
+            <Select value={scopeType} onValueChange={handleScopeTypeChange}>
               <SelectTrigger>
                 <SelectValue placeholder="Selecione o escopo" />
               </SelectTrigger>
@@ -238,7 +293,7 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
               {loadingClasses ? (
                 <div className="text-sm text-text-secondary">Carregando turmas...</div>
               ) : (
-                <Select 
+                <Select
                   onValueChange={(value) => {
                     const currentIds = watch('class_ids') || []
                     if (!currentIds.includes(value)) {
@@ -258,14 +313,13 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
                   </SelectContent>
                 </Select>
               )}
-              
-              {/* Mostrar turmas selecionadas */}
+
               {(watch('class_ids')?.length ?? 0) > 0 && (
                 <div className="mt-2 flex flex-wrap gap-2">
                   {watch('class_ids')?.map((classId) => {
-                    const cls = classes.find(c => c.id === classId)
+                    const cls = classes.find((c) => c.id === classId)
                     return (
-                      <span 
+                      <span
                         key={classId}
                         className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-1 text-xs"
                       >
@@ -274,7 +328,10 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
                           type="button"
                           onClick={() => {
                             const currentIds = watch('class_ids') || []
-                            setValue('class_ids', currentIds.filter(id => id !== classId))
+                            setValue(
+                              'class_ids',
+                              currentIds.filter((id) => id !== classId),
+                            )
                           }}
                           className="hover:text-danger"
                         >
@@ -304,6 +361,33 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
   )
 }
 
-function formatDateForInput(date: Date): string {
-  return date.toISOString().slice(0, 16)
+function formatDatetimeLocal(date: Date): string {
+  const y = date.getFullYear()
+  const m = String(date.getMonth() + 1).padStart(2, '0')
+  const d = String(date.getDate()).padStart(2, '0')
+  const h = String(date.getHours()).padStart(2, '0')
+  const min = String(date.getMinutes()).padStart(2, '0')
+  return `${y}-${m}-${d}T${h}:${min}`
+}
+
+function toYmdFromField(val: string): string {
+  if (!val) {
+    const n = new Date()
+    const y = n.getFullYear()
+    const m = String(n.getMonth() + 1).padStart(2, '0')
+    const d = String(n.getDate()).padStart(2, '0')
+    return `${y}-${m}-${d}`
+  }
+  if (val.length >= 10 && val[4] === '-' && val[7] === '-') {
+    return val.slice(0, 10)
+  }
+  return toYmdFromField('')
+}
+
+/** datetime-local sem segundos → ISO aceito pelo backend */
+function normalizeDatetimeLocalForApi(value: string): string {
+  if (value.length === 16) {
+    return `${value}:00`
+  }
+  return value
 }

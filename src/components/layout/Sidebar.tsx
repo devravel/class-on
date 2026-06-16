@@ -1,5 +1,6 @@
 'use client'
 
+import { useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { BookOpen } from 'lucide-react'
@@ -15,6 +16,8 @@ interface SidebarProps {
 export function Sidebar({ navItems }: SidebarProps) {
   const pathname = usePathname()
   const { isCollapsed, isMobileOpen, closeMobile } = useSidebar()
+  const [isHovered, setIsHovered] = useState(false)
+  const showExpanded = !isCollapsed || isHovered
 
   return (
     <>
@@ -28,25 +31,27 @@ export function Sidebar({ navItems }: SidebarProps) {
       )}
 
       <aside
+        onMouseEnter={() => isCollapsed && setIsHovered(true)}
+        onMouseLeave={() => setIsHovered(false)}
         className={cn(
           'fixed inset-y-0 left-0 z-40 flex flex-col border-r border-border bg-surface',
           'transition-all duration-300 ease-in-out',
           'lg:static lg:z-auto lg:translate-x-0',
           isMobileOpen ? 'translate-x-0 shadow-medium' : '-translate-x-full lg:translate-x-0',
-          isCollapsed ? 'w-[72px]' : 'w-60',
+          showExpanded ? 'w-60' : 'w-[72px]',
         )}
       >
         {/* Logo */}
         <div
           className={cn(
             'flex h-16 shrink-0 items-center border-b border-border',
-            isCollapsed ? 'justify-center' : 'gap-2.5 px-4',
+            showExpanded ? 'gap-2.5 px-4' : 'justify-center',
           )}
         >
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary text-white">
             <BookOpen size={16} strokeWidth={2.5} />
           </div>
-          {!isCollapsed && (
+          {showExpanded && (
             <span className="text-sm font-semibold text-text-primary">ClassOn</span>
           )}
         </div>
@@ -61,10 +66,10 @@ export function Sidebar({ navItems }: SidebarProps) {
               <Link
                 key={item.href}
                 href={item.href}
-                title={isCollapsed ? item.label : undefined}
+                title={showExpanded ? undefined : item.label}
                 className={cn(
                   'group flex items-center gap-3 rounded-component text-sm font-medium transition-colors',
-                  isCollapsed ? 'justify-center px-2 py-2.5' : 'px-3 py-2',
+                  showExpanded ? 'px-3 py-2' : 'justify-center px-2 py-2.5',
                   isActive
                     ? 'bg-primary text-white'
                     : 'text-text-secondary hover:bg-neutral-200 hover:text-text-primary',
@@ -77,7 +82,7 @@ export function Sidebar({ navItems }: SidebarProps) {
                     isActive ? 'text-white' : 'text-neutral-500 group-hover:text-text-primary',
                   )}
                 />
-                {!isCollapsed && (
+                {showExpanded && (
                   <span className="truncate">{item.label}</span>
                 )}
               </Link>

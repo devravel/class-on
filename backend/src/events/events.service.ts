@@ -8,6 +8,13 @@ import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { CreateEventDto } from './dto/create-event.dto'
 import { UpdateEventDto } from './dto/update-event.dto'
+import {
+  addUtcDaysToYmd,
+  compareYmd,
+  extractCalendarYmd,
+  inclusiveAllDayRangeToUtcBounds,
+  utcYmd,
+} from './event-dates'
 
 const EVENT_INCLUDE = {
   users: {
@@ -51,12 +58,28 @@ export class EventsService {
 
   async create(dto: CreateEventDto, userId: bigint, userRole: string) {
     try {
-      // Validar se start_date <= end_date
-      const startDate = new Date(dto.start_date)
-      const endDate = new Date(dto.end_date)
+      let startDate: Date
+      let endDate: Date
 
-      if (startDate > endDate) {
-        throw new BadRequestException('start_date deve ser anterior ou igual a end_date.')
+      if (dto.all_day) {
+        const startYmd = extractCalendarYmd(dto.start_date)
+        const endYmd = extractCalendarYmd(dto.end_date)
+        if (compareYmd(startYmd, endYmd) > 0) {
+          throw new BadRequestException(
+            'A data de término deve ser a mesma que a de início ou posterior.',
+          )
+        }
+        const bounds = inclusiveAllDayRangeToUtcBounds(startYmd, endYmd)
+        startDate = bounds.start
+        endDate = bounds.end
+      } else {
+        startDate = new Date(dto.start_date)
+        endDate = new Date(dto.end_date)
+        if (startDate > endDate) {
+          throw new BadRequestException(
+            'A data e hora de término devem ser iguais ou posteriores às de início.',
+          )
+        }
       }
 
       // Buscar ano letivo ativo
@@ -66,7 +89,9 @@ export class EventsService {
       })
 
       if (!activeYear) {
-        throw new BadRequestException('Nenhum ano letivo ativo encontrado.')
+        throw new BadRequestException(
+          'Não encontramos um ano letivo ativo. Em Secretaria, abra Anos letivos e marque um ano como ativo para continuar.',
+        )
       }
 
       let yearId = activeYear.id
@@ -75,7 +100,7 @@ export class EventsService {
       if (userRole === 'PROFESSOR') {
         if (dto.scope_type === 'ALL_SCHOOL' || dto.scope_type === 'TEACHERS') {
           throw new ForbiddenException(
-            'Professor não pode criar eventos para toda escola ou apenas professores.'
+            'No ClassOn, professores podem criar eventos para alunos ou para turmas em que lecionam. Escolha outro escopo.',
           )
         }
 
@@ -105,7 +130,7 @@ export class EventsService {
 
           if (unauthorizedClasses.length > 0) {
             throw new ForbiddenException(
-              `Professor não tem atribuição nas turmas: ${unauthorizedClasses.join(', ')}`
+              'Você só pode incluir turmas em que está vinculado como professor. Ajuste a seleção e tente de novo.',
             )
           }
         }
@@ -299,7 +324,9 @@ export class EventsService {
       if (userId && userRole) {
         const hasAccess = await this.checkUserAccess(event, userId, userRole)
         if (!hasAccess) {
-          throw new ForbiddenException('Acesso negado a este evento.')
+          throw new ForbiddenException(
+            'Você não tem permissão para ver este evento. Peça ajuda à secretaria se precisar de acesso.',
+          )
         }
       }
 
@@ -315,16 +342,46 @@ export class EventsService {
 
       // Apenas criador ou secretaria podem editar
       if (userRole !== 'SECRETARIA' && event.creator_id !== userId) {
-        throw new ForbiddenException('Apenas o criador ou secretaria podem editar eventos.')
+        throw new ForbiddenException(
+          'Só quem criou o evento ou a secretaria pode alterá-lo.',
+        )
       }
 
-      // Validar datas se fornecidas
-      if (dto.start_date && dto.end_date) {
-        const startDate = new Date(dto.start_date)
-        const endDate = new Date(dto.end_date)
+      const mergedAllDay = dto.all_day !== undefined ? dto.all_day : event.all_day
 
-        if (startDate > endDate) {
-          throw new BadRequestException('start_date deve ser anterior ou igual a end_date.')
+      let nextStart = event.start_date
+      let nextEnd = event.end_date
+
+      if (dto.start_date !== undefined || dto.end_date !== undefined) {
+        if (mergedAllDay) {
+          const startYmd =
+            dto.start_date !== undefined
+              ? extractCalendarYmd(dto.start_date)
+              : utcYmd(event.start_date)
+          const endYmd =
+            dto.end_date !== undefined
+              ? extractCalendarYmd(dto.end_date)
+              : utcYmd(event.end_date)
+          if (compareYmd(startYmd, endYmd) > 0) {
+            throw new BadRequestException(
+              'A data de término deve ser a mesma que a de início ou posterior.',
+            )
+          }
+          const bounds = inclusiveAllDayRangeToUtcBounds(startYmd, endYmd)
+          nextStart = bounds.start
+          nextEnd = bounds.end
+        } else {
+          if (dto.start_date !== undefined) {
+            nextStart = new Date(dto.start_date)
+          }
+          if (dto.end_date !== undefined) {
+            nextEnd = new Date(dto.end_date)
+          }
+          if (nextStart > nextEnd) {
+            throw new BadRequestException(
+              'A data e hora de término devem ser iguais ou posteriores às de início.',
+            )
+          }
         }
       }
 
@@ -333,8 +390,9 @@ export class EventsService {
         data: {
           ...(dto.title && { title: dto.title }),
           ...(dto.description && { description: dto.description }),
-          ...(dto.start_date && { start_date: new Date(dto.start_date) }),
-          ...(dto.end_date && { end_date: new Date(dto.end_date) }),
+          ...(dto.start_date !== undefined || dto.end_date !== undefined
+            ? { start_date: nextStart, end_date: nextEnd }
+            : {}),
           ...(dto.all_day !== undefined && { all_day: dto.all_day }),
           ...(dto.status && { status: dto.status as any }),
           updated_at: new Date(),
@@ -354,7 +412,9 @@ export class EventsService {
 
       // Apenas criador ou secretaria podem deletar
       if (userRole !== 'SECRETARIA' && event.creator_id !== userId) {
-        throw new ForbiddenException('Apenas o criador ou secretaria podem deletar eventos.')
+        throw new ForbiddenException(
+          'Só quem criou o evento ou a secretaria pode removê-lo.',
+        )
       }
 
       // Soft delete: marcar como CANCELLED ao invés de remover
@@ -391,20 +451,40 @@ export class EventsService {
         })
       }
 
-      // Converter para formato FullCalendar
-      return filteredEvents.map((event) => ({
-        id: event.id.toString(),
-        title: event.title,
-        start: event.start_date.toISOString(),
-        end: event.end_date.toISOString(),
-        allDay: event.all_day,
-        extendedProps: {
-          description: event.description,
-          creator: event.users.teachers?.[0]?.full_name || event.users.email,
-          status: event.status,
-          scope_type: event.scope_type,
-        },
-      }))
+      // Converter para formato FullCalendar (dia inteiro: fim exclusivo em YYYY-MM-DD)
+      return filteredEvents.map((event) => {
+        if (event.all_day) {
+          const startYmd = utcYmd(event.start_date)
+          const endInclusiveYmd = utcYmd(event.end_date)
+          const endExclusiveYmd = addUtcDaysToYmd(endInclusiveYmd, 1)
+          return {
+            id: event.id.toString(),
+            title: event.title,
+            start: startYmd,
+            end: endExclusiveYmd,
+            allDay: true,
+            extendedProps: {
+              description: event.description,
+              creator: event.users.teachers?.[0]?.full_name || event.users.email,
+              status: event.status,
+              scope_type: event.scope_type,
+            },
+          }
+        }
+        return {
+          id: event.id.toString(),
+          title: event.title,
+          start: event.start_date.toISOString(),
+          end: event.end_date.toISOString(),
+          allDay: false,
+          extendedProps: {
+            description: event.description,
+            creator: event.users.teachers?.[0]?.full_name || event.users.email,
+            status: event.status,
+            scope_type: event.scope_type,
+          },
+        }
+      })
     } catch (error) {
       handlePrismaError(error)
     }
