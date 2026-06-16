@@ -16,6 +16,7 @@ import { ListCard } from '@/components/dashboard/ListCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 
 const assignedClasses = [
   { id: 1, name: '9º Ano A', subject: 'Matemática', students: 32, shift: 'Matutino', nextLesson: 'Hoje, 08:00' },
@@ -64,10 +65,10 @@ export default function ProfessorPage() {
         <QuickActions actions={quickActions} />
       </Section>
 
-      {/* Turmas + Agenda */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-5">
-        {/* Turmas atribuídas — 3/5 */}
-        <div className="lg:col-span-3">
+      {/* Turmas + Próximos Eventos + Agenda */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Turmas atribuídas — 1/3 */}
+        <div>
           <Section
             title="Minhas Turmas"
             description={`${assignedClasses.length} turmas atribuídas`}
@@ -85,24 +86,19 @@ export default function ProfessorPage() {
               renderItem={(item) => (
                 <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                      <BookOpen size={16} className="text-primary" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <BookOpen size={14} className="text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-text-primary">{item.name}</p>
                       <p className="truncate text-xs text-text-secondary">
-                        {item.subject} · {item.shift}
+                        {item.subject}
                       </p>
                     </div>
                   </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1 pl-4">
-                    <span className="flex items-center gap-1 text-xs text-text-secondary">
-                      <Users size={12} />
+                  <div className="shrink-0 pl-4 text-right">
+                    <span className="text-xs text-text-secondary">
                       {item.students} alunos
-                    </span>
-                    <span className="flex items-center gap-1 text-xs text-primary">
-                      <Clock size={12} />
-                      {item.nextLesson}
                     </span>
                   </div>
                 </div>
@@ -111,8 +107,13 @@ export default function ProfessorPage() {
           </Section>
         </div>
 
-        {/* Agenda do dia — 2/5 */}
-        <div className="lg:col-span-2">
+        {/* Próximos Eventos — 1/3 */}
+        <div>
+          <UpcomingEventsCard role="PROFESSOR" limit={4} />
+        </div>
+
+        {/* Agenda do dia — 1/3 */}
+        <div>
           <Section
             title="Agenda de Hoje"
             action={
@@ -129,18 +130,13 @@ export default function ProfessorPage() {
               items={todaySchedule}
               renderItem={(item) => (
                 <div className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-neutral-100">
-                  <span className="w-12 shrink-0 text-sm font-semibold text-text-primary">
+                  <span className="w-10 shrink-0 text-sm font-semibold text-text-primary">
                     {item.time}
                   </span>
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm font-medium text-text-primary">{item.class}</p>
                     <p className="text-xs text-text-secondary">{item.room}</p>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-medium ${statusBadge[item.status] ?? ''}`}
-                  >
-                    {statusLabel[item.status]}
-                  </span>
                 </div>
               )}
             />

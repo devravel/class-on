@@ -8,6 +8,15 @@ import { AuthModule } from './auth/auth.module'
 import { AcademicYearsModule } from './academic-years/academic-years.module'
 import { ClassesModule } from './classes/classes.module'
 import { TeachersModule } from './teachers/teachers.module'
+import { StudentsModule } from './students/students.module'
+import { SubjectsModule } from './subjects/subjects.module'
+import { AssignmentsModule } from './assignments/assignments.module'
+import { LessonsModule } from './lessons/lessons.module'
+import { AttendanceModule } from './attendance/attendance.module'
+import { GradesModule } from './grades/grades.module'
+import { TasksModule } from './tasks/tasks.module'
+import { AnnouncementsModule } from './announcements/announcements.module'
+import { EventsModule } from './events/events.module'
 
 @Module({
   imports: [
@@ -17,6 +26,15 @@ import { TeachersModule } from './teachers/teachers.module'
     AcademicYearsModule,
     ClassesModule,
     TeachersModule,
+    StudentsModule,
+    SubjectsModule,
+    AssignmentsModule,
+    LessonsModule,
+    AttendanceModule,
+    GradesModule,
+    TasksModule,
+    AnnouncementsModule,
+    EventsModule,
   ],
   providers: [
     {

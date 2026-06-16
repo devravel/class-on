@@ -15,6 +15,7 @@ model academic_years {
   updated_at DateTime    @db.Timestamp(6)
   bimesters  bimesters[]
   classes    classes[]
+  events     events[]
 }
 
 model announcement_reads {
@@ -106,6 +107,7 @@ model classes {
   assignments           assignments[]
   academic_years        academic_years          @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   enrollments           enrollments[]
+  event_targets         event_targets[]
 
   @@unique([year_id, series, letter, shift], map: "classes_unique_identity")
 }
@@ -137,19 +139,21 @@ model enrollments {
 }
 
 model grades {
-  id            BigInt      @id
-  enrollment_id BigInt
-  assignment_id BigInt
-  bimester_id   BigInt
-  n1            Decimal     @db.Decimal(8, 2)
-  n2            Decimal     @db.Decimal(8, 2)
-  n3            Decimal     @db.Decimal(8, 2)
-  n4            Decimal     @db.Decimal(8, 2)
-  average       Decimal     @db.Decimal(8, 2)
-  created_at    DateTime    @db.Timestamp(6)
-  assignments   assignments @relation(fields: [assignment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  bimesters     bimesters   @relation(fields: [bimester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  enrollments   enrollments @relation(fields: [enrollment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  id             BigInt      @id
+  enrollment_id  BigInt
+  assignment_id  BigInt
+  bimester_id    BigInt
+  n1             Decimal     @db.Decimal(8, 2)
+  n2             Decimal     @db.Decimal(8, 2)
+  n3             Decimal     @db.Decimal(8, 2)
+  n4             Decimal     @db.Decimal(8, 2)
+  average        Decimal     @db.Decimal(8, 2)
+  recovery_grade Decimal?    @db.Decimal(8, 2)
+  final_average  Decimal?    @db.Decimal(8, 2)
+  created_at     DateTime    @db.Timestamp(6)
+  assignments    assignments @relation(fields: [assignment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  bimesters      bimesters   @relation(fields: [bimester_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  enrollments    enrollments @relation(fields: [enrollment_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 
   @@unique([enrollment_id, assignment_id, bimester_id], map: "grades_unique")
 }
@@ -234,6 +238,7 @@ model tasks {
   description      String
   status           String             @db.VarChar(255)
   target_mode      String             @db.VarChar(255)
+  deadline         DateTime           @db.Timestamp(6)
   created_at       DateTime           @db.Timestamp(6)
   task_submissions task_submissions[]
   task_targets     task_targets[]
@@ -260,7 +265,57 @@ model users {
   created_at         DateTime             @db.Timestamp(6)
   announcement_reads announcement_reads[]
   announcements      announcements[]
+  events             events[]
   messages           messages[]
   students           students?
   teachers           teachers?
+}
+
+/// Enum para status dos eventos
+enum EventStatus {
+  ACTIVE
+  CANCELLED
+}
+
+/// Enum para escopo dos eventos  
+enum EventScopeType {
+  ALL_SCHOOL // Para toda a escola
+  TEACHERS // Apenas professores
+  STUDENTS // Apenas alunos
+  SPECIFIC_CLASSES // Turmas específicas
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model events {
+  id         BigInt @id
+  creator_id BigInt
+  year_id    BigInt
+
+  title       String @db.VarChar(255)
+  description String
+
+  start_date DateTime @db.Timestamp(6)
+  end_date   DateTime @db.Timestamp(6)
+  all_day    Boolean
+
+  status     EventStatus    @default(ACTIVE)
+  scope_type EventScopeType
+
+  created_at DateTime @db.Timestamp(6)
+  updated_at DateTime @db.Timestamp(6)
+
+  users          users           @relation(fields: [creator_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  academic_years academic_years  @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  event_targets  event_targets[]
+}
+
+model event_targets {
+  id       BigInt @id
+  event_id BigInt
+  class_id BigInt
+
+  events  events  @relation(fields: [event_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  classes classes @relation(fields: [class_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@unique([event_id, class_id], map: "event_targets_unique")
 }

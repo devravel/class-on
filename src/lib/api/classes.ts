@@ -1,7 +1,13 @@
 import { apiClient } from '@/lib/api-client'
 import { Class, CreateClassRequest, UpdateClassRequest } from '@/types/class'
 
+export type { Class, CreateClassRequest, UpdateClassRequest }
+
 export const classesApi = {
+  async getAll(): Promise<Class[]> {
+    return apiClient.get<Class[]>('/classes')
+  },
+
   async list(): Promise<Class[]> {
     return apiClient.get<Class[]>('/classes')
   },

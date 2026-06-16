@@ -19,6 +19,7 @@ import { KpiCard } from '@/components/dashboard/KpiCard'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
 import { Section } from '@/components/dashboard/Section'
+import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { buttonVariants } from '@/components/ui/button'
 import { academicYearsApi } from '@/lib/api'
@@ -177,10 +178,10 @@ export default function SecretariaPage() {
         </div>
       </Section>
 
-      {/* Turmas + Comunicados */}
+      {/* Turmas + Próximos Eventos + Comunicados */}
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Turmas recentes — 2/3 */}
-        <div className="lg:col-span-2">
+        {/* Turmas recentes — 1/3 */}
+        <div className="lg:col-span-1">
           <Section
             title="Turmas Recentes"
             action={
@@ -193,32 +194,34 @@ export default function SecretariaPage() {
             }
           >
             <ListCard
-              items={recentClasses}
+              items={recentClasses.slice(0, 4)} // Reduzir para caber no layout
               renderItem={(item) => (
                 <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
                   <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                      <BookOpen size={16} className="text-primary" />
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <BookOpen size={14} className="text-primary" />
                     </div>
                     <div className="min-w-0">
                       <p className="truncate text-sm font-medium text-text-primary">{item.name}</p>
                       <p className="truncate text-xs text-text-secondary">
-                        Prof. {item.teacher} · {item.subject}
+                        {item.students} alunos
                       </p>
                     </div>
                   </div>
-                  <div className="flex shrink-0 items-center gap-3 pl-4">
-                    <span
-                      className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
-                    >
-                      {item.shift}
-                    </span>
-                    <span className="text-xs text-text-secondary">{item.students} alunos</span>
-                  </div>
+                  <span
+                    className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
+                  >
+                    {item.shift}
+                  </span>
                 </div>
               )}
             />
           </Section>
+        </div>
+
+        {/* Próximos Eventos — 1/3 */}
+        <div className="lg:col-span-1">
+          <UpcomingEventsCard role="SECRETARIA" limit={4} />
         </div>
 
         {/* Comunicados — 1/3 */}
@@ -235,7 +238,7 @@ export default function SecretariaPage() {
             }
           >
             <ListCard
-              items={announcements}
+              items={announcements.slice(0, 4)} // Reduzir para caber no layout
               renderItem={(item) => (
                 <div className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-neutral-100">
                   <p className="text-sm font-medium leading-snug text-text-primary">

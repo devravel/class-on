@@ -12,6 +12,7 @@ import {
 import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 
 const recentGrades = [
   { id: 1, subject: 'Matemática', grade: 8.5, bimester: '2º Bimestre', status: 'approved' },
@@ -145,89 +146,94 @@ export default function AlunoPage() {
         </Section>
       </div>
 
-      {/* Bottom row: Tarefas + Comunicados */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Tarefas pendentes */}
-        <Section
-          title="Tarefas Pendentes"
-          description={
-            lateCount > 0
-              ? `${lateCount} tarefa${lateCount > 1 ? 's' : ''} atrasada${lateCount > 1 ? 's' : ''}`
-              : `${pendingTasks.length} tarefa${pendingTasks.length !== 1 ? 's' : ''} aguardando`
-          }
-          action={
-            <a
-              href="/aluno/tarefas"
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              Ver todas <ChevronRight size={14} />
-            </a>
-          }
-        >
-          <ListCard
-            items={pendingTasks}
-            emptyMessage="Nenhuma tarefa pendente."
-            renderItem={(item) => (
-              <div className="flex items-start justify-between gap-4 px-4 py-3 transition-colors hover:bg-neutral-100">
-                <div className="flex min-w-0 items-start gap-3">
-                  {item.status === 'late' ? (
-                    <AlertCircle size={16} className="mt-0.5 shrink-0 text-danger" />
-                  ) : (
-                    <ListTodo size={16} className="mt-0.5 shrink-0 text-text-secondary" />
-                  )}
-                  <div className="min-w-0">
-                    <p className="truncate text-sm font-medium text-text-primary">{item.title}</p>
-                    <p className="text-xs text-text-secondary">{item.subject}</p>
+      {/* Bottom row: Próximos Eventos + Tarefas + Comunicados */}
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
+        {/* Próximos Eventos — 1/3 */}
+        <div>
+          <UpcomingEventsCard role="ALUNO" limit={4} />
+        </div>
+
+        {/* Tarefas pendentes — 1/3 */}
+        <div>
+          <Section
+            title="Tarefas Pendentes"
+            description={
+              lateCount > 0
+                ? `${lateCount} tarefa${lateCount > 1 ? 's' : ''} atrasada${lateCount > 1 ? 's' : ''}`
+                : `${pendingTasks.length} tarefa${pendingTasks.length !== 1 ? 's' : ''} aguardando`
+            }
+            action={
+              <a
+                href="/aluno/tarefas"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Ver todas <ChevronRight size={14} />
+              </a>
+            }
+          >
+            <ListCard
+              items={pendingTasks.slice(0, 3)} // Reduzir para caber no layout
+              emptyMessage="Nenhuma tarefa pendente."
+              renderItem={(item) => (
+                <div className="flex items-start justify-between gap-4 px-4 py-3 transition-colors hover:bg-neutral-100">
+                  <div className="flex min-w-0 items-start gap-3">
+                    {item.status === 'late' ? (
+                      <AlertCircle size={14} className="mt-0.5 shrink-0 text-danger" />
+                    ) : (
+                      <ListTodo size={14} className="mt-0.5 shrink-0 text-text-secondary" />
+                    )}
+                    <div className="min-w-0">
+                      <p className="truncate text-sm font-medium text-text-primary">{item.title}</p>
+                      <p className="text-xs text-text-secondary">{item.subject}</p>
+                    </div>
+                  </div>
+                  <div className="flex shrink-0 flex-col items-end gap-1">
+                    <span
+                      className={`rounded-full px-2 py-1 text-xs font-medium ${taskBadge[item.status] ?? ''}`}
+                    >
+                      {taskLabel[item.status]}
+                    </span>
                   </div>
                 </div>
-                <div className="flex shrink-0 flex-col items-end gap-1">
-                  <span
-                    className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${taskBadge[item.status] ?? ''}`}
-                  >
-                    {taskLabel[item.status]}
-                  </span>
-                  <span className="flex items-center gap-1 text-xs text-text-secondary">
-                    <Clock size={10} />
-                    {item.dueDate}
-                  </span>
-                </div>
-              </div>
-            )}
-          />
-        </Section>
+              )}
+            />
+          </Section>
+        </div>
 
-        {/* Comunicados */}
-        <Section
-          title="Comunicados"
-          action={
-            <a
-              href="/aluno/comunicados"
-              className="flex items-center gap-1 text-xs text-primary hover:underline"
-            >
-              Ver todos <ChevronRight size={14} />
-            </a>
-          }
-        >
-          <ListCard
-            items={announcements}
-            renderItem={(item) => (
-              <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-100">
-                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                  <Megaphone size={14} className="text-primary" />
+        {/* Comunicados — 1/3 */}
+        <div>
+          <Section
+            title="Comunicados"
+            action={
+              <a
+                href="/aluno/comunicados"
+                className="flex items-center gap-1 text-xs text-primary hover:underline"
+              >
+                Ver todos <ChevronRight size={14} />
+              </a>
+            }
+          >
+            <ListCard
+              items={announcements.slice(0, 3)} // Reduzir para caber no layout
+              renderItem={(item) => (
+                <div className="flex items-start gap-3 px-4 py-3 transition-colors hover:bg-neutral-100">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                    <Megaphone size={14} className="text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium leading-snug text-text-primary">
+                      {item.title}
+                    </p>
+                    <span className="flex items-center gap-1 text-xs text-text-secondary">
+                      <Clock size={10} />
+                      {item.date} · {item.author}
+                    </span>
+                  </div>
                 </div>
-                <div className="min-w-0">
-                  <p className="text-sm font-medium leading-snug text-text-primary">
-                    {item.title}
-                  </p>
-                  <span className="flex items-center gap-1 text-xs text-text-secondary">
-                    <Clock size={10} />
-                    {item.date} · {item.author}
-                  </span>
-                </div>
-              </div>
-            )}
-          />
-        </Section>
+              )}
+            />
+          </Section>
+        </div>
       </div>
     </PageContainer>
   )
