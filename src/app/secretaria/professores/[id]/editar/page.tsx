@@ -6,6 +6,7 @@ import { useEffect, useState } from 'react'
 import { useRouter, useParams } from 'next/navigation'
 
 import { TeacherForm, TeacherFormValues } from '@/components/teachers/TeacherForm'
+import { TeacherPasswordSection } from '@/components/teachers/TeacherPasswordSection'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { buttonVariants } from '@/components/ui/button'
@@ -97,23 +98,37 @@ export default function EditarProfessorPage() {
       )}
 
       {!isLoading && !loadError && teacher && (
-        <Section
-          title="Informações do Professor"
-          description="Atualize os dados de identificação do professor"
-        >
-          <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
-            <div className="p-6">
-              <TeacherForm
-                defaultValues={defaultValues}
-                isSubmitting={isSubmitting}
-                error={submitError}
-                onSubmit={handleSubmit}
-                onCancel={() => router.push('/secretaria/professores')}
-                submitLabel="Salvar Alterações"
-              />
+        <>
+          <Section
+            title="Informações do Professor"
+            description="Atualize os dados de identificação do professor"
+          >
+            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+              <div className="p-6">
+                <TeacherForm
+                  defaultValues={defaultValues}
+                  isSubmitting={isSubmitting}
+                  error={submitError}
+                  onSubmit={handleSubmit}
+                  onCancel={() => router.push('/secretaria/professores')}
+                  submitLabel="Salvar Alterações"
+                />
+              </div>
             </div>
-          </div>
-        </Section>
+          </Section>
+
+          <Section
+            title="Senha de Acesso"
+            description="Gerencie a senha de login do professor"
+            className="mt-8"
+          >
+            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+              <div className="p-6">
+                <TeacherPasswordSection teacherId={id} />
+              </div>
+            </div>
+          </Section>
+        </>
       )}
     </PageContainer>
   )

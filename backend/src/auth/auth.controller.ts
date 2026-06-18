@@ -3,6 +3,7 @@ import { AuthService } from './auth.service'
 import { LoginDto } from './dto/login.dto'
 import { JwtAuthGuard } from './guards/jwt-auth.guard'
 import { CurrentUser } from './decorators/current-user.decorator'
+import { AuthenticatedUser } from './strategies/jwt.strategy'
 
 @Controller('auth')
 export class AuthController {
@@ -16,7 +17,7 @@ export class AuthController {
 
   @Get('me')
   @UseGuards(JwtAuthGuard)
-  me(@CurrentUser() user: { id: string; email: string; role: string }) {
+  me(@CurrentUser() user: AuthenticatedUser): AuthenticatedUser {
     return user
   }
 }

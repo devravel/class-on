@@ -11,7 +11,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { classesApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
-import { Class, SERIES_LABELS, SHIFT_LABELS, Shift } from '@/types/class'
+import { Class, EDUCATION_LEVEL_LABELS, formatClassShortLabel, SHIFT_LABELS, Shift } from '@/types/class'
 
 export default function TurmasPage() {
   const [classes, setClasses] = useState<Class[]>([])
@@ -52,11 +52,13 @@ export default function TurmasPage() {
   const filteredClasses = classes.filter((c) => {
     if (!search.trim()) return true
     const q = search.toLowerCase()
-    const seriesLabel = (SERIES_LABELS[c.series] ?? '').toLowerCase()
+    const seriesLabel = formatClassShortLabel(c).toLowerCase()
+    const levelLabel = (EDUCATION_LEVEL_LABELS[c.education_level] ?? '').toLowerCase()
     const shiftLabel = (SHIFT_LABELS[c.shift as Shift] ?? '').toLowerCase()
     const yearLabel = String(c.academic_years?.year ?? '')
     return (
       seriesLabel.includes(q) ||
+      levelLabel.includes(q) ||
       c.letter.toLowerCase().includes(q) ||
       shiftLabel.includes(q) ||
       yearLabel.includes(q)
@@ -122,10 +124,11 @@ export default function TurmasPage() {
                   </div>
                   <div className="min-w-0">
                     <p className="text-base font-semibold text-text-primary">
-                      {SERIES_LABELS[item.series] ?? `${item.series}º Ano`}{' '}
-                      {item.letter}
+                      {formatClassShortLabel(item)}
                     </p>
                     <p className="text-sm text-text-secondary">
+                      {EDUCATION_LEVEL_LABELS[item.education_level]}
+                      {' · '}
                       {SHIFT_LABELS[item.shift as Shift] ?? item.shift}
                       {' · '}
                       {item.academic_years?.year ?? '—'}

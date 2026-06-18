@@ -42,6 +42,7 @@ export default function EditarTurmaPage() {
 
       await classesApi.update(id, {
         year_id: Number(values.year_id),
+        education_level: values.education_level,
         series: Number(values.series),
         letter: values.letter,
         shift: values.shift,
@@ -60,6 +61,7 @@ export default function EditarTurmaPage() {
   const defaultValues: ClassFormValues | undefined = classRecord
     ? {
         year_id: classRecord.year_id,
+        education_level: classRecord.education_level,
         series: String(classRecord.series),
         letter: classRecord.letter,
         shift: classRecord.shift,

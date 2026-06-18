@@ -1,5 +1,5 @@
-import { IsEnum, IsIn, IsInt, IsOptional, IsString, Max, Min } from 'class-validator'
-import { Shift } from './create-class.dto'
+import { IsEnum, IsIn, IsInt, IsOptional, IsString } from 'class-validator'
+import { EducationLevel, Shift } from './create-class.dto'
 
 export class UpdateClassDto {
   @IsOptional()
@@ -7,9 +7,13 @@ export class UpdateClassDto {
   year_id?: number
 
   @IsOptional()
+  @IsEnum(EducationLevel, {
+    message: 'education_level deve ser FUNDAMENTAL ou MEDIO.',
+  })
+  education_level?: EducationLevel
+
+  @IsOptional()
   @IsInt({ message: 'series deve ser um número inteiro.' })
-  @Min(1, { message: 'series deve ser 1, 2 ou 3.' })
-  @Max(3, { message: 'series deve ser 1, 2 ou 3.' })
   series?: number
 
   @IsOptional()

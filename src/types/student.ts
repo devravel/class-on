@@ -17,6 +17,7 @@ export interface AcademicYear {
 export interface Class {
   id: string
   year_id: string
+  education_level: 'FUNDAMENTAL' | 'MEDIO'
   series: number
   letter: string
   shift: string

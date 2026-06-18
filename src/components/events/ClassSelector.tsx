@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Label } from '@/components/ui/label'
 import { Class, classesApi } from '@/lib/api/classes'
+import { getClassShortLabel } from '@/lib/class-utils'
 import { ApiError } from '@/lib/api-client'
 
 interface ClassSelectorProps {
@@ -89,7 +90,7 @@ export function ClassSelector({
             <SelectItem key={cls.id} value={cls.id}>
               <div className="flex items-center gap-2">
                 <span className="font-medium">
-                  {cls.series}º {cls.letter}
+                  {getClassShortLabel(cls)}
                 </span>
                 <span className="text-text-secondary text-sm">
                   {cls.shift}

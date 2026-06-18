@@ -100,6 +100,7 @@ model bimesters {
 model classes {
   id                    BigInt                  @id
   year_id               BigInt
+  education_level       String                  @default("FUNDAMENTAL") @db.VarChar(255)
   series                Int
   letter                String                  @db.VarChar(255)
   shift                 String                  @db.VarChar(255)
@@ -109,7 +110,7 @@ model classes {
   enrollments           enrollments[]
   event_targets         event_targets[]
 
-  @@unique([year_id, series, letter, shift], map: "classes_unique_identity")
+  @@unique([year_id, education_level, series, letter, shift], map: "classes_unique_identity")
 }
 
 model conversations {

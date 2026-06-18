@@ -11,6 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CreateEventDto, eventsApi } from '@/lib/api/events'
 import { Class, classesApi } from '@/lib/api/classes'
+import { getClassLabel } from '@/lib/class-utils'
 import { useAuth } from '@/contexts/auth-context'
 import { toastEventCreateError, toastEventCreated } from '@/lib/events/feedback'
 import { toast } from 'sonner'
@@ -307,7 +308,7 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
                   <SelectContent>
                     {classes.map((cls) => (
                       <SelectItem key={cls.id} value={cls.id}>
-                        {cls.series}º {cls.letter} - {cls.shift}
+                        {getClassLabel(cls)}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -323,7 +324,7 @@ export function EventForm({ onSuccess, onCancel, initialDate }: EventFormProps) 
                         key={classId}
                         className="inline-flex items-center gap-1 rounded-full bg-primary/10 text-primary px-2 py-1 text-xs"
                       >
-                        {cls ? `${cls.series}º ${cls.letter} - ${cls.shift}` : classId}
+                        {cls ? getClassLabel(cls) : classId}
                         <button
                           type="button"
                           onClick={() => {

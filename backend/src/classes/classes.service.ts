@@ -5,7 +5,8 @@ import {
 } from '@nestjs/common'
 import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
-import { CreateClassDto } from './dto/create-class.dto'
+import { validateSeriesForEducationLevel } from './class-series.validation'
+import { CreateClassDto, EducationLevel } from './dto/create-class.dto'
 import { UpdateClassDto } from './dto/update-class.dto'
 
 @Injectable()
@@ -16,8 +17,15 @@ export class ClassesService {
     try {
       const yearId = BigInt(dto.year_id)
 
+      validateSeriesForEducationLevel(dto.series, dto.education_level)
       await this.ensureAcademicYearExists(yearId)
-      await this.ensureUniqueIdentity(yearId, dto.series, dto.letter, dto.shift)
+      await this.ensureUniqueIdentity(
+        yearId,
+        dto.education_level,
+        dto.series,
+        dto.letter,
+        dto.shift,
+      )
 
       const maxIdRecord = await this.prisma.classes.findFirst({
         orderBy: { id: 'desc' },
@@ -30,6 +38,7 @@ export class ClassesService {
         data: {
           id: nextId,
           year_id: yearId,
+          education_level: dto.education_level,
           series: dto.series,
           letter: dto.letter,
           shift: dto.shift,
@@ -46,7 +55,12 @@ export class ClassesService {
   async findAll() {
     try {
       return await this.prisma.classes.findMany({
-        orderBy: [{ year_id: 'desc' }, { series: 'asc' }, { letter: 'asc' }],
+        orderBy: [
+          { year_id: 'desc' },
+          { education_level: 'asc' },
+          { series: 'asc' },
+          { letter: 'asc' },
+        ],
         include: {
           academic_years: true,
         },
@@ -81,9 +95,14 @@ export class ClassesService {
 
       const yearId =
         dto.year_id !== undefined ? BigInt(dto.year_id) : current.year_id
+      const educationLevel =
+        dto.education_level ??
+        (current.education_level as EducationLevel)
       const series = dto.series ?? current.series
       const letter = dto.letter ?? current.letter
       const shift = dto.shift ?? current.shift
+
+      validateSeriesForEducationLevel(series, educationLevel)
 
       if (dto.year_id !== undefined) {
         await this.ensureAcademicYearExists(yearId)
@@ -91,18 +110,29 @@ export class ClassesService {
 
       const identityChanged =
         yearId !== current.year_id ||
+        educationLevel !== current.education_level ||
         series !== current.series ||
         letter !== current.letter ||
         shift !== current.shift
 
       if (identityChanged) {
-        await this.ensureUniqueIdentity(yearId, series, letter, shift, id)
+        await this.ensureUniqueIdentity(
+          yearId,
+          educationLevel,
+          series,
+          letter,
+          shift,
+          id,
+        )
       }
 
       return await this.prisma.classes.update({
         where: { id },
         data: {
           ...(dto.year_id !== undefined && { year_id: yearId }),
+          ...(dto.education_level !== undefined && {
+            education_level: dto.education_level,
+          }),
           ...(dto.series !== undefined && { series: dto.series }),
           ...(dto.letter !== undefined && { letter: dto.letter }),
           ...(dto.shift !== undefined && { shift: dto.shift }),
@@ -144,6 +174,7 @@ export class ClassesService {
 
   private async ensureUniqueIdentity(
     yearId: bigint,
+    educationLevel: string,
     series: number,
     letter: string,
     shift: string,
@@ -153,6 +184,7 @@ export class ClassesService {
       const existing = await this.prisma.classes.findFirst({
         where: {
           year_id: yearId,
+          education_level: educationLevel,
           series,
           letter,
           shift,

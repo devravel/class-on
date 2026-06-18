@@ -50,6 +50,19 @@ export function Header() {
 
       {/* Right: user area */}
       <div className="flex items-center gap-3">
+        <button
+          type="button"
+          onClick={() =>
+            window.dispatchEvent(new Event('classon:open-command-palette'))
+          }
+          className="hidden items-center gap-2 rounded-component border border-border bg-neutral-100 px-2.5 py-1.5 text-xs font-medium text-text-secondary transition-colors hover:bg-neutral-200 hover:text-text-primary md:flex"
+          aria-label="Abrir paleta de comandos"
+        >
+          <span>Buscar</span>
+          <kbd className="rounded border border-border bg-surface px-1 py-0.5 font-mono text-[10px]">
+            ⌘K
+          </kbd>
+        </button>
         {user && (
           <div className="hidden flex-col items-end sm:flex">
             <span className="text-sm font-medium leading-none text-text-primary">

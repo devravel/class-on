@@ -32,6 +32,7 @@ export interface Event {
     class_id: string
     classes: {
       id: string
+      education_level: 'FUNDAMENTAL' | 'MEDIO'
       series: number
       letter: string
       shift: string

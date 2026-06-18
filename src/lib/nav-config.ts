@@ -6,8 +6,6 @@ import {
   BookMarked,
   BookUser,
   Megaphone,
-  ClipboardList,
-  CheckSquare,
   ListTodo,
   BarChart2,
   School,
@@ -36,9 +34,7 @@ export const secretariaNav: NavItem[] = [
 export const professorNav: NavItem[] = [
   { label: 'Início', href: '/professor', icon: LayoutDashboard },
   { label: 'Minhas Turmas', href: '/professor/turmas', icon: BookOpen },
-  { label: 'Notas', href: '/professor/notas', icon: ClipboardList },
-  { label: 'Chamada', href: '/professor/chamada', icon: CheckSquare },
-  { label: 'Tarefas', href: '/professor/tarefas', icon: ListTodo },
+  // Notas, chamada e tarefas unificados em /professor/turmas/[id] (sprint demo)
   { label: 'Comunicados', href: '/professor/comunicados', icon: Megaphone },
   { label: 'Agendão', href: '/professor/calendario', icon: Calendar },
 ]
@@ -46,7 +42,7 @@ export const professorNav: NavItem[] = [
 export const alunoNav: NavItem[] = [
   { label: 'Início', href: '/aluno', icon: LayoutDashboard },
   { label: 'Minhas Notas', href: '/aluno/notas', icon: BarChart2 },
-  { label: 'Frequência', href: '/aluno/frequencia', icon: CheckSquare },
+  // Frequência integrada ao boletim em /aluno/notas (sprint demo)
   { label: 'Tarefas', href: '/aluno/tarefas', icon: ListTodo },
   { label: 'Comunicados', href: '/aluno/comunicados', icon: Megaphone },
   { label: 'Agendão', href: '/aluno/calendario', icon: Calendar },

@@ -3,6 +3,7 @@ import {
   Teacher,
   CreateTeacherRequest,
   UpdateTeacherRequest,
+  UpdateTeacherPasswordRequest,
   CreateTeacherResponse,
 } from '@/types/teacher'
 
@@ -21,5 +22,12 @@ export const teachersApi = {
 
   async update(id: string, data: UpdateTeacherRequest): Promise<Teacher> {
     return apiClient.patch<Teacher>(`/teachers/${id}`, data)
+  },
+
+  async updatePassword(
+    id: string,
+    data: UpdateTeacherPasswordRequest,
+  ): Promise<{ message: string }> {
+    return apiClient.patch<{ message: string }>(`/teachers/${id}/password`, data)
   },
 }

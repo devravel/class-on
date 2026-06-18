@@ -20,6 +20,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { studentsApi, classesApi } from '@/lib/api'
+import { getClassLabel } from '@/lib/class-utils'
 import { Student } from '@/types/student'
 import { Class as ClassType } from '@/types/class'
 
@@ -131,8 +132,7 @@ export function EnrollmentDialog({
                 )}
                 {availableClasses.map((classItem) => (
                   <SelectItem key={classItem.id} value={classItem.id}>
-                    {classItem.academic_years.year} - {classItem.series}º{' '}
-                    {classItem.letter} ({classItem.shift})
+                    {classItem.academic_years.year} - {getClassLabel(classItem)}
                   </SelectItem>
                 ))}
               </SelectContent>
@@ -148,8 +148,7 @@ export function EnrollmentDialog({
                 {student.enrollments.map((enrollment) => (
                   <li key={enrollment.id} className="text-sm text-text-secondary">
                     • {enrollment.classes.academic_years.year} -{' '}
-                    {enrollment.classes.series}º {enrollment.classes.letter} (
-                    {enrollment.classes.shift})
+                    {getClassLabel(enrollment.classes)}
                   </li>
                 ))}
               </ul>

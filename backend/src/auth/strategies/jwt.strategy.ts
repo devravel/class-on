@@ -9,6 +9,29 @@ export interface JwtPayload {
   role: string
 }
 
+export interface TeacherProfile {
+  id: bigint
+  user_id: bigint
+  full_name: string
+  registration_code: string
+}
+
+export interface StudentProfile {
+  id: bigint
+  user_id: bigint
+  rm: string
+  full_name: string
+  status: string
+}
+
+export interface AuthenticatedUser {
+  id: string
+  email: string
+  role: string
+  teacher?: TeacherProfile
+  student?: StudentProfile
+}
+
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy) {
   constructor(private readonly prisma: PrismaService) {
@@ -19,7 +42,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     })
   }
 
-  async validate(payload: JwtPayload) {
+  async validate(payload: JwtPayload): Promise<AuthenticatedUser> {
     const user = await this.prisma.users.findUnique({
       where: { id: BigInt(payload.sub) },
       select: {
@@ -27,6 +50,23 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         email: true,
         role: true,
         is_active: true,
+        teachers: {
+          select: {
+            id: true,
+            user_id: true,
+            full_name: true,
+            registration_code: true,
+          },
+        },
+        students: {
+          select: {
+            id: true,
+            user_id: true,
+            rm: true,
+            full_name: true,
+            status: true,
+          },
+        },
       },
     })
 
@@ -34,10 +74,26 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       throw new UnauthorizedException('Sessão inválida ou usuário inativo.')
     }
 
-    return {
+    const authenticated: AuthenticatedUser = {
       id: user.id.toString(),
       email: user.email,
       role: user.role,
     }
+
+    if (user.role === 'PROFESSOR') {
+      if (!user.teachers) {
+        throw new UnauthorizedException('Perfil de professor não encontrado.')
+      }
+      authenticated.teacher = user.teachers
+    }
+
+    if (user.role === 'ALUNO') {
+      if (!user.students) {
+        throw new UnauthorizedException('Perfil de aluno não encontrado.')
+      }
+      authenticated.student = user.students
+    }
+
+    return authenticated
   }
 }

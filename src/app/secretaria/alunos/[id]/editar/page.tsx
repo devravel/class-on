@@ -6,6 +6,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { Section } from '@/components/dashboard/Section'
+import { getClassLabel } from '@/lib/class-utils'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
@@ -248,8 +249,7 @@ export default function EditarAlunoPage() {
                           className="text-sm text-text-secondary"
                         >
                           • {enrollment.classes.academic_years.year} -{' '}
-                          {enrollment.classes.series}º {enrollment.classes.letter}{' '}
-                          ({enrollment.classes.shift})
+                          {getClassLabel(enrollment.classes)}
                         </li>
                       ))}
                     </ul>

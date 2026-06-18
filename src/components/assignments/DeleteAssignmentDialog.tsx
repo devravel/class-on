@@ -13,6 +13,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { assignmentsApi } from '@/lib/api'
+import { getClassLabel } from '@/lib/class-utils'
 import { Assignment } from '@/types/assignment'
 
 interface DeleteAssignmentDialogProps {
@@ -60,17 +61,7 @@ export function DeleteAssignmentDialog({
 
   if (!assignment) return null
 
-  const getClassLabel = () => {
-    const c = assignment.classes
-    const seriesLabel = `${c.series}º Ano`
-    const shiftLabel = {
-      MORNING: 'Manhã',
-      AFTERNOON: 'Tarde',
-      NIGHT: 'Noite',
-    }[c.shift] || c.shift
-    
-    return `${seriesLabel} ${c.letter} - ${shiftLabel}`
-  }
+  const classLabel = getClassLabel(assignment.classes)
 
   return (
     <Dialog open={open} onOpenChange={handleClose}>
@@ -103,7 +94,7 @@ export function DeleteAssignmentDialog({
           <div>
             <p className="text-xs text-text-secondary">Turma:</p>
             <p className="text-sm font-semibold text-text-primary">
-              {getClassLabel()}
+              {classLabel}
             </p>
           </div>
         </div>

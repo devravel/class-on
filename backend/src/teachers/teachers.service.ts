@@ -27,7 +27,7 @@ export class TeachersService {
       await this.ensureRegistrationCodeUnique(dto.registration_code)
 
       const provisionalPassword = this.generateProvisionalPassword()
-      const hashedPassword = await bcrypt.hash(provisionalPassword, 10)
+      const hashedPassword = await this.hashPassword(provisionalPassword)
       const now = new Date()
 
       const maxUserId = await this.prisma.users.findFirst({
@@ -99,6 +99,22 @@ export class TeachersService {
     }
   }
 
+  async updatePassword(id: bigint, password: string) {
+    try {
+      const current = await this.findOne(id)
+      const hashedPassword = await this.hashPassword(password)
+
+      await this.prisma.users.update({
+        where: { id: current.user_id },
+        data: { password: hashedPassword },
+      })
+
+      return { message: 'Senha atualizada com sucesso.' }
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
   async update(id: bigint, dto: UpdateTeacherDto) {
     try {
       const current = await this.findOne(id)
@@ -142,6 +158,10 @@ export class TeachersService {
     } catch (error) {
       handlePrismaError(error)
     }
+  }
+
+  private async hashPassword(plain: string): Promise<string> {
+    return bcrypt.hash(plain, 10)
   }
 
   private generateProvisionalPassword(): string {

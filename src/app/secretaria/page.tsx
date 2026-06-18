@@ -5,7 +5,6 @@ import {
   School,
   ChevronRight,
   Clock,
-  FileText,
   GraduationCap,
   Plus,
   UserCheck,
@@ -13,69 +12,47 @@ import {
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
+import { InlineError } from '@/components/dashboard/InlineError'
 import { KpiCard } from '@/components/dashboard/KpiCard'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { QuickActions } from '@/components/dashboard/QuickActions'
+import { RiskDonutChart } from '@/components/dashboard/RiskDonutChart'
 import { Section } from '@/components/dashboard/Section'
 import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { buttonVariants } from '@/components/ui/button'
-import { academicYearsApi } from '@/lib/api'
+import {
+  academicYearsApi,
+  analyticsApi,
+  classesApi,
+  studentsApi,
+  teachersApi,
+} from '@/lib/api'
 import { announcementsApi } from '@/lib/api/announcements'
 import { ApiError } from '@/lib/api-client'
+import { getClassLabel } from '@/lib/class-utils'
 import { cn } from '@/lib/utils'
 import { AcademicYear } from '@/types/academic-year'
 import { Announcement } from '@/types/announcement'
-
-const kpis = [
-  {
-    id: 'alunos',
-    label: 'Total de Alunos',
-    value: '1.247',
-    icon: Users,
-    trend: '+23 este mês',
-    trendType: 'positive' as const,
-  },
-  {
-    id: 'professores',
-    label: 'Total de Professores',
-    value: '42',
-    icon: GraduationCap,
-    trend: '+2 este mês',
-    trendType: 'positive' as const,
-  },
-  {
-    id: 'turmas',
-    label: 'Total de Turmas',
-    value: '28',
-    icon: BookOpen,
-    trend: '5 com vagas disponíveis',
-    trendType: 'neutral' as const,
-  },
-]
-
-const recentClasses = [
-  { id: 1, name: '9º Ano A', shift: 'Matutino', students: 32, teacher: 'João Silva', subject: 'Matemática' },
-  { id: 2, name: '8º Ano B', shift: 'Vespertino', students: 28, teacher: 'Ana Lima', subject: 'Português' },
-  { id: 3, name: '7º Ano C', shift: 'Matutino', students: 30, teacher: 'Carlos Souza', subject: 'Ciências' },
-  { id: 4, name: '6º Ano A', shift: 'Noturno', students: 25, teacher: 'Maria Santos', subject: 'História' },
-  { id: 5, name: '1º EM A', shift: 'Matutino', students: 35, teacher: 'Pedro Costa', subject: 'Física' },
-]
-
+import { RiskAnalyticsResponse } from '@/types/analytics'
+import { Class, SHIFT_LABELS, Shift } from '@/types/class'
 
 const quickActions = [
   { label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
   { label: 'Cadastrar Professor', icon: UserCheck, href: '/secretaria/professores/novo', variant: 'outline' as const },
   { label: 'Nova Turma', icon: Plus, href: '/secretaria/turmas/nova', variant: 'outline' as const },
-  { label: 'Emitir Relatório', icon: FileText, href: '/secretaria/relatorios', variant: 'outline' as const },
 ]
 
 const shiftBadge: Record<string, string> = {
-  Matutino: 'bg-brand-100 text-brand-700',
-  Vespertino: 'bg-warning/10 text-warning',
-  Noturno: 'bg-neutral-200 text-neutral-700',
+  MORNING: 'bg-brand-100 text-brand-700',
+  AFTERNOON: 'bg-warning/10 text-warning',
+  NIGHT: 'bg-neutral-200 text-neutral-700',
+}
+
+interface ClassWithStudents extends Class {
+  studentCount: number
 }
 
 export default function SecretariaPage() {
@@ -84,6 +61,16 @@ export default function SecretariaPage() {
   const [academicYearError, setAcademicYearError] = useState<string | null>(null)
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(null)
+  const [riskAnalytics, setRiskAnalytics] = useState<RiskAnalyticsResponse | null>(null)
+  const [isRiskLoading, setIsRiskLoading] = useState(true)
+  const [riskError, setRiskError] = useState<string | null>(null)
+  const [studentCount, setStudentCount] = useState<number | null>(null)
+  const [teacherCount, setTeacherCount] = useState<number | null>(null)
+  const [classCount, setClassCount] = useState<number | null>(null)
+  const [recentClasses, setRecentClasses] = useState<ClassWithStudents[]>([])
+  const [isKpisLoading, setIsKpisLoading] = useState(true)
+  const [kpisError, setKpisError] = useState<string | null>(null)
 
   useEffect(() => {
     let isMounted = true
@@ -121,13 +108,18 @@ export default function SecretariaPage() {
     const loadAnnouncements = async () => {
       try {
         setIsAnnouncementsLoading(true)
+        setAnnouncementsError(null)
         const data = await announcementsApi.findAll()
-        
+
         if (isMounted) {
           setAnnouncements(Array.isArray(data) ? data.slice(0, 4) : [])
         }
       } catch (error) {
         console.error('Failed to fetch announcements:', error)
+        if (isMounted) {
+          setAnnouncements([])
+          setAnnouncementsError('Não foi possível carregar os comunicados.')
+        }
       } finally {
         if (isMounted) {
           setIsAnnouncementsLoading(false)
@@ -135,8 +127,78 @@ export default function SecretariaPage() {
       }
     }
 
+    const loadRiskAnalytics = async () => {
+      try {
+        setIsRiskLoading(true)
+        setRiskError(null)
+        const data = await analyticsApi.getRiskAnalytics()
+        if (isMounted) {
+          setRiskAnalytics(data)
+        }
+      } catch (error) {
+        console.error('Erro ao carregar analytics de risco:', error)
+        if (isMounted) {
+          setRiskAnalytics(null)
+          setRiskError('Não foi possível carregar o índice de risco.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsRiskLoading(false)
+        }
+      }
+    }
+
+    const loadKpis = async () => {
+      try {
+        setIsKpisLoading(true)
+        setKpisError(null)
+
+        const [students, teachers, classes] = await Promise.all([
+          studentsApi.list(),
+          teachersApi.list(),
+          classesApi.list(),
+        ])
+
+        if (!isMounted) return
+
+        const enrollmentCounts = new Map<string, number>()
+        for (const student of students) {
+          for (const enrollment of student.enrollments ?? []) {
+            enrollmentCounts.set(
+              enrollment.class_id,
+              (enrollmentCounts.get(enrollment.class_id) ?? 0) + 1,
+            )
+          }
+        }
+
+        setStudentCount(students.length)
+        setTeacherCount(teachers.length)
+        setClassCount(classes.length)
+
+        const classesWithStudents: ClassWithStudents[] = classes
+          .slice(0, 4)
+          .map((classRecord) => ({
+            ...classRecord,
+            studentCount: enrollmentCounts.get(classRecord.id) ?? 0,
+          }))
+
+        setRecentClasses(classesWithStudents)
+      } catch (error) {
+        console.error('Erro ao carregar indicadores:', error)
+        if (isMounted) {
+          setKpisError('Não foi possível carregar os indicadores gerais.')
+        }
+      } finally {
+        if (isMounted) {
+          setIsKpisLoading(false)
+        }
+      }
+    }
+
     loadActiveAcademicYear()
     loadAnnouncements()
+    loadRiskAnalytics()
+    loadKpis()
 
     return () => {
       isMounted = false
@@ -155,9 +217,38 @@ export default function SecretariaPage() {
       ? 'Em andamento'
       : academicYearError
 
+  const kpiCards = useMemo(
+    () => [
+      {
+        id: 'alunos',
+        label: 'Total de Alunos',
+        value: isKpisLoading ? '...' : String(studentCount ?? 0),
+        icon: Users,
+        trend: isKpisLoading ? undefined : `${studentCount ?? 0} matriculados`,
+        trendType: 'neutral' as const,
+      },
+      {
+        id: 'professores',
+        label: 'Total de Professores',
+        value: isKpisLoading ? '...' : String(teacherCount ?? 0),
+        icon: GraduationCap,
+        trend: isKpisLoading ? undefined : `${teacherCount ?? 0} cadastrados`,
+        trendType: 'neutral' as const,
+      },
+      {
+        id: 'turmas',
+        label: 'Total de Turmas',
+        value: isKpisLoading ? '...' : String(classCount ?? 0),
+        icon: BookOpen,
+        trend: isKpisLoading ? undefined : `${classCount ?? 0} turmas ativas`,
+        trendType: 'neutral' as const,
+      },
+    ],
+    [isKpisLoading, studentCount, teacherCount, classCount],
+  )
+
   return (
     <PageContainer>
-      {/* Page heading */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
         <p className="mt-1 text-sm text-text-secondary">
@@ -167,10 +258,10 @@ export default function SecretariaPage() {
         </p>
       </div>
 
-      {/* KPIs */}
       <Section title="Indicadores Gerais" className="mb-8">
+        {kpisError && <InlineError message={kpisError} className="mb-4" />}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {kpis.map((kpi) => (
+          {kpiCards.map((kpi) => (
             <KpiCard key={kpi.id} {...kpi} />
           ))}
           <KpiCard
@@ -195,63 +286,87 @@ export default function SecretariaPage() {
         </div>
       </Section>
 
-      {/* Turmas + Próximos Eventos + Comunicados */}
+      <Section
+        title="Monitoramento Preditivo"
+        description="Heurística analítica baseada em notas e frequência dos alunos"
+        className="mb-8"
+      >
+        {isRiskLoading ? (
+          <div className="flex h-48 items-center justify-center rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="text-center">
+              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
+              <p className="mt-2 text-sm text-text-secondary">Calculando índice de risco...</p>
+            </div>
+          </div>
+        ) : riskError ? (
+          <InlineError message={riskError} />
+        ) : riskAnalytics ? (
+          <RiskDonutChart data={riskAnalytics} />
+        ) : null}
+      </Section>
+
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Turmas recentes — 1/3 */}
         <div className="lg:col-span-1">
           <Section
             title="Turmas Recentes"
             action={
-              <a
+              <Link
                 href="/secretaria/turmas"
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 Ver todas <ChevronRight size={14} />
-              </a>
+              </Link>
             }
           >
-            <ListCard
-              items={recentClasses.slice(0, 4)} // Reduzir para caber no layout
-              renderItem={(item) => (
-                <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
-                  <div className="flex min-w-0 items-center gap-3">
-                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                      <BookOpen size={14} className="text-primary" />
+            {isKpisLoading ? (
+              <div className="flex items-center justify-center py-8">
+                <div className="mx-auto h-6 w-6 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
+              </div>
+            ) : (
+              <ListCard
+                items={recentClasses}
+                emptyMessage="Nenhuma turma cadastrada."
+                renderItem={(item) => (
+                  <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
+                    <div className="flex min-w-0 items-center gap-3">
+                      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                        <BookOpen size={14} className="text-primary" />
+                      </div>
+                      <div className="min-w-0">
+                        <p className="truncate text-sm font-medium text-text-primary">
+                          {getClassLabel(item)}
+                        </p>
+                        <p className="truncate text-xs text-text-secondary">
+                          {item.studentCount} aluno{item.studentCount !== 1 ? 's' : ''}
+                        </p>
+                      </div>
                     </div>
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-text-primary">{item.name}</p>
-                      <p className="truncate text-xs text-text-secondary">
-                        {item.students} alunos
-                      </p>
-                    </div>
+                    <span
+                      className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
+                    >
+                      {SHIFT_LABELS[item.shift as Shift] ?? item.shift}
+                    </span>
                   </div>
-                  <span
-                    className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
-                  >
-                    {item.shift}
-                  </span>
-                </div>
-              )}
-            />
+                )}
+              />
+            )}
           </Section>
         </div>
 
-        {/* Próximos Eventos — 1/3 */}
         <div className="lg:col-span-1">
           <UpcomingEventsCard role="SECRETARIA" limit={4} />
         </div>
 
-        {/* Comunicados — 1/3 */}
         <div className="lg:col-span-1">
           <Section
             title="Comunicados"
             action={
-              <a
+              <Link
                 href="/secretaria/comunicados"
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 Ver todos <ChevronRight size={14} />
-              </a>
+              </Link>
             }
           >
             {isAnnouncementsLoading ? (
@@ -261,6 +376,8 @@ export default function SecretariaPage() {
                   <p className="mt-2 text-xs text-neutral-500">Carregando...</p>
                 </div>
               </div>
+            ) : announcementsError ? (
+              <InlineError message={announcementsError} />
             ) : (
               <ListCard
                 items={announcements}
@@ -271,7 +388,7 @@ export default function SecretariaPage() {
                     </p>
                     <span className="flex items-center gap-1 text-xs text-text-secondary">
                       <Clock size={12} />
-                      {new Date(item.created_at).toLocaleDateString('pt-BR')} · 
+                      {new Date(item.created_at).toLocaleDateString('pt-BR')} ·
                       {item.users.teachers?.[0]?.full_name || item.users.email}
                     </span>
                   </div>
@@ -283,7 +400,6 @@ export default function SecretariaPage() {
         </div>
       </div>
 
-      {/* Quick Actions */}
       <Section
         title="Ações Rápidas"
         description="Acesso direto às principais funcionalidades"

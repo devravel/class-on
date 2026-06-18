@@ -24,6 +24,7 @@ export default function NovaTurmaPage() {
 
       await classesApi.create({
         year_id: Number(values.year_id),
+        education_level: values.education_level,
         series: Number(values.series),
         letter: values.letter,
         shift: values.shift,

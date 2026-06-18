@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { teachersApi, classesApi, subjectsApi } from '@/lib/api'
+import { getClassLabel } from '@/lib/class-utils'
 import { Teacher } from '@/types/teacher'
 import { Class } from '@/types/class'
 import { Subject } from '@/types/subject'
@@ -88,15 +89,8 @@ export function AssignmentForm({
     loadData()
   }, [])
 
-  const getClassLabel = (classItem: Class) => {
-    const seriesLabel = `${classItem.series}º Ano`
-    const shiftLabel = {
-      MORNING: 'Manhã',
-      AFTERNOON: 'Tarde',
-      NIGHT: 'Noite',
-    }[classItem.shift] || classItem.shift
-    
-    return `${seriesLabel} ${classItem.letter} - ${shiftLabel} (${classItem.academic_years.year})`
+  const getClassOptionLabel = (classItem: Class) => {
+    return `${getClassLabel(classItem)} (${classItem.academic_years.year})`
   }
 
   if (isLoadingData) {
@@ -181,7 +175,7 @@ export function AssignmentForm({
                 <SelectContent>
                   {classes.map((classItem) => (
                     <SelectItem key={classItem.id} value={classItem.id}>
-                      {getClassLabel(classItem)}
+                      {getClassOptionLabel(classItem)}
                     </SelectItem>
                   ))}
                 </SelectContent>

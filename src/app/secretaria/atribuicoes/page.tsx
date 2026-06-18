@@ -11,6 +11,7 @@ import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { assignmentsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
+import { getClassLabel } from '@/lib/class-utils'
 import { Assignment } from '@/types/assignment'
 
 export default function AtribuicoesPage() {
@@ -49,25 +50,13 @@ export default function AtribuicoesPage() {
     setSelectedAssignment(null)
   }
 
-  const getClassLabel = (assignment: Assignment) => {
-    const c = assignment.classes
-    const seriesLabel = `${c.series}º Ano`
-    const shiftLabel = {
-      MORNING: 'Manhã',
-      AFTERNOON: 'Tarde',
-      NIGHT: 'Noite',
-    }[c.shift] || c.shift
-    
-    return `${seriesLabel} ${c.letter} - ${shiftLabel}`
-  }
-
   const filteredAssignments = assignments.filter((a) => {
     if (!search.trim()) return true
     const q = search.toLowerCase()
     return (
       a.teachers.full_name.toLowerCase().includes(q) ||
       a.subjects.name.toLowerCase().includes(q) ||
-      getClassLabel(a).toLowerCase().includes(q)
+      getClassLabel(a.classes).toLowerCase().includes(q)
     )
   })
 
@@ -137,7 +126,7 @@ export default function AtribuicoesPage() {
                       {item.teachers.full_name}
                     </p>
                     <p className="text-sm text-text-secondary">
-                      {item.subjects.name} • {getClassLabel(item)}
+                      {item.subjects.name} • {getClassLabel(item.classes)}
                     </p>
                     <p className="text-xs text-text-secondary mt-1">
                       Ano Letivo: {item.classes.academic_years.year}

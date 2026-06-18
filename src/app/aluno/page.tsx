@@ -6,38 +6,86 @@ import {
   ChevronRight,
   Clock,
   ListTodo,
+  Loader2,
   Megaphone,
 } from 'lucide-react'
+import Link from 'next/link'
+import { useEffect, useMemo, useState } from 'react'
 
+import { InlineError } from '@/components/dashboard/InlineError'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
+import { attendanceApi, authApi, gradesApi } from '@/lib/api'
 import { announcementsApi } from '@/lib/api/announcements'
+import { tasksApi } from '@/lib/api/tasks'
+import {
+  getGradeDisplayStatus,
+  parseGradeValue,
+} from '@/lib/class-utils'
+import { cn } from '@/lib/utils'
+import { StudentAttendanceSummary } from '@/types/attendance'
+import { StudentGradeRecord } from '@/types/grade'
 import { Announcement } from '@/types/announcement'
-import { useState, useEffect } from 'react'
+import { StudentTask } from '@/types/task'
 
-const recentGrades = [
-  { id: 1, subject: 'Matemática', grade: 8.5, bimester: '2º Bimestre', status: 'approved' },
-  { id: 2, subject: 'Português', grade: 9.0, bimester: '2º Bimestre', status: 'approved' },
-  { id: 3, subject: 'Ciências', grade: 7.0, bimester: '2º Bimestre', status: 'approved' },
-  { id: 4, subject: 'História', grade: 6.5, bimester: '2º Bimestre', status: 'watch' },
-  { id: 5, subject: 'Ed. Física', grade: 9.5, bimester: '2º Bimestre', status: 'approved' },
-]
+interface RecentGradeItem {
+  id: string
+  subject: string
+  grade: number
+  bimester: string
+  status: 'approved' | 'watch' | 'failed'
+}
 
-const attendance = [
-  { id: 1, subject: 'Matemática', percentage: 92, present: 46, total: 50 },
-  { id: 2, subject: 'Português', percentage: 88, present: 44, total: 50 },
-  { id: 3, subject: 'Ciências', percentage: 96, present: 48, total: 50 },
-  { id: 4, subject: 'História', percentage: 80, present: 40, total: 50 },
-]
+function buildRecentGrades(grades: StudentGradeRecord[]): RecentGradeItem[] {
+  const bySubject = new Map<string, StudentGradeRecord>()
 
-const pendingTasks = [
-  { id: 1, title: 'Lista de exercícios — Cap. 5', subject: 'Matemática', dueDate: '10/01', status: 'pending' },
-  { id: 2, title: 'Redação — Tema: Meio Ambiente', subject: 'Português', dueDate: '12/01', status: 'pending' },
-  { id: 3, title: 'Relatório de experimento', subject: 'Ciências', dueDate: '05/01', status: 'late' },
-]
+  for (const grade of grades) {
+    const subjectName = grade.assignments.subjects.name
+    const existing = bySubject.get(subjectName)
+    if (!existing || grade.bimesters.number > existing.bimesters.number) {
+      bySubject.set(subjectName, grade)
+    }
+  }
 
+  return Array.from(bySubject.values()).map((grade) => {
+    const average = parseGradeValue(grade.average)
+    const recovery = grade.recovery_grade != null ? parseGradeValue(grade.recovery_grade) : null
+    const finalAverage = grade.final_average != null ? parseGradeValue(grade.final_average) : null
+    const displayAverage = finalAverage ?? average
+    const displayStatus = getGradeDisplayStatus(average, recovery, finalAverage)
+
+    const status: RecentGradeItem['status'] =
+      displayStatus === 'APROVADO'
+        ? 'approved'
+        : displayStatus === 'EM_RECUPERACAO'
+          ? 'watch'
+          : 'failed'
+
+    return {
+      id: grade.id,
+      subject: grade.assignments.subjects.name,
+      grade: displayAverage,
+      bimester: `${grade.bimesters.number}º Bimestre`,
+      status,
+    }
+  })
+}
+
+function getPendingTasks(tasks: StudentTask[]): StudentTask[] {
+  return tasks.filter((task) => {
+    const submission = task.task_submissions[0]
+    if (submission) return false
+    return true
+  })
+}
+
+function isTaskOverdue(task: StudentTask): boolean {
+  const submission = task.task_submissions[0]
+  if (submission) return false
+  return new Date(task.deadline) < new Date()
+}
 
 const gradeColor: Record<string, string> = {
   approved: 'text-success',
@@ -48,39 +96,105 @@ const gradeColor: Record<string, string> = {
 const taskBadge: Record<string, string> = {
   pending: 'bg-warning/10 text-warning',
   late: 'bg-danger/10 text-danger',
-  done: 'bg-success/10 text-success',
 }
 
 const taskLabel: Record<string, string> = {
   pending: 'Pendente',
   late: 'Atrasada',
-  done: 'Entregue',
 }
 
 export default function AlunoPage() {
+  const [recentGrades, setRecentGrades] = useState<RecentGradeItem[]>([])
+  const [attendance, setAttendance] = useState<StudentAttendanceSummary | null>(null)
+  const [pendingTasks, setPendingTasks] = useState<StudentTask[]>([])
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [gradesError, setGradesError] = useState<string | null>(null)
+  const [attendanceError, setAttendanceError] = useState<string | null>(null)
+  const [tasksError, setTasksError] = useState<string | null>(null)
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(null)
   const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
-  const lateCount = pendingTasks.filter((t) => t.status === 'late').length
 
   useEffect(() => {
+    const load = async () => {
+      setIsLoading(true)
+      setGradesError(null)
+      setAttendanceError(null)
+      setTasksError(null)
+
+      try {
+        const me = await authApi.getMe()
+        if (!me.student) {
+          setGradesError('Perfil de aluno não encontrado.')
+          return
+        }
+
+        const gradesPromise = gradesApi.getMyGrades().then((data) => {
+          const grades = Array.isArray(data) ? data : []
+          setRecentGrades(buildRecentGrades(grades))
+        }).catch(() => {
+          setGradesError('Não foi possível carregar suas notas.')
+        })
+
+        const attendancePromise = attendanceApi
+          .getStudentSummary(me.student.id)
+          .then(setAttendance)
+          .catch(() => {
+            setAttendanceError('Não foi possível carregar sua frequência.')
+          })
+
+        const tasksPromise = tasksApi.listMyTasks().then((data) => {
+          const tasks = Array.isArray(data) ? data : []
+          setPendingTasks(getPendingTasks(tasks).slice(0, 5))
+        }).catch(() => {
+          setTasksError('Não foi possível carregar suas tarefas.')
+        })
+
+        await Promise.all([gradesPromise, attendancePromise, tasksPromise])
+      } catch {
+        setGradesError('Não foi possível carregar seus dados.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
     const loadAnnouncements = async () => {
       try {
         setIsAnnouncementsLoading(true)
+        setAnnouncementsError(null)
         const data = await announcementsApi.findAll()
         setAnnouncements(Array.isArray(data) ? data.slice(0, 3) : [])
-      } catch (error) {
-        console.error('Failed to fetch announcements:', error)
+      } catch {
+        setAnnouncementsError('Não foi possível carregar os comunicados.')
       } finally {
         setIsAnnouncementsLoading(false)
       }
     }
 
+    load()
     loadAnnouncements()
   }, [])
 
+  const lateCount = useMemo(
+    () => pendingTasks.filter((task) => isTaskOverdue(task)).length,
+    [pendingTasks],
+  )
+
+  const attendanceRate = attendance?.attendance_rate ?? 0
+  const isAttendanceHealthy = attendanceRate >= 75
+
+  if (isLoading) {
+    return (
+      <PageContainer>
+        <div className="flex items-center justify-center py-24">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      </PageContainer>
+    )
+  }
+
   return (
     <PageContainer>
-      {/* Page heading */}
       <div className="mb-8">
         <h1 className="text-2xl font-bold text-text-primary">Meu Painel</h1>
         <p className="mt-1 text-sm text-text-secondary">
@@ -88,88 +202,96 @@ export default function AlunoPage() {
         </p>
       </div>
 
-      {/* Top row: Notas + Frequência */}
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">
-        {/* Notas recentes */}
         <Section
           title="Notas Recentes"
           action={
-            <a
+            <Link
               href="/aluno/notas"
               className="flex items-center gap-1 text-xs text-primary hover:underline"
             >
               Ver todas <ChevronRight size={14} />
-            </a>
+            </Link>
           }
         >
-          <ListCard
-            items={recentGrades}
-            renderItem={(item) => (
-              <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
-                <div className="flex items-center gap-3">
-                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                    <BarChart2 size={14} className="text-primary" />
+          {gradesError ? (
+            <InlineError message={gradesError} />
+          ) : (
+            <ListCard
+              items={recentGrades}
+              emptyMessage="Nenhuma nota lançada ainda."
+              renderItem={(item) => (
+                <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <BarChart2 size={14} className="text-primary" />
+                    </div>
+                    <div>
+                      <p className="text-sm font-medium text-text-primary">{item.subject}</p>
+                      <p className="text-xs text-text-secondary">{item.bimester}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-text-primary">{item.subject}</p>
-                    <p className="text-xs text-text-secondary">{item.bimester}</p>
-                  </div>
+                  <span className={`text-lg font-bold ${gradeColor[item.status] ?? 'text-text-primary'}`}>
+                    {item.grade.toFixed(1)}
+                  </span>
                 </div>
-                <span className={`text-lg font-bold ${gradeColor[item.status] ?? 'text-text-primary'}`}>
-                  {item.grade.toFixed(1)}
-                </span>
-              </div>
-            )}
-          />
+              )}
+            />
+          )}
         </Section>
 
-        {/* Frequência */}
         <Section
           title="Frequência"
           action={
-            <a
-              href="/aluno/frequencia"
+            <Link
+              href="/aluno/notas"
               className="flex items-center gap-1 text-xs text-primary hover:underline"
             >
               Ver detalhes <ChevronRight size={14} />
-            </a>
+            </Link>
           }
         >
-          <ListCard
-            items={attendance}
-            renderItem={(item) => (
-              <div className="px-4 py-3 transition-colors hover:bg-neutral-100">
-                <div className="mb-2 flex items-center justify-between">
-                  <span className="text-sm font-medium text-text-primary">{item.subject}</span>
-                  <span
-                    className={`text-sm font-semibold ${item.percentage >= 75 ? 'text-success' : 'text-danger'}`}
-                  >
-                    {item.percentage}%
-                  </span>
-                </div>
-                <div className="h-1.5 overflow-hidden rounded-full bg-neutral-200">
-                  <div
-                    className={`h-full rounded-full transition-all ${item.percentage >= 75 ? 'bg-success' : 'bg-danger'}`}
-                    style={{ width: `${item.percentage}%` }}
-                  />
-                </div>
-                <p className="mt-1 text-xs text-text-secondary">
-                  {item.present}/{item.total} aulas
-                </p>
+          {attendanceError ? (
+            <InlineError message={attendanceError} />
+          ) : attendance ? (
+            <div className="rounded-card bg-surface p-4 shadow-light ring-1 ring-border">
+              <div className="mb-3 flex items-center justify-between">
+                <span className="text-sm font-medium text-text-primary">Frequência geral</span>
+                <span
+                  className={cn(
+                    'text-lg font-bold',
+                    isAttendanceHealthy ? 'text-success' : 'text-danger',
+                  )}
+                >
+                  {attendanceRate.toFixed(1)}%
+                </span>
               </div>
-            )}
-          />
+              <div className="h-2 overflow-hidden rounded-full bg-neutral-200">
+                <div
+                  className={cn(
+                    'h-full rounded-full transition-all',
+                    isAttendanceHealthy ? 'bg-success' : 'bg-danger',
+                  )}
+                  style={{ width: `${Math.min(attendanceRate, 100)}%` }}
+                />
+              </div>
+              <p className="mt-2 text-xs text-text-secondary">
+                {attendance.present} presenças · {attendance.absent} faltas · {attendance.total_lessons} aulas
+              </p>
+            </div>
+          ) : (
+            <div className="rounded-card bg-surface p-6 text-center shadow-light ring-1 ring-border">
+              <p className="text-sm text-text-secondary">Nenhuma aula registrada ainda.</p>
+            </div>
+          )}
         </Section>
       </div>
 
-      {/* Bottom row: Próximos Eventos + Tarefas + Comunicados */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-3">
-        {/* Próximos Eventos — 1/3 */}
         <div>
           <UpcomingEventsCard role="ALUNO" limit={4} />
         </div>
 
-        {/* Tarefas pendentes — 1/3 */}
         <div>
           <Section
             title="Tarefas Pendentes"
@@ -179,54 +301,62 @@ export default function AlunoPage() {
                 : `${pendingTasks.length} tarefa${pendingTasks.length !== 1 ? 's' : ''} aguardando`
             }
             action={
-              <a
+              <Link
                 href="/aluno/tarefas"
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 Ver todas <ChevronRight size={14} />
-              </a>
+              </Link>
             }
           >
-            <ListCard
-              items={pendingTasks.slice(0, 3)} // Reduzir para caber no layout
-              emptyMessage="Nenhuma tarefa pendente."
-              renderItem={(item) => (
-                <div className="flex items-start justify-between gap-4 px-4 py-3 transition-colors hover:bg-neutral-100">
-                  <div className="flex min-w-0 items-start gap-3">
-                    {item.status === 'late' ? (
-                      <AlertCircle size={14} className="mt-0.5 shrink-0 text-danger" />
-                    ) : (
-                      <ListTodo size={14} className="mt-0.5 shrink-0 text-text-secondary" />
-                    )}
-                    <div className="min-w-0">
-                      <p className="truncate text-sm font-medium text-text-primary">{item.title}</p>
-                      <p className="text-xs text-text-secondary">{item.subject}</p>
+            {tasksError ? (
+              <InlineError message={tasksError} />
+            ) : (
+              <ListCard
+                items={pendingTasks}
+                emptyMessage="Nenhuma tarefa pendente."
+                renderItem={(item) => {
+                  const overdue = isTaskOverdue(item)
+                  const statusKey = overdue ? 'late' : 'pending'
+
+                  return (
+                    <div className="flex items-start justify-between gap-4 px-4 py-3 transition-colors hover:bg-neutral-100">
+                      <div className="flex min-w-0 items-start gap-3">
+                        {overdue ? (
+                          <AlertCircle size={14} className="mt-0.5 shrink-0 text-danger" />
+                        ) : (
+                          <ListTodo size={14} className="mt-0.5 shrink-0 text-text-secondary" />
+                        )}
+                        <div className="min-w-0">
+                          <p className="truncate text-sm font-medium text-text-primary">{item.title}</p>
+                          <p className="text-xs text-text-secondary">
+                            {item.assignments.subjects.name}
+                          </p>
+                        </div>
+                      </div>
+                      <span
+                        className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${taskBadge[statusKey] ?? ''}`}
+                      >
+                        {taskLabel[statusKey]}
+                      </span>
                     </div>
-                  </div>
-                  <div className="flex shrink-0 flex-col items-end gap-1">
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-medium ${taskBadge[item.status] ?? ''}`}
-                    >
-                      {taskLabel[item.status]}
-                    </span>
-                  </div>
-                </div>
-              )}
-            />
+                  )
+                }}
+              />
+            )}
           </Section>
         </div>
 
-        {/* Comunicados — 1/3 */}
         <div>
           <Section
             title="Comunicados"
             action={
-              <a
+              <Link
                 href="/aluno/comunicados"
                 className="flex items-center gap-1 text-xs text-primary hover:underline"
               >
                 Ver todos <ChevronRight size={14} />
-              </a>
+              </Link>
             }
           >
             {isAnnouncementsLoading ? (
@@ -236,6 +366,8 @@ export default function AlunoPage() {
                   <p className="mt-2 text-xs text-neutral-500">Carregando...</p>
                 </div>
               </div>
+            ) : announcementsError ? (
+              <InlineError message={announcementsError} />
             ) : (
               <ListCard
                 items={announcements}
@@ -250,7 +382,7 @@ export default function AlunoPage() {
                       </p>
                       <span className="flex items-center gap-1 text-xs text-text-secondary">
                         <Clock size={10} />
-                        {new Date(item.created_at).toLocaleDateString('pt-BR')} · 
+                        {new Date(item.created_at).toLocaleDateString('pt-BR')} ·
                         {item.users.teachers?.[0]?.full_name || item.users.email}
                       </span>
                     </div>

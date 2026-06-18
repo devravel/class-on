@@ -24,14 +24,50 @@ import {
 } from '@/components/ui/select'
 import { academicYearsApi } from '@/lib/api'
 import { AcademicYear } from '@/types/academic-year'
-import { SERIES_LABELS, SERIES_OPTIONS, LETTER_OPTIONS, SHIFT_LABELS, SHIFT_OPTIONS } from '@/types/class'
+import {
+  EDUCATION_LEVEL_LABELS,
+  EDUCATION_LEVEL_OPTIONS,
+  EducationLevel,
+  formatSeriesLabel,
+  getSeriesOptionsForLevel,
+  isValidSeriesForLevel,
+  LETTER_OPTIONS,
+  SHIFT_LABELS,
+  SHIFT_OPTIONS,
+} from '@/types/class'
 
-const classFormSchema = z.object({
-  year_id: z.string().min(1, 'Selecione um ano letivo'),
-  series: z.string().min(1, 'Selecione a série'),
-  letter: z.string().min(1, 'Selecione a letra'),
-  shift: z.string().min(1, 'Selecione o turno'),
-})
+const classFormSchema = z
+  .object({
+    year_id: z.string().min(1, 'Selecione um ano letivo'),
+    education_level: z.enum(['FUNDAMENTAL', 'MEDIO'], {
+      message: 'Selecione o nível de ensino',
+    }),
+    series: z.string().min(1, 'Selecione a série'),
+    letter: z.string().min(1, 'Selecione a letra'),
+    shift: z.string().min(1, 'Selecione o turno'),
+  })
+  .superRefine((values, ctx) => {
+    const series = Number(values.series)
+    if (!/^\d+$/.test(values.series) || !Number.isInteger(series)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: 'Selecione uma série válida',
+        path: ['series'],
+      })
+      return
+    }
+
+    if (!isValidSeriesForLevel(series, values.education_level)) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message:
+          values.education_level === 'MEDIO'
+            ? 'Para Ensino Médio, a série deve ser 1, 2 ou 3'
+            : 'Para Ensino Fundamental, a série deve ser entre 1 e 9',
+        path: ['series'],
+      })
+    }
+  })
 
 export type ClassFormValues = z.infer<typeof classFormSchema>
 
@@ -59,11 +95,15 @@ export function ClassForm({
     resolver: zodResolver(classFormSchema),
     defaultValues: defaultValues ?? {
       year_id: '',
+      education_level: 'FUNDAMENTAL',
       series: '',
       letter: '',
       shift: '',
     },
   })
+
+  const educationLevel = form.watch('education_level') as EducationLevel
+  const seriesOptions = getSeriesOptionsForLevel(educationLevel)
 
   useEffect(() => {
     academicYearsApi
@@ -72,6 +112,13 @@ export function ClassForm({
       .catch(console.error)
       .finally(() => setLoadingYears(false))
   }, [])
+
+  useEffect(() => {
+    const currentSeries = form.getValues('series')
+    if (currentSeries && !seriesOptions.includes(Number(currentSeries))) {
+      form.setValue('series', '')
+    }
+  }, [educationLevel, form, seriesOptions])
 
   return (
     <Form {...form}>
@@ -115,6 +162,32 @@ export function ClassForm({
           )}
         />
 
+        {/* Nível de Ensino */}
+        <FormField
+          control={form.control}
+          name="education_level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Nível de Ensino *</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value}>
+                <FormControl>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Selecione o nível de ensino" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {EDUCATION_LEVEL_OPTIONS.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {EDUCATION_LEVEL_LABELS[level]}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
         {/* Série */}
         <FormField
           control={form.control}
@@ -129,9 +202,9 @@ export function ClassForm({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {SERIES_OPTIONS.map((s) => (
+                  {seriesOptions.map((s) => (
                     <SelectItem key={s} value={String(s)}>
-                      {SERIES_LABELS[s]}
+                      {formatSeriesLabel(s, educationLevel)}
                     </SelectItem>
                   ))}
                 </SelectContent>

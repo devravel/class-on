@@ -3,6 +3,7 @@
 import { type UserRole } from '@/contexts/auth-context'
 import { SidebarProvider } from '@/contexts/sidebar-context'
 import { alunoNav, professorNav, secretariaNav } from '@/lib/nav-config'
+import { CommandPalette } from './CommandPalette'
 import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 
@@ -22,6 +23,7 @@ export function LayoutBase({ children, role }: LayoutBaseProps) {
 
   return (
     <SidebarProvider>
+      <CommandPalette />
       <div className="flex h-screen overflow-hidden bg-background">
         <Sidebar navItems={navItems} />
 

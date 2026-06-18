@@ -31,3 +31,7 @@ export interface UpdateTeacherRequest {
   registration_code?: string
   is_active?: boolean
 }
+
+export interface UpdateTeacherPasswordRequest {
+  password: string
+}

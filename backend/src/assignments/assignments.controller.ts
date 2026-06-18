@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Delete,
+  ForbiddenException,
   Get,
   HttpCode,
   HttpStatus,
@@ -13,6 +14,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { AssignmentsService } from './assignments.service'
 import { CreateAssignmentDto } from './dto/create-assignment.dto'
 
@@ -33,20 +35,20 @@ export class AssignmentsController {
     return this.assignmentsService.findAll()
   }
 
-  @Get(':id')
-  @Roles('SECRETARIA', 'PROFESSOR')
-  findOne(@Param('id') id: string) {
-    return this.assignmentsService.findOne(BigInt(id))
-  }
-
   @Get('teacher/:teacherId')
   @Roles('SECRETARIA', 'PROFESSOR')
-  findByTeacher(@Param('teacherId') teacherId: string, @CurrentUser() user: any) {
+  findByTeacher(
+    @Param('teacherId') teacherId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
     const id = BigInt(teacherId)
 
     if (user.role === 'PROFESSOR') {
-      if (!user.teacher || user.teacher.id !== id) {
-        throw new Error('Você só pode visualizar suas próprias atribuições')
+      if (!user.teacher) {
+        throw new ForbiddenException('Perfil de professor não encontrado.')
+      }
+      if (user.teacher.id !== id) {
+        throw new ForbiddenException('Você só pode visualizar suas próprias atribuições.')
       }
     }
 
@@ -57,6 +59,12 @@ export class AssignmentsController {
   @Roles('SECRETARIA')
   findByClass(@Param('classId') classId: string) {
     return this.assignmentsService.findByClass(BigInt(classId))
+  }
+
+  @Get(':id')
+  @Roles('SECRETARIA', 'PROFESSOR')
+  findOne(@Param('id') id: string) {
+    return this.assignmentsService.findOne(BigInt(id))
   }
 
   @Delete(':id')

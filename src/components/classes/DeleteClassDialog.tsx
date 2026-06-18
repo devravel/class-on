@@ -5,7 +5,7 @@ import { AlertTriangle, Trash2, XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
-import { Class, SERIES_LABELS, SHIFT_LABELS, Shift } from '@/types/class'
+import { Class, formatClassShortLabel, SHIFT_LABELS, Shift } from '@/types/class'
 import { classesApi } from '@/lib/api'
 
 interface DeleteClassDialogProps {
@@ -104,7 +104,7 @@ export function DeleteClassDialog({
     }
   }
 
-  const className = `${SERIES_LABELS[classRecord.series] ?? `${classRecord.series}º Ano`} ${classRecord.letter} - ${SHIFT_LABELS[classRecord.shift as Shift] ?? classRecord.shift}`
+  const className = `${formatClassShortLabel(classRecord)} - ${SHIFT_LABELS[classRecord.shift as Shift] ?? classRecord.shift}`
 
   return (
     <div

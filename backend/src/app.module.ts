@@ -17,6 +17,9 @@ import { GradesModule } from './grades/grades.module'
 import { TasksModule } from './tasks/tasks.module'
 import { AnnouncementsModule } from './announcements/announcements.module'
 import { EventsModule } from './events/events.module'
+import { BimestersModule } from './bimesters/bimesters.module'
+import { DashboardModule } from './dashboard/dashboard.module'
+import { AiModule } from './ai/ai.module'
 
 @Module({
   imports: [
@@ -24,6 +27,7 @@ import { EventsModule } from './events/events.module'
     PrismaModule,
     AuthModule,
     AcademicYearsModule,
+    BimestersModule,
     ClassesModule,
     TeachersModule,
     StudentsModule,
@@ -35,6 +39,8 @@ import { EventsModule } from './events/events.module'
     TasksModule,
     AnnouncementsModule,
     EventsModule,
+    DashboardModule,
+    AiModule,
   ],
   providers: [
     {
