@@ -60,7 +60,13 @@ export interface StudentGradeBimester {
 
 export interface StudentGradeRecord extends GradeRecord {
   assignments: {
+    id: string
+    class_id?: string
     subjects: StudentGradeSubject
+    teachers?: {
+      id: string
+      full_name: string
+    }
   }
   bimesters: StudentGradeBimester
 }

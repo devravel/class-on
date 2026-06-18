@@ -33,8 +33,20 @@ export function handlePrismaError(error: unknown): never {
       throw new BadRequestException('Já existe um registro com esses dados')
     }
 
+    if (error.code === 'P2003') {
+      throw new BadRequestException(
+        'Referência inválida ao vincular dados (professor, disciplina ou turma).',
+      )
+    }
+
     if (error.code === 'P2025') {
       throw new NotFoundException('Registro não encontrado')
+    }
+
+    if (error.code === 'P2028') {
+      throw new BadRequestException(
+        'A operação demorou demais. Reduza a quantidade de alunos ou tente novamente.',
+      )
     }
 
     throw new InternalServerErrorException(

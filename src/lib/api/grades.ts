@@ -31,4 +31,8 @@ export const gradesApi = {
   async getMyGrades(): Promise<StudentGradeRecord[]> {
     return apiClient.get<StudentGradeRecord[]>('/grades/my-grades')
   },
+
+  async getByStudent(studentId: string): Promise<StudentGradeRecord[]> {
+    return apiClient.get<StudentGradeRecord[]>(`/grades/student/${studentId}`)
+  },
 }

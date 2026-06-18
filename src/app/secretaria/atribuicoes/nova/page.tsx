@@ -1,7 +1,7 @@
 'use client'
 
 import { useRouter } from 'next/navigation'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 import {
   AssignmentForm,
@@ -15,6 +15,10 @@ export default function NovaAtribuicaoPage() {
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    router.replace('/secretaria/professores')
+  }, [router])
 
   const handleSubmit = async (values: AssignmentFormValues) => {
     try {

@@ -89,6 +89,62 @@ export class ClassesService {
     }
   }
 
+  async findOneDetails(id: bigint) {
+    try {
+      const classRecord = await this.prisma.classes.findUnique({
+        where: { id },
+        include: {
+          academic_years: true,
+          enrollments: {
+            include: {
+              students: {
+                include: {
+                  users: {
+                    select: {
+                      id: true,
+                      email: true,
+                      is_active: true,
+                    },
+                  },
+                },
+              },
+            },
+            orderBy: {
+              students: { full_name: 'asc' },
+            },
+          },
+          assignments: {
+            include: {
+              teachers: {
+                select: {
+                  id: true,
+                  full_name: true,
+                },
+              },
+              subjects: {
+                select: {
+                  id: true,
+                  name: true,
+                },
+              },
+            },
+            orderBy: {
+              subjects: { name: 'asc' },
+            },
+          },
+        },
+      })
+
+      if (!classRecord) {
+        throw new NotFoundException('Registro não encontrado')
+      }
+
+      return classRecord
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
   async update(id: bigint, dto: UpdateClassDto) {
     try {
       const current = await this.findOne(id)

@@ -2,6 +2,7 @@
 
 import { BookUser, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { DeleteAssignmentDialog } from '@/components/assignments/DeleteAssignmentDialog'
@@ -15,6 +16,7 @@ import { getClassLabel } from '@/lib/class-utils'
 import { Assignment } from '@/types/assignment'
 
 export default function AtribuicoesPage() {
+  const router = useRouter()
   const [assignments, setAssignments] = useState<Assignment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -35,6 +37,10 @@ export default function AtribuicoesPage() {
       setIsLoading(false)
     }
   }
+
+  useEffect(() => {
+    router.replace('/secretaria/professores')
+  }, [router])
 
   useEffect(() => {
     loadAssignments()

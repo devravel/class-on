@@ -5,39 +5,93 @@ import Link from 'next/link'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
-import { ClassForm, ClassFormValues } from '@/components/classes/ClassForm'
+import { ClassCreationWizard } from '@/components/classes/ClassCreationWizard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { buttonVariants } from '@/components/ui/button'
-import { classesApi } from '@/lib/api'
+import { Button, buttonVariants } from '@/components/ui/button'
+import { ClassWizardResponse } from '@/types/class'
 import { cn } from '@/lib/utils'
 
 export default function NovaTurmaPage() {
   const router = useRouter()
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState<string | null>(null)
+  const [result, setResult] = useState<ClassWizardResponse | null>(null)
 
-  const handleSubmit = async (values: ClassFormValues) => {
-    try {
-      setIsSubmitting(true)
-      setError(null)
+  if (result) {
+    return (
+      <PageContainer>
+        <div className="mb-8">
+          <h1 className="text-2xl font-bold text-text-primary">Turma criada</h1>
+          <p className="text-sm text-text-secondary">
+            A turma e todos os vínculos foram criados com sucesso.
+          </p>
+        </div>
 
-      await classesApi.create({
-        year_id: Number(values.year_id),
-        education_level: values.education_level,
-        series: Number(values.series),
-        letter: values.letter,
-        shift: values.shift,
-      })
+        <Section
+          title="Resumo da criação"
+          description="Detalhes do que foi gerado nesta operação"
+        >
+          <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="space-y-4 p-6 text-sm">
+              <div className="grid gap-3 sm:grid-cols-3">
+                <div className="rounded-component border border-border p-3">
+                  <p className="text-text-secondary">Atribuições</p>
+                  <p className="text-lg font-semibold text-text-primary">
+                    {result.summary.assignments_created}
+                  </p>
+                </div>
+                <div className="rounded-component border border-border p-3">
+                  <p className="text-text-secondary">Alunos criados</p>
+                  <p className="text-lg font-semibold text-text-primary">
+                    {result.summary.students_created}
+                  </p>
+                </div>
+                <div className="rounded-component border border-border p-3">
+                  <p className="text-text-secondary">Professores</p>
+                  <p className="text-lg font-semibold text-text-primary">
+                    {result.summary.teachers_assigned}
+                  </p>
+                </div>
+              </div>
 
-      router.push('/secretaria/turmas')
-    } catch (err: unknown) {
-      console.error('Erro ao criar turma:', err)
-      const message = err instanceof Error ? err.message : undefined
-      setError(message || 'Não foi possível criar a turma. Tente novamente.')
-    } finally {
-      setIsSubmitting(false)
-    }
+              {result.students.length > 0 && (
+                <div>
+                  <p className="mb-2 font-medium text-text-primary">
+                    Credenciais dos alunos
+                  </p>
+                  <ul className="max-h-64 divide-y divide-border overflow-y-auto rounded-component border border-border">
+                    {result.students.map((entry) => (
+                      <li key={entry.student.id} className="px-3 py-2">
+                        <p className="font-medium text-text-primary">
+                          {entry.student.full_name}
+                        </p>
+                        <p className="text-text-secondary">
+                          {entry.student.users.email} · Senha:{' '}
+                          {entry.provisional_password}
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3 border-t border-border pt-4">
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setResult(null)
+                  }}
+                >
+                  Criar outra turma
+                </Button>
+                <Button onClick={() => router.push('/secretaria/turmas')}>
+                  Ir para turmas
+                </Button>
+              </div>
+            </div>
+          </div>
+        </Section>
+      </PageContainer>
+    )
   }
 
   return (
@@ -54,22 +108,20 @@ export default function NovaTurmaPage() {
           <h1 className="text-2xl font-bold text-text-primary">Nova Turma</h1>
         </div>
         <p className="text-sm text-text-secondary">
-          Cadastre uma nova turma para a instituição
+          Crie a turma, atribua professores e matricule alunos em um fluxo
+          guiado
         </p>
       </div>
 
       <Section
-        title="Informações da Turma"
-        description="Defina a série, letra, turno e ano letivo da turma"
+        title="Assistente de criação"
+        description="Preencha os dados da turma e configure professores e alunos"
       >
         <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
           <div className="p-6">
-            <ClassForm
-              isSubmitting={isSubmitting}
-              error={error}
-              onSubmit={handleSubmit}
+            <ClassCreationWizard
               onCancel={() => router.push('/secretaria/turmas')}
-              submitLabel="Criar Turma"
+              onSuccess={setResult}
             />
           </div>
         </div>

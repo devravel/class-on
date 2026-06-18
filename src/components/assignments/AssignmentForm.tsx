@@ -38,6 +38,8 @@ export type AssignmentFormValues = z.infer<typeof assignmentFormSchema>
 
 interface AssignmentFormProps {
   defaultValues?: AssignmentFormValues
+  lockedTeacherId?: string
+  lockedTeacherName?: string
   isSubmitting: boolean
   error: string | null
   onSubmit: (values: AssignmentFormValues) => void
@@ -47,6 +49,8 @@ interface AssignmentFormProps {
 
 export function AssignmentForm({
   defaultValues,
+  lockedTeacherId,
+  lockedTeacherName,
   isSubmitting,
   error,
   onSubmit,
@@ -61,11 +65,17 @@ export function AssignmentForm({
   const form = useForm<AssignmentFormValues>({
     resolver: zodResolver(assignmentFormSchema),
     defaultValues: defaultValues ?? {
-      teacher_id: '',
+      teacher_id: lockedTeacherId ?? '',
       class_id: '',
       subject_id: '',
     },
   })
+
+  useEffect(() => {
+    if (lockedTeacherId) {
+      form.setValue('teacher_id', lockedTeacherId)
+    }
+  }, [lockedTeacherId, form])
 
   useEffect(() => {
     const loadData = async () => {
@@ -110,30 +120,41 @@ export function AssignmentForm({
           </div>
         )}
 
-        <FormField
-          control={form.control}
-          name="teacher_id"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Professor *</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value}>
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Selecione um professor" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {teachers.map((teacher) => (
-                    <SelectItem key={teacher.id} value={teacher.id}>
-                      {teacher.full_name} ({teacher.registration_code})
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {lockedTeacherId ? (
+          <div className="rounded-component border border-border bg-neutral-50 p-4">
+            <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">
+              Professor
+            </p>
+            <p className="mt-1 text-sm font-semibold text-text-primary">
+              {lockedTeacherName ?? 'Professor selecionado'}
+            </p>
+          </div>
+        ) : (
+          <FormField
+            control={form.control}
+            name="teacher_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Professor *</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Selecione um professor" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {teachers.map((teacher) => (
+                      <SelectItem key={teacher.id} value={teacher.id}>
+                        {teacher.full_name} ({teacher.registration_code})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

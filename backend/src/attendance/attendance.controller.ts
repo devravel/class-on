@@ -4,6 +4,7 @@ import {
   Get,
   Param,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
@@ -39,15 +40,21 @@ export class AttendanceController {
     return this.attendanceService.findByLesson(BigInt(lessonId), teacherId)
   }
 
+  @Get('classes/:classId/students-summary')
+  @Roles('SECRETARIA', 'PROFESSOR')
+  getClassStudentsAttendance(@Param('classId') classId: string) {
+    return this.attendanceService.getClassStudentsAttendance(BigInt(classId))
+  }
+
   @Get('students/:studentId/summary')
   @Roles('PROFESSOR', 'SECRETARIA', 'ALUNO')
   getStudentSummary(
     @Param('studentId') studentId: string,
+    @Query('class_id') classId: string | undefined,
     @CurrentUser() user: any,
   ) {
     const id = BigInt(studentId)
 
-    // Se for aluno, só pode ver própria frequência
     if (user.role === 'ALUNO') {
       if (!user.student || user.student.id !== id) {
         throw new Error('Você só pode visualizar sua própria frequência')
@@ -55,6 +62,7 @@ export class AttendanceController {
     }
 
     const teacherId = user.role === 'PROFESSOR' ? user.teacher.id : undefined
-    return this.attendanceService.getStudentSummary(id, teacherId)
+    const classIdBigInt = classId ? BigInt(classId) : undefined
+    return this.attendanceService.getStudentSummary(id, teacherId, classIdBigInt)
   }
 }

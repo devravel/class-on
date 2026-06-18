@@ -82,3 +82,83 @@ export interface UpdateClassRequest {
   letter?: string
   shift?: string
 }
+
+export interface WizardManualStudent {
+  full_name: string
+  email: string
+  rm: string
+}
+
+export interface CreateClassWizardRequest extends CreateClassRequest {
+  teacher_ids?: number[]
+  manual_students?: WizardManualStudent[]
+  bulk_student_count?: number
+}
+
+export interface ClassWizardStudentResult {
+  student: {
+    id: string
+    full_name: string
+    rm: string
+    users: {
+      email: string
+    }
+  }
+  provisional_password: string
+}
+
+export interface ClassDetailsEnrollmentStudent {
+  id: string
+  user_id: string
+  full_name: string
+  rm: string
+  status: string
+  users: {
+    id: string
+    email: string
+    is_active: boolean
+  }
+}
+
+export interface ClassDetailsEnrollment {
+  id: string
+  student_id: string
+  class_id: string
+  final_result: string
+  students: ClassDetailsEnrollmentStudent
+}
+
+export interface ClassDetailsAssignment {
+  id: string
+  teacher_id: string
+  class_id: string
+  subject_id: string
+  teachers: {
+    id: string
+    full_name: string
+  }
+  subjects: {
+    id: string
+    name: string
+  }
+}
+
+export interface ClassDetails extends Class {
+  enrollments: ClassDetailsEnrollment[]
+  assignments: ClassDetailsAssignment[]
+}
+
+export interface ClassWizardResponse {
+  class: Class
+  assignments: Array<{
+    id: string
+    teachers: { id: string; full_name: string }
+    subjects: { id: string; name: string }
+  }>
+  students: ClassWizardStudentResult[]
+  summary: {
+    assignments_created: number
+    students_created: number
+    teachers_assigned: number
+  }
+}

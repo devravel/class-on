@@ -1,32 +1,47 @@
 'use client'
 
-import { GraduationCap, Pencil, Plus, PowerOff } from 'lucide-react'
+import { BookOpen, GraduationCap, Pencil, Plus, PowerOff } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { ToggleTeacherDialog } from '@/components/teachers/ToggleTeacherDialog'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { Button, buttonVariants } from '@/components/ui/button'
-import { teachersApi } from '@/lib/api'
+import { assignmentsApi, teachersApi } from '@/lib/api'
+import {
+  getPrimarySubjectName,
+  groupAssignmentsByTeacher,
+} from '@/lib/assignment-utils'
 import { cn } from '@/lib/utils'
+import { Assignment } from '@/types/assignment'
 import { Teacher } from '@/types/teacher'
 
 export default function ProfessoresPage() {
   const [teachers, setTeachers] = useState<Teacher[]>([])
+  const [assignments, setAssignments] = useState<Assignment[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [search, setSearch] = useState('')
   const [selectedTeacher, setSelectedTeacher] = useState<Teacher | null>(null)
   const [isToggleDialogOpen, setIsToggleDialogOpen] = useState(false)
 
+  const assignmentsByTeacher = useMemo(
+    () => groupAssignmentsByTeacher(assignments),
+    [assignments],
+  )
+
   const loadTeachers = async () => {
     try {
       setIsLoading(true)
       setError(null)
-      const data = await teachersApi.list()
-      setTeachers(data)
+      const [teachersData, assignmentsData] = await Promise.all([
+        teachersApi.list(),
+        assignmentsApi.list(),
+      ])
+      setTeachers(teachersData)
+      setAssignments(Array.isArray(assignmentsData) ? assignmentsData : [])
     } catch (err) {
       console.error('Erro ao carregar professores:', err)
       setError('Não foi possível carregar os professores.')
@@ -52,10 +67,14 @@ export default function ProfessoresPage() {
   const filteredTeachers = teachers.filter((t) => {
     if (!search.trim()) return true
     const q = search.toLowerCase()
+    const teacherAssignments = assignmentsByTeacher.get(t.id) ?? []
+    const primarySubject = getPrimarySubjectName(teacherAssignments).toLowerCase()
+
     return (
       t.full_name.toLowerCase().includes(q) ||
       t.users.email.toLowerCase().includes(q) ||
-      t.registration_code.toLowerCase().includes(q)
+      t.registration_code.toLowerCase().includes(q) ||
+      primarySubject.includes(q)
     )
   })
 
@@ -65,7 +84,7 @@ export default function ProfessoresPage() {
         <div>
           <h1 className="text-2xl font-bold text-text-primary">Professores</h1>
           <p className="mt-1 text-sm text-text-secondary">
-            Gerencie os professores da instituição
+            Gerencie professores, turmas e atribuições
           </p>
         </div>
 
@@ -95,7 +114,7 @@ export default function ProfessoresPage() {
           <div className="mb-4">
             <input
               type="text"
-              placeholder="Buscar por nome, e-mail ou código..."
+              placeholder="Buscar por nome, e-mail, código ou disciplina..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               className="w-full max-w-sm rounded-component border border-border bg-background px-3 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 transition-all"
@@ -109,56 +128,71 @@ export default function ProfessoresPage() {
                 ? 'Nenhum professor encontrado para esta busca.'
                 : 'Nenhum professor cadastrado.'
             }
-            renderItem={(item) => (
-              <div className="flex flex-col gap-4 px-4 py-4 transition-colors hover:bg-neutral-100 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-4">
-                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                    <GraduationCap size={18} className="text-primary" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <p className="text-base font-semibold text-text-primary">
-                        {item.full_name}
-                      </p>
-                      <span
-                        className={cn(
-                          'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
-                          item.users.is_active
-                            ? 'bg-emerald-100 text-emerald-700'
-                            : 'bg-neutral-100 text-neutral-500',
-                        )}
-                      >
-                        {item.users.is_active ? 'Ativo' : 'Inativo'}
-                      </span>
-                    </div>
-                    <p className="truncate text-sm text-text-secondary">
-                      {item.users.email}
-                      {' · '}
-                      {item.registration_code}
-                    </p>
-                  </div>
-                </div>
+            renderItem={(item) => {
+              const teacherAssignments = assignmentsByTeacher.get(item.id) ?? []
+              const primarySubject = getPrimarySubjectName(teacherAssignments)
 
-                <div className="flex shrink-0 items-center gap-2 sm:pl-4">
-                  <Link
-                    href={`/secretaria/professores/${item.id}/editar`}
-                    className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
-                  >
-                    <Pencil size={14} />
-                    Editar
-                  </Link>
-                  <Button
-                    type="button"
-                    variant={item.users.is_active ? 'destructive' : 'default'}
-                    size="sm"
-                    onClick={() => handleToggleClick(item)}
-                  >
-                    <PowerOff size={14} />
-                    {item.users.is_active ? 'Inativar' : 'Ativar'}
-                  </Button>
+              return (
+                <div className="flex flex-col gap-4 px-4 py-4 transition-colors hover:bg-neutral-100 sm:flex-row sm:items-center sm:justify-between">
+                  <div className="flex min-w-0 items-center gap-4">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                      <GraduationCap size={18} className="text-primary" />
+                    </div>
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2">
+                        <p className="text-base font-semibold text-text-primary">
+                          {item.full_name}
+                        </p>
+                        <span
+                          className={cn(
+                            'inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium',
+                            item.users.is_active
+                              ? 'bg-emerald-100 text-emerald-700'
+                              : 'bg-neutral-100 text-neutral-500',
+                          )}
+                        >
+                          {item.users.is_active ? 'Ativo' : 'Inativo'}
+                        </span>
+                      </div>
+                      <p className="text-sm font-medium text-primary">
+                        {primarySubject}
+                      </p>
+                      <p className="truncate text-xs text-text-secondary">
+                        {item.users.email}
+                        {' · '}
+                        {item.registration_code}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex shrink-0 items-center gap-2 sm:pl-4">
+                    <Link
+                      href={`/secretaria/professores/${item.id}/turmas`}
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                    >
+                      <BookOpen size={14} />
+                      Ver Turmas
+                    </Link>
+                    <Link
+                      href={`/secretaria/professores/${item.id}/editar`}
+                      className={cn(buttonVariants({ variant: 'outline', size: 'sm' }))}
+                    >
+                      <Pencil size={14} />
+                      Editar
+                    </Link>
+                    <Button
+                      type="button"
+                      variant={item.users.is_active ? 'destructive' : 'default'}
+                      size="sm"
+                      onClick={() => handleToggleClick(item)}
+                    >
+                      <PowerOff size={14} />
+                      {item.users.is_active ? 'Inativar' : 'Ativar'}
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            )}
+              )
+            }}
           />
         </Section>
       )}

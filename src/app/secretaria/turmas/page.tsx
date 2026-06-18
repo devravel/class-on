@@ -1,7 +1,8 @@
 'use client'
 
-import { BookOpen, Pencil, Plus, Trash2 } from 'lucide-react'
+import { BookOpen, ChevronRight, Pencil, Plus, Trash2 } from 'lucide-react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { DeleteClassDialog } from '@/components/classes/DeleteClassDialog'
@@ -14,6 +15,7 @@ import { cn } from '@/lib/utils'
 import { Class, EDUCATION_LEVEL_LABELS, formatClassShortLabel, SHIFT_LABELS, Shift } from '@/types/class'
 
 export default function TurmasPage() {
+  const router = useRouter()
   const [classes, setClasses] = useState<Class[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -118,7 +120,11 @@ export default function TurmasPage() {
             }
             renderItem={(item) => (
               <div className="flex flex-col gap-4 px-4 py-4 transition-colors hover:bg-neutral-100 sm:flex-row sm:items-center sm:justify-between">
-                <div className="flex min-w-0 items-center gap-4">
+                <button
+                  type="button"
+                  onClick={() => router.push(`/secretaria/turmas/${item.id}`)}
+                  className="flex min-w-0 flex-1 items-center gap-4 text-left"
+                >
                   <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-primary/10">
                     <BookOpen size={18} className="text-primary" />
                   </div>
@@ -134,14 +140,27 @@ export default function TurmasPage() {
                       {item.academic_years?.year ?? '—'}
                     </p>
                   </div>
-                </div>
+                  <ChevronRight
+                    size={18}
+                    className="ml-auto hidden shrink-0 text-text-secondary sm:block"
+                  />
+                </button>
 
                 <div className="flex shrink-0 items-center gap-2 sm:pl-4">
+                  <Link
+                    href={`/secretaria/turmas/${item.id}`}
+                    className={cn(
+                      buttonVariants({ variant: 'outline', size: 'sm' }),
+                    )}
+                  >
+                    Ver Detalhes
+                  </Link>
                   <Link
                     href={`/secretaria/turmas/${item.id}/editar`}
                     className={cn(
                       buttonVariants({ variant: 'outline', size: 'sm' }),
                     )}
+                    onClick={(event) => event.stopPropagation()}
                   >
                     <Pencil size={14} />
                     Editar

@@ -1,5 +1,6 @@
 import { apiClient } from '@/lib/api-client'
 import {
+  ClassStudentAttendanceSummary,
   MarkAttendanceRequest,
   MarkAttendanceResponse,
   StudentAttendanceSummary,
@@ -16,9 +17,21 @@ export const attendanceApi = {
     )
   },
 
-  async getStudentSummary(studentId: string): Promise<StudentAttendanceSummary> {
+  async getStudentSummary(
+    studentId: string,
+    classId?: string,
+  ): Promise<StudentAttendanceSummary> {
+    const query = classId ? `?class_id=${classId}` : ''
     return apiClient.get<StudentAttendanceSummary>(
-      `/attendance/students/${studentId}/summary`,
+      `/attendance/students/${studentId}/summary${query}`,
+    )
+  },
+
+  async getClassStudentsSummary(
+    classId: string,
+  ): Promise<ClassStudentAttendanceSummary[]> {
+    return apiClient.get<ClassStudentAttendanceSummary[]>(
+      `/attendance/classes/${classId}/students-summary`,
     )
   },
 }
