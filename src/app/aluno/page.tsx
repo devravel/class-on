@@ -10,7 +10,7 @@ import {
   Megaphone,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { InlineError } from '@/components/dashboard/InlineError'
 import { ListCard } from '@/components/dashboard/ListCard'
@@ -114,66 +114,92 @@ export default function AlunoPage() {
   const [tasksError, setTasksError] = useState<string | null>(null)
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null)
   const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
+
+  const loadStudentData = useCallback(async (options?: { silent?: boolean }) => {
+    if (options?.silent) {
+      setIsRefreshing(true)
+    } else {
+      setIsLoading(true)
+    }
+    setGradesError(null)
+    setAttendanceError(null)
+    setTasksError(null)
+
+    try {
+      const me = await authApi.getMe()
+      if (!me.student) {
+        setGradesError('Perfil de aluno não encontrado.')
+        return
+      }
+
+      const gradesPromise = gradesApi.getMyGrades().then((data) => {
+        const grades = Array.isArray(data) ? data : []
+        setRecentGrades(buildRecentGrades(grades))
+      }).catch(() => {
+        setGradesError('Não foi possível carregar suas notas.')
+      })
+
+      const attendancePromise = attendanceApi
+        .getStudentSummary(me.student.id)
+        .then(setAttendance)
+        .catch(() => {
+          setAttendanceError('Não foi possível carregar sua frequência.')
+        })
+
+      const tasksPromise = tasksApi.listMyTasks().then((data) => {
+        const tasks = Array.isArray(data) ? data : []
+        setPendingTasks(getPendingTasks(tasks).slice(0, 5))
+      }).catch(() => {
+        setTasksError('Não foi possível carregar suas tarefas.')
+      })
+
+      await Promise.all([gradesPromise, attendancePromise, tasksPromise])
+    } catch {
+      setGradesError('Não foi possível carregar seus dados.')
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }, [])
+
+  const loadAnnouncements = useCallback(async () => {
+    try {
+      setIsAnnouncementsLoading(true)
+      setAnnouncementsError(null)
+      const data = await announcementsApi.findAll()
+      setAnnouncements(Array.isArray(data) ? data.slice(0, 3) : [])
+    } catch {
+      setAnnouncementsError('Não foi possível carregar os comunicados.')
+    } finally {
+      setIsAnnouncementsLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
-    const load = async () => {
-      setIsLoading(true)
-      setGradesError(null)
-      setAttendanceError(null)
-      setTasksError(null)
+    void loadStudentData()
+    void loadAnnouncements()
+  }, [loadStudentData, loadAnnouncements])
 
-      try {
-        const me = await authApi.getMe()
-        if (!me.student) {
-          setGradesError('Perfil de aluno não encontrado.')
-          return
-        }
-
-        const gradesPromise = gradesApi.getMyGrades().then((data) => {
-          const grades = Array.isArray(data) ? data : []
-          setRecentGrades(buildRecentGrades(grades))
-        }).catch(() => {
-          setGradesError('Não foi possível carregar suas notas.')
-        })
-
-        const attendancePromise = attendanceApi
-          .getStudentSummary(me.student.id)
-          .then(setAttendance)
-          .catch(() => {
-            setAttendanceError('Não foi possível carregar sua frequência.')
-          })
-
-        const tasksPromise = tasksApi.listMyTasks().then((data) => {
-          const tasks = Array.isArray(data) ? data : []
-          setPendingTasks(getPendingTasks(tasks).slice(0, 5))
-        }).catch(() => {
-          setTasksError('Não foi possível carregar suas tarefas.')
-        })
-
-        await Promise.all([gradesPromise, attendancePromise, tasksPromise])
-      } catch {
-        setGradesError('Não foi possível carregar seus dados.')
-      } finally {
-        setIsLoading(false)
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        void loadStudentData({ silent: true })
       }
     }
 
-    const loadAnnouncements = async () => {
-      try {
-        setIsAnnouncementsLoading(true)
-        setAnnouncementsError(null)
-        const data = await announcementsApi.findAll()
-        setAnnouncements(Array.isArray(data) ? data.slice(0, 3) : [])
-      } catch {
-        setAnnouncementsError('Não foi possível carregar os comunicados.')
-      } finally {
-        setIsAnnouncementsLoading(false)
-      }
+    function handleWindowFocus() {
+      void loadStudentData({ silent: true })
     }
 
-    load()
-    loadAnnouncements()
-  }, [])
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleWindowFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleWindowFocus)
+    }
+  }, [loadStudentData])
 
   const lateCount = useMemo(
     () => pendingTasks.filter((task) => isTaskOverdue(task)).length,
@@ -195,11 +221,19 @@ export default function AlunoPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Meu Painel</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          Acompanhe seu desempenho acadêmico
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">Meu Painel</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Acompanhe seu desempenho acadêmico
+            {isRefreshing && (
+              <span className="ml-2 inline-flex items-center gap-1 text-primary">
+                <Loader2 size={12} className="animate-spin" />
+                Atualizando...
+              </span>
+            )}
+          </p>
+        </div>
       </div>
 
       <div className="mb-6 grid grid-cols-1 gap-6 lg:grid-cols-2">

@@ -2,8 +2,6 @@ import { cn } from '@/lib/utils'
 
 interface ListItem {
   id: string | number
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  [key: string]: any
 }
 
 interface ListCardProps<T extends ListItem> {

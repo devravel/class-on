@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowLeft, Loader2, Pencil } from 'lucide-react'
+import { ArrowLeft, Archive, Loader2, Pencil } from 'lucide-react'
 import Link from 'next/link'
 import { useParams } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
@@ -98,14 +98,26 @@ export default function TurmaDetailPage() {
           </div>
         </div>
 
-        <Link
-          href={`/secretaria/turmas/${classId}/editar`}
-          className={cn(buttonVariants({ variant: 'outline' }))}
-        >
-          <Pencil size={16} />
-          Editar Turma
-        </Link>
+        {classDetails.is_active !== false && (
+          <Link
+            href={`/secretaria/turmas/${classId}/editar`}
+            className={cn(buttonVariants({ variant: 'outline' }))}
+          >
+            <Pencil size={16} />
+            Editar Turma
+          </Link>
+        )}
       </div>
+
+      {classDetails.is_active === false && (
+        <div className="mb-6 flex items-start gap-3 rounded-lg border border-border bg-muted/40 p-4 text-sm text-text-secondary">
+          <Archive size={18} className="mt-0.5 shrink-0" />
+          <p>
+            Esta turma está <strong className="text-text-primary">desativada</strong>.
+            Os dados históricos permanecem disponíveis apenas para consulta.
+          </p>
+        </div>
+      )}
 
       <div className="space-y-8">
         <ClassInfoCard classRecord={classDetails} />

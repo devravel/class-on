@@ -15,8 +15,10 @@ export const classesApi = {
     return apiClient.get<Class[]>('/classes')
   },
 
-  async list(): Promise<Class[]> {
-    return apiClient.get<Class[]>('/classes')
+  async list(options?: { includeInactive?: boolean }): Promise<Class[]> {
+    const query =
+      options?.includeInactive === true ? '?include_inactive=true' : ''
+    return apiClient.get<Class[]>(`/classes${query}`)
   },
 
   async getById(id: string): Promise<Class> {

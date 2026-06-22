@@ -13,6 +13,7 @@ export interface Class {
   series: number
   letter: string
   shift: string
+  is_active: boolean
   academic_years: ClassAcademicYear
 }
 

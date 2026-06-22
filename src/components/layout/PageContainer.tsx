@@ -1,5 +1,8 @@
 import { cn } from '@/lib/utils'
 
+/** Top offset shared with sidebar logo — keeps logo aligned with page titles. */
+export const pageHeaderTopOffset = 'pt-6 lg:pt-8'
+
 interface PageContainerProps {
   children: React.ReactNode
   className?: string

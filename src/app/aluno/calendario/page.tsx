@@ -28,22 +28,6 @@ export default function AlunoCalendarioPage() {
         </div>
       </div>
 
-      {/* Info Card */}
-      <Card className="mb-6 bg-primary/5 border-primary/20">
-        <CardContent className="p-4">
-          <div className="text-sm">
-            <p className="text-text-primary font-medium mb-1">
-              📅 Você visualiza:
-            </p>
-            <ul className="text-text-secondary space-y-1">
-              <li>• Eventos para toda a escola</li>
-              <li>• Eventos para alunos</li>
-              <li>• Eventos específicos da sua turma</li>
-            </ul>
-          </div>
-        </CardContent>
-      </Card>
-
       {/* Calendar */}
       <Card>
         <CardContent className="p-6">

@@ -12,7 +12,7 @@ import {
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { InlineError } from '@/components/dashboard/InlineError'
 import { KpiCard } from '@/components/dashboard/KpiCard'
@@ -40,9 +40,9 @@ import { RiskAnalyticsResponse } from '@/types/analytics'
 import { Class, SHIFT_LABELS, Shift } from '@/types/class'
 
 const quickActions = [
-  { label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
-  { label: 'Cadastrar Professor', icon: UserCheck, href: '/secretaria/professores/novo', variant: 'outline' as const },
-  { label: 'Nova Turma', icon: Plus, href: '/secretaria/turmas/nova', variant: 'outline' as const },
+  { id: 'cadastrar-aluno', label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
+  { id: 'cadastrar-professor', label: 'Cadastrar Professor', icon: UserCheck, href: '/secretaria/professores/novo', variant: 'outline' as const },
+  { id: 'nova-turma', label: 'Nova Turma', icon: Plus, href: '/secretaria/turmas/nova', variant: 'outline' as const },
 ]
 
 const shiftBadge: Record<string, string> = {
@@ -71,6 +71,21 @@ export default function SecretariaPage() {
   const [recentClasses, setRecentClasses] = useState<ClassWithStudents[]>([])
   const [isKpisLoading, setIsKpisLoading] = useState(true)
   const [kpisError, setKpisError] = useState<string | null>(null)
+
+  const loadRiskAnalytics = useCallback(async () => {
+    try {
+      setIsRiskLoading(true)
+      setRiskError(null)
+      const data = await analyticsApi.getRiskAnalytics()
+      setRiskAnalytics(data)
+    } catch (error) {
+      console.error('Erro ao carregar analytics de risco:', error)
+      setRiskAnalytics(null)
+      setRiskError('Não foi possível carregar o índice de risco.')
+    } finally {
+      setIsRiskLoading(false)
+    }
+  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -127,7 +142,7 @@ export default function SecretariaPage() {
       }
     }
 
-    const loadRiskAnalytics = async () => {
+    const loadRiskAnalyticsOnMount = async () => {
       try {
         setIsRiskLoading(true)
         setRiskError(null)
@@ -197,13 +212,33 @@ export default function SecretariaPage() {
 
     loadActiveAcademicYear()
     loadAnnouncements()
-    loadRiskAnalytics()
+    loadRiskAnalyticsOnMount()
     loadKpis()
 
     return () => {
       isMounted = false
     }
   }, [])
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        void loadRiskAnalytics()
+      }
+    }
+
+    function handleWindowFocus() {
+      void loadRiskAnalytics()
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleWindowFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleWindowFocus)
+    }
+  }, [loadRiskAnalytics])
 
   const academicYearValue = isAcademicYearLoading
     ? 'Carregando...'

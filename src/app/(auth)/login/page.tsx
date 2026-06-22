@@ -38,6 +38,14 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+const DEMO_CREDENTIALS = [
+  { role: "Secretaria", email: "admin@classon.com" },
+  { role: "Professor", email: "prof1@classon.com" },
+  { role: "Aluno", email: "aluno1@classon.com" },
+] as const;
+
+const isDevEnvironment = process.env.NODE_ENV === "development";
+
 export default function LoginPage() {
   const router = useRouter();
   const { signIn } = useAuth();
@@ -105,7 +113,26 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen bg-neutral-100 font-sans">
-      <div className="flex min-h-screen items-center justify-center p-6">
+      <div className="flex min-h-screen items-center justify-center gap-6 p-6">
+        {isDevEnvironment && (
+          <Card className="hidden w-full max-w-[280px] rounded-[12px] border border-neutral-200 bg-white p-5 shadow-sm lg:block">
+            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Contas de demonstração
+            </p>
+            <ul className="space-y-2.5">
+              {DEMO_CREDENTIALS.map((account) => (
+                <li key={account.email} className="rounded-lg bg-neutral-50 px-3 py-2">
+                  <p className="text-xs font-medium text-neutral-500">{account.role}</p>
+                  <p className="text-sm font-semibold text-neutral-900">{account.email}</p>
+                </li>
+              ))}
+            </ul>
+            <p className="mt-3 text-xs text-neutral-500">
+              Senha padrão: <span className="font-mono font-semibold text-neutral-700">123456</span>
+            </p>
+          </Card>
+        )}
+
         <Card className="w-full max-w-[400px] rounded-[12px] border-0 bg-neutral-100 p-8 shadow-none ring-0">
           {step === 2 && (
             <button
@@ -122,8 +149,8 @@ export default function LoginPage() {
             <Image
               src="/assets/logo/no_name_logo.svg"
               alt="Logo ClassOn"
-              width={35}
-              height={32}
+              width={33}
+              height={30}
               className="mx-auto mb-10"
             />
             <h1 className="text-2xl font-bold text-neutral-900">
@@ -238,6 +265,21 @@ export default function LoginPage() {
             </Form>
           )}
         </Card>
+
+        {isDevEnvironment && (
+          <Card className="w-full max-w-[400px] rounded-[12px] border border-neutral-200 bg-white p-4 shadow-sm lg:hidden">
+            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+              Demo — senha: 123456
+            </p>
+            <div className="flex flex-wrap gap-2 text-xs text-neutral-700">
+              {DEMO_CREDENTIALS.map((account) => (
+                <span key={account.email} className="rounded-full bg-neutral-100 px-2.5 py-1">
+                  {account.role}: {account.email}
+                </span>
+              ))}
+            </div>
+          </Card>
+        )}
       </div>
     </div>
   );

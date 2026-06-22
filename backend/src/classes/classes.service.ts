@@ -52,9 +52,10 @@ export class ClassesService {
     }
   }
 
-  async findAll() {
+  async findAll(includeInactive = false) {
     try {
       return await this.prisma.classes.findMany({
+        where: includeInactive ? undefined : { is_active: true },
         orderBy: [
           { year_id: 'desc' },
           { education_level: 'asc' },
@@ -149,6 +150,12 @@ export class ClassesService {
     try {
       const current = await this.findOne(id)
 
+      if (!current.is_active) {
+        throw new BadRequestException(
+          'Não é possível editar uma turma desativada',
+        )
+      }
+
       const yearId =
         dto.year_id !== undefined ? BigInt(dto.year_id) : current.year_id
       const educationLevel =
@@ -204,10 +211,18 @@ export class ClassesService {
 
   async remove(id: bigint) {
     try {
-      await this.findOne(id)
+      const classRecord = await this.findOne(id)
 
-      return await this.prisma.classes.delete({
+      if (!classRecord.is_active) {
+        throw new BadRequestException('Esta turma já está desativada')
+      }
+
+      return await this.prisma.classes.update({
         where: { id },
+        data: { is_active: false },
+        include: {
+          academic_years: true,
+        },
       })
     } catch (error) {
       handlePrismaError(error)
@@ -244,6 +259,7 @@ export class ClassesService {
           series,
           letter,
           shift,
+          is_active: true,
           ...(excludeId !== undefined && { id: { not: excludeId } }),
         },
       })

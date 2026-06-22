@@ -4,7 +4,6 @@ import { type UserRole } from '@/contexts/auth-context'
 import { SidebarProvider } from '@/contexts/sidebar-context'
 import { alunoNav, professorNav, secretariaNav } from '@/lib/nav-config'
 import { CommandPalette } from './CommandPalette'
-import { Header } from './Header'
 import { Sidebar } from './Sidebar'
 
 const NAV_BY_ROLE = {
@@ -28,7 +27,6 @@ export function LayoutBase({ children, role }: LayoutBaseProps) {
         <Sidebar navItems={navItems} />
 
         <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <Header />
           <main className="flex-1 overflow-y-auto">
             {children}
           </main>

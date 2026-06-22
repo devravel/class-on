@@ -25,10 +25,10 @@ import { Assignment } from '@/types/assignment'
 import { Task } from '@/types/task'
 
 const quickActions = [
-  { label: 'Lançar Nota', icon: ClipboardList, href: '/professor/turmas', variant: 'default' as const },
-  { label: 'Chamada', icon: CheckSquare, href: '/professor/turmas', variant: 'outline' as const },
-  { label: 'Nova Tarefa', icon: Plus, href: '/professor/turmas', variant: 'outline' as const },
-  { label: 'Ver Turmas', icon: BookOpen, href: '/professor/turmas', variant: 'outline' as const },
+  { id: 'lancar-nota', label: 'Lançar Nota', icon: ClipboardList, href: '/professor/turmas', variant: 'default' as const },
+  { id: 'chamada', label: 'Chamada', icon: CheckSquare, href: '/professor/turmas', variant: 'outline' as const },
+  { id: 'nova-tarefa', label: 'Nova Tarefa', icon: Plus, href: '/professor/turmas', variant: 'outline' as const },
+  { id: 'ver-turmas', label: 'Ver Turmas', icon: BookOpen, href: '/professor/turmas', variant: 'outline' as const },
 ]
 
 export default function ProfessorPage() {

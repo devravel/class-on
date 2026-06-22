@@ -11,6 +11,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { GradesService } from './grades.service'
 import { CreateGradeDto } from './dto/create-grade.dto'
 import { AddRecoveryDto } from './dto/add-recovery.dto'
@@ -22,7 +23,7 @@ export class GradesController {
 
   @Post()
   @Roles('PROFESSOR')
-  create(@Body() dto: CreateGradeDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateGradeDto, @CurrentUser() user: AuthenticatedUser) {
     return this.gradesService.create(dto, BigInt(user.id))
   }
 
@@ -31,7 +32,7 @@ export class GradesController {
   findByAssignmentAndBimester(
     @Param('assignmentId') assignmentId: string,
     @Param('bimesterId') bimesterId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const userId = user.role === 'PROFESSOR' ? BigInt(user.id) : undefined
     return this.gradesService.findByAssignmentAndBimester(
@@ -46,14 +47,14 @@ export class GradesController {
   addRecovery(
     @Param('id') id: string,
     @Body() dto: AddRecoveryDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     return this.gradesService.addRecovery(BigInt(id), dto, BigInt(user.id))
   }
 
   @Get('my-grades')
   @Roles('ALUNO')
-  findMyGrades(@CurrentUser() user: any) {
+  findMyGrades(@CurrentUser() user: AuthenticatedUser) {
     return this.gradesService.findMyGrades(BigInt(user.id))
   }
 

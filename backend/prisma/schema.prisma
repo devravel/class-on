@@ -104,13 +104,14 @@ model classes {
   series                Int
   letter                String                  @db.VarChar(255)
   shift                 String                  @db.VarChar(255)
+  is_active             Boolean                 @default(true)
   announcements_targets announcements_targets[]
   assignments           assignments[]
   academic_years        academic_years          @relation(fields: [year_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   enrollments           enrollments[]
   event_targets         event_targets[]
 
-  @@unique([year_id, education_level, series, letter, shift], map: "classes_unique_identity")
+  // Uniqueness for active classes enforced via partial index (see migration)
 }
 
 model conversations {

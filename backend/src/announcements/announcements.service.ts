@@ -95,6 +95,52 @@ export class AnnouncementsService {
             )
           }
         }
+
+        if (dto.target_type === 'STUDENT' && dto.student_ids) {
+          const teacher = await this.prisma.teachers.findUnique({
+            where: { user_id: userId },
+            select: { id: true },
+          })
+
+          if (!teacher) {
+            throw new BadRequestException('Perfil de professor não encontrado.')
+          }
+
+          const teacherClassIds = (
+            await this.prisma.assignments.findMany({
+              where: { teacher_id: teacher.id },
+              select: { class_id: true },
+            })
+          ).map((a) => a.class_id)
+
+          if (teacherClassIds.length === 0) {
+            throw new ForbiddenException(
+              'Professor não possui turmas atribuídas para enviar comunicados a alunos.'
+            )
+          }
+
+          const studentIds = dto.student_ids.map((id) => BigInt(id))
+          const authorizedEnrollments = await this.prisma.enrollments.findMany({
+            where: {
+              class_id: { in: teacherClassIds },
+              student_id: { in: studentIds },
+            },
+            select: { student_id: true },
+          })
+
+          const authorizedStudentIds = new Set(
+            authorizedEnrollments.map((e) => e.student_id.toString()),
+          )
+          const unauthorizedStudents = dto.student_ids.filter(
+            (studentId) => !authorizedStudentIds.has(studentId),
+          )
+
+          if (unauthorizedStudents.length > 0) {
+            throw new ForbiddenException(
+              `Professor não leciona para os alunos: ${unauthorizedStudents.join(', ')}`
+            )
+          }
+        }
       }
 
       // Criar comunicado

@@ -106,6 +106,39 @@ async function nextAssignmentId(tx: TransactionClient): Promise<bigint> {
   return (maxRecord?.id ?? BigInt(0)) + BigInt(1)
 }
 
+async function nextLessonId(tx: TransactionClient): Promise<bigint> {
+  const maxRecord = await tx.lessons.findFirst({
+    orderBy: { id: 'desc' },
+    select: { id: true },
+  })
+  return (maxRecord?.id ?? BigInt(0)) + BigInt(1)
+}
+
+async function nextAttendanceId(tx: TransactionClient): Promise<bigint> {
+  const maxRecord = await tx.attendances.findFirst({
+    orderBy: { id: 'desc' },
+    select: { id: true },
+  })
+  return (maxRecord?.id ?? BigInt(0)) + BigInt(1)
+}
+
+async function nextGradeId(tx: TransactionClient): Promise<bigint> {
+  const maxRecord = await tx.grades.findFirst({
+    orderBy: { id: 'desc' },
+    select: { id: true },
+  })
+  return (maxRecord?.id ?? BigInt(0)) + BigInt(1)
+}
+
+type StudentRecord = {
+  studentId: bigint
+  enrollmentId: bigint
+}
+
+function calculateAverage(n1: number, n2: number, n3: number, n4: number): number {
+  return Math.round(((n1 + n2 + n3 + n4) / 4) * 100) / 100
+}
+
 async function upsertUser(
   tx: TransactionClient,
   email: string,
@@ -318,7 +351,9 @@ async function ensureStudents(
   classId: bigint,
   hashedPassword: string,
   now: Date,
-): Promise<void> {
+): Promise<Map<string, StudentRecord>> {
+  const records = new Map<string, StudentRecord>()
+
   for (const studentData of DEMO_STUDENTS) {
     const user = await upsertUser(
       tx,
@@ -368,18 +403,30 @@ async function ensureStudents(
       select: { id: true },
     })
 
+    let enrollmentId: bigint
+
     if (!existingEnrollment) {
+      enrollmentId = await nextEnrollmentId(tx)
       await tx.enrollments.create({
         data: {
-          id: await nextEnrollmentId(tx),
+          id: enrollmentId,
           student_id: student.id,
           class_id: classId,
           final_result: 'IN_PROGRESS',
           created_at: now,
         },
       })
+    } else {
+      enrollmentId = existingEnrollment.id
     }
+
+    records.set(studentData.email, {
+      studentId: student.id,
+      enrollmentId,
+    })
   }
+
+  return records
 }
 
 async function ensureAssignment(
@@ -388,7 +435,7 @@ async function ensureAssignment(
   classId: bigint,
   subjectId: bigint,
   now: Date,
-): Promise<void> {
+): Promise<{ id: bigint }> {
   const existing = await tx.assignments.findFirst({
     where: {
       teacher_id: teacherId,
@@ -399,15 +446,161 @@ async function ensureAssignment(
   })
 
   if (existing) {
-    return
+    return existing
   }
+
+  const id = await nextAssignmentId(tx)
 
   await tx.assignments.create({
     data: {
-      id: await nextAssignmentId(tx),
+      id,
       teacher_id: teacherId,
       class_id: classId,
       subject_id: subjectId,
+      created_at: now,
+    },
+  })
+
+  return { id }
+}
+
+/** Cenário dramático: aulas + chamada + notas para popular o gráfico de risco na abertura. */
+async function seedDemoAcademicData(
+  tx: TransactionClient,
+  assignmentId: bigint,
+  bimesterId: bigint,
+  studentRecords: Map<string, StudentRecord>,
+  now: Date,
+): Promise<void> {
+  const carlos = studentRecords.get('aluno3@classon.com')
+  const bruno = studentRecords.get('aluno2@classon.com')
+  const ana = studentRecords.get('aluno1@classon.com')
+  const diana = studentRecords.get('aluno4@classon.com')
+  const eduardo = studentRecords.get('aluno5@classon.com')
+
+  if (!carlos || !bruno || !ana || !diana || !eduardo) {
+    throw new Error('Alunos de demonstração não encontrados para o cenário acadêmico.')
+  }
+
+  const TOTAL_LESSONS = 10
+  const lessonIds: bigint[] = []
+
+  for (let order = 1; order <= TOTAL_LESSONS; order += 1) {
+    const existingLesson = await tx.lessons.findFirst({
+      where: { assignment_id: assignmentId, lesson_order: order },
+      select: { id: true },
+    })
+
+    if (existingLesson) {
+      lessonIds.push(existingLesson.id)
+      continue
+    }
+
+    const lessonDate = new Date(now)
+    lessonDate.setDate(lessonDate.getDate() - (TOTAL_LESSONS - order) * 7)
+
+    const lessonId = await nextLessonId(tx)
+    await tx.lessons.create({
+      data: {
+        id: lessonId,
+        assignment_id: assignmentId,
+        date: lessonDate,
+        lesson_order: order,
+        content: `Aula ${order} — Equações e funções do 1º grau`,
+        created_at: now,
+      },
+    })
+    lessonIds.push(lessonId)
+  }
+
+  /** Presenças por aluno (10 aulas): Carlos ~40%, Bruno ~80%, demais ≥90%. */
+  const attendancePlan: Array<{
+    record: StudentRecord
+    absentLessonOrders: number[]
+  }> = [
+    { record: ana, absentLessonOrders: [] },
+    { record: bruno, absentLessonOrders: [3, 7] },
+    { record: carlos, absentLessonOrders: [1, 2, 4, 5, 8, 9] },
+    { record: diana, absentLessonOrders: [6] },
+    { record: eduardo, absentLessonOrders: [] },
+  ]
+
+  let nextAttId = await nextAttendanceId(tx)
+
+  for (let index = 0; index < lessonIds.length; index += 1) {
+    const lessonId = lessonIds[index]
+    const lessonOrder = index + 1
+
+    for (const { record, absentLessonOrders } of attendancePlan) {
+      const status = absentLessonOrders.includes(lessonOrder) ? 'ABSENT' : 'PRESENT'
+
+      const existingAttendance = await tx.attendances.findUnique({
+        where: {
+          student_id_lesson_id: {
+            student_id: record.studentId,
+            lesson_id: lessonId,
+          },
+        },
+        select: { id: true },
+      })
+
+      if (existingAttendance) {
+        await tx.attendances.update({
+          where: { id: existingAttendance.id },
+          data: { status },
+        })
+        continue
+      }
+
+      await tx.attendances.create({
+        data: {
+          id: nextAttId,
+          student_id: record.studentId,
+          lesson_id: lessonId,
+          status,
+          created_at: now,
+        },
+      })
+      nextAttId += BigInt(1)
+    }
+  }
+
+  /** Carlos: média 3.25 em Matemática → Risco Crítico (+40 nota +50 frequência). */
+  const carlosGrades = { n1: 2, n2: 3, n3: 4, n4: 4 }
+  const carlosAverage = calculateAverage(
+    carlosGrades.n1,
+    carlosGrades.n2,
+    carlosGrades.n3,
+    carlosGrades.n4,
+  )
+
+  await tx.grades.upsert({
+    where: {
+      enrollment_id_assignment_id_bimester_id: {
+        enrollment_id: carlos.enrollmentId,
+        assignment_id: assignmentId,
+        bimester_id: bimesterId,
+      },
+    },
+    update: {
+      n1: carlosGrades.n1,
+      n2: carlosGrades.n2,
+      n3: carlosGrades.n3,
+      n4: carlosGrades.n4,
+      average: carlosAverage,
+      final_average: carlosAverage,
+    },
+    create: {
+      id: await nextGradeId(tx),
+      enrollment_id: carlos.enrollmentId,
+      assignment_id: assignmentId,
+      bimester_id: bimesterId,
+      n1: carlosGrades.n1,
+      n2: carlosGrades.n2,
+      n3: carlosGrades.n3,
+      n4: carlosGrades.n4,
+      average: carlosAverage,
+      final_average: carlosAverage,
       created_at: now,
     },
   })
@@ -425,14 +618,37 @@ async function main() {
     const classRecord = await ensureClass(tx, academicYear.id)
     const teacher = await ensureTeacher(tx, hashedPassword, now)
 
-    await ensureStudents(tx, classRecord.id, hashedPassword, now)
+    const studentRecords = await ensureStudents(tx, classRecord.id, hashedPassword, now)
 
     const mathSubjectId = subjectIds.get('Matemática')
     if (!mathSubjectId) {
       throw new Error('Disciplina Matemática não encontrada após o seed.')
     }
 
-    await ensureAssignment(tx, teacher.id, classRecord.id, mathSubjectId, now)
+    const assignment = await ensureAssignment(
+      tx,
+      teacher.id,
+      classRecord.id,
+      mathSubjectId,
+      now,
+    )
+
+    const bimester1 = await tx.bimesters.findFirst({
+      where: { year_id: academicYear.id, number: 1 },
+      select: { id: true },
+    })
+
+    if (!bimester1) {
+      throw new Error('1º bimestre não encontrado para o ano letivo de demonstração.')
+    }
+
+    await seedDemoAcademicData(
+      tx,
+      assignment.id,
+      bimester1.id,
+      studentRecords,
+      now,
+    )
   })
 
   console.log('Seed de demonstração concluído com sucesso.')
@@ -443,6 +659,7 @@ async function main() {
   console.log('  Alunos:     aluno1@classon.com … aluno5@classon.com')
   console.log('')
   console.log('Cenário: Ano letivo 2026 · Turma 9º Ano A · Atribuição Matemática (Prof. João Silva)')
+  console.log('Risco analítico: Carlos (Crítico) · Bruno (Alerta) · demais (Estável)')
 }
 
 main()

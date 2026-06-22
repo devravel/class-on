@@ -2,6 +2,7 @@
 
 import { GraduationCap, Pencil, Plus, PowerOff, UserCheck } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { ToggleStudentDialog } from '@/components/students/ToggleStudentDialog'
@@ -15,6 +16,7 @@ import { cn } from '@/lib/utils'
 import { Student } from '@/types/student'
 
 export default function AlunosPage() {
+  const searchParams = useSearchParams()
   const [students, setStudents] = useState<Student[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
@@ -40,6 +42,13 @@ export default function AlunosPage() {
   useEffect(() => {
     loadStudents()
   }, [])
+
+  useEffect(() => {
+    const query = searchParams.get('q')
+    if (query) {
+      setSearch(query)
+    }
+  }, [searchParams])
 
   const handleToggleClick = (student: Student) => {
     setSelectedStudent(student)

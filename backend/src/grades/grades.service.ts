@@ -4,6 +4,7 @@ import {
   NotFoundException,
   ForbiddenException,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { CreateGradeDto } from './dto/create-grade.dto'
@@ -62,6 +63,14 @@ const GRADE_INCLUDE = {
     },
   },
 } as const
+
+type GradeWithRelations = Prisma.gradesGetPayload<{
+  include: typeof GRADE_INCLUDE
+}>
+
+type GradeWithStatus = GradeWithRelations & {
+  status: 'APROVADO' | 'REPROVADO'
+}
 
 @Injectable()
 export class GradesService {
@@ -272,8 +281,10 @@ export class GradesService {
         }
       }
 
+      const averageValue = Number(grade.average)
+
       // Validar se a média atual é menor que 6.0
-      if (grade.average >= 6.0) {
+      if (averageValue >= 6.0) {
         throw new BadRequestException(
           'Só é possível adicionar recuperação para notas com média menor que 6.0',
         )
@@ -281,7 +292,7 @@ export class GradesService {
 
       // Calcular nova média final
       const final_average = this.calculateFinalAverage(
-        grade.average,
+        averageValue,
         dto.recovery_grade,
       )
 
@@ -374,9 +385,10 @@ export class GradesService {
     return Math.round(final_average * 100) / 100 // Arredondar para 2 casas decimais
   }
 
-  private addStatusToGrade(grade: any) {
-    const finalAverage = Number(grade.final_average || grade.average)
-    const status = finalAverage >= 6.0 ? 'APROVADO' : 'REPROVADO'
+  private addStatusToGrade(grade: GradeWithRelations): GradeWithStatus {
+    const finalAverage = Number(grade.final_average ?? grade.average)
+    const status: GradeWithStatus['status'] =
+      finalAverage >= 6.0 ? 'APROVADO' : 'REPROVADO'
 
     return {
       ...grade,

@@ -1,9 +1,10 @@
 'use client'
 
-import { BarChart2, Loader2, UserCheck } from 'lucide-react'
-import { useEffect, useMemo, useState } from 'react'
+import { BarChart2, Loader2, RefreshCw, UserCheck } from 'lucide-react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 
 import { PageContainer } from '@/components/layout/PageContainer'
+import { Button } from '@/components/ui/button'
 import { attendanceApi, authApi, gradesApi } from '@/lib/api'
 import {
   formatGradeCell,
@@ -70,36 +71,62 @@ export default function AlunoNotasPage() {
   const [grades, setGrades] = useState<StudentGradeRecord[]>([])
   const [attendance, setAttendance] = useState<StudentAttendanceSummary | null>(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [isRefreshing, setIsRefreshing] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const load = async () => {
-      try {
+  const loadBoletim = useCallback(async (options?: { silent?: boolean }) => {
+    try {
+      if (options?.silent) {
+        setIsRefreshing(true)
+      } else {
         setIsLoading(true)
-        setError(null)
+      }
+      setError(null)
 
-        const me = await authApi.getMe()
-        if (!me.student) {
-          setError('Perfil de aluno não encontrado.')
-          return
-        }
+      const me = await authApi.getMe()
+      if (!me.student) {
+        setError('Perfil de aluno não encontrado.')
+        return
+      }
 
-        const [gradesData, attendanceData] = await Promise.all([
-          gradesApi.getMyGrades(),
-          attendanceApi.getStudentSummary(me.student.id),
-        ])
+      const [gradesData, attendanceData] = await Promise.all([
+        gradesApi.getMyGrades(),
+        attendanceApi.getStudentSummary(me.student.id),
+      ])
 
-        setGrades(Array.isArray(gradesData) ? gradesData : [])
-        setAttendance(attendanceData)
-      } catch {
-        setError('Não foi possível carregar seu boletim. Tente novamente.')
-      } finally {
-        setIsLoading(false)
+      setGrades(Array.isArray(gradesData) ? gradesData : [])
+      setAttendance(attendanceData)
+    } catch {
+      setError('Não foi possível carregar seu boletim. Tente novamente.')
+    } finally {
+      setIsLoading(false)
+      setIsRefreshing(false)
+    }
+  }, [])
+
+  useEffect(() => {
+    void loadBoletim()
+  }, [loadBoletim])
+
+  useEffect(() => {
+    function handleVisibilityChange() {
+      if (document.visibilityState === 'visible') {
+        void loadBoletim({ silent: true })
       }
     }
 
-    load()
-  }, [])
+    function handleWindowFocus() {
+      void loadBoletim({ silent: true })
+    }
+
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleWindowFocus)
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleWindowFocus)
+    }
+  }, [loadBoletim])
 
   const subjects = useMemo(() => groupGradesBySubject(grades), [grades])
   const attendanceRate = attendance?.attendance_rate ?? 0
@@ -117,11 +144,28 @@ export default function AlunoNotasPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Meu Boletim</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          Acompanhe suas notas por disciplina e bimestre
-        </p>
+      <div className="mb-8 flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-text-primary">Meu Boletim</h1>
+          <p className="mt-1 text-sm text-text-secondary">
+            Acompanhe suas notas por disciplina e bimestre
+          </p>
+        </div>
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          disabled={isRefreshing}
+          onClick={() => void loadBoletim({ silent: true })}
+          className="shrink-0"
+        >
+          {isRefreshing ? (
+            <Loader2 size={14} className="animate-spin" />
+          ) : (
+            <RefreshCw size={14} />
+          )}
+          Atualizar boletim
+        </Button>
       </div>
 
       {error && (

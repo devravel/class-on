@@ -26,9 +26,11 @@ import {
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
 import { CreateAnnouncementDto } from '@/types/announcement'
+import { assignmentsApi, authApi } from '@/lib/api'
 import { classesApi } from '@/lib/api/classes'
 import { studentsApi } from '@/lib/api/students'
 import { useAuth } from '@/contexts/auth-context'
+import { getClassLabel } from '@/lib/class-utils'
 
 const announcementFormSchema = z.object({
   title: z
@@ -87,15 +89,53 @@ export function AnnouncementForm({
 
   // Carregar turmas quando necessário
   useEffect(() => {
-    if (watchTargetType === 'CLASS') {
-      setLoadingClasses(true)
-      classesApi
-        .list()
-        .then(setClasses)
-        .catch(console.error)
-        .finally(() => setLoadingClasses(false))
+    if (watchTargetType !== 'CLASS') return
+
+    setLoadingClasses(true)
+
+    const loadClasses = async () => {
+      try {
+        if (user?.role === 'PROFESSOR') {
+          const me = await authApi.getMe()
+          if (!me.teacher) {
+            setClasses([])
+            return
+          }
+
+          const assignments = await assignmentsApi.getByTeacher(me.teacher.id)
+          const uniqueClasses = new Map<string, { id: string; name: string; shift: string }>()
+
+          for (const assignment of assignments) {
+            if (!assignment.classes || uniqueClasses.has(assignment.classes.id)) continue
+            uniqueClasses.set(assignment.classes.id, {
+              id: assignment.classes.id,
+              name: getClassLabel(assignment.classes),
+              shift: assignment.classes.shift,
+            })
+          }
+
+          setClasses(Array.from(uniqueClasses.values()))
+          return
+        }
+
+        const data = await classesApi.list()
+        setClasses(
+          data.map((cls) => ({
+            id: cls.id,
+            name: getClassLabel(cls),
+            shift: cls.shift,
+          })),
+        )
+      } catch (err) {
+        console.error(err)
+        setClasses([])
+      } finally {
+        setLoadingClasses(false)
+      }
     }
-  }, [watchTargetType])
+
+    void loadClasses()
+  }, [watchTargetType, user?.role])
 
   // Carregar alunos quando necessário
   useEffect(() => {

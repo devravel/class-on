@@ -8,6 +8,7 @@ import {
   Param,
   Patch,
   Post,
+  Query,
   UseGuards,
 } from '@nestjs/common'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
@@ -41,8 +42,8 @@ export class ClassesController {
 
   @Get()
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  findAll() {
-    return this.classesService.findAll()
+  findAll(@Query('include_inactive') includeInactive?: string) {
+    return this.classesService.findAll(includeInactive === 'true')
   }
 
   @Get(':id/details')

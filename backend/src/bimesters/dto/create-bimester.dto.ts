@@ -1,4 +1,4 @@
-import { IsIn, IsInt, Max, Min } from 'class-validator'
+import { IsIn, IsInt, IsString, Matches, Max, Min } from 'class-validator'
 
 export class CreateBimesterDto {
   @IsInt({ message: 'O número do bimestre deve ser um inteiro.' })
@@ -9,7 +9,7 @@ export class CreateBimesterDto {
   @IsIn(['ABERTO', 'FECHADO'], { message: 'Status deve ser ABERTO ou FECHADO.' })
   status: string
 
-  @IsInt({ message: 'year_id deve ser um número inteiro.' })
-  @Min(1, { message: 'year_id deve ser um identificador válido.' })
-  year_id: number
+  @IsString({ message: 'year_id deve ser uma string.' })
+  @Matches(/^\d+$/, { message: 'year_id deve ser um identificador numérico válido.' })
+  year_id: string
 }

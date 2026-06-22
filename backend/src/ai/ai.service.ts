@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  InternalServerErrorException,
-  ServiceUnavailableException,
-} from '@nestjs/common'
+import { Injectable } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { GenerateLessonPlanDto } from './dto/generate-lesson-plan.dto'
 import { GenerateParentReportDto } from './dto/generate-parent-report.dto'
@@ -82,11 +78,19 @@ A carta deve:
     const openaiKey = this.config.get<string>('OPENAI_API_KEY')
 
     if (groqKey) {
-      return this.callGroq(groqKey, systemPrompt, userPrompt)
+      try {
+        return await this.callGroq(groqKey, systemPrompt, userPrompt)
+      } catch {
+        return this.generateFallback(systemPrompt, userPrompt)
+      }
     }
 
     if (openaiKey) {
-      return this.callOpenAi(openaiKey, systemPrompt, userPrompt)
+      try {
+        return await this.callOpenAi(openaiKey, systemPrompt, userPrompt)
+      } catch {
+        return this.generateFallback(systemPrompt, userPrompt)
+      }
     }
 
     return this.generateFallback(systemPrompt, userPrompt)
@@ -153,14 +157,12 @@ A carta deve:
         }),
       })
     } catch {
-      throw new ServiceUnavailableException(
-        'Não foi possível conectar ao serviço de IA. Tente novamente.',
-      )
+      throw new Error('Não foi possível conectar ao serviço de IA.')
     }
 
     if (!response.ok) {
       const errorBody = await response.text().catch(() => '')
-      throw new InternalServerErrorException(
+      throw new Error(
         `Erro na geração por IA: ${errorBody || response.statusText}`,
       )
     }
@@ -171,9 +173,7 @@ A carta deve:
 
     const content = data.choices?.[0]?.message?.content?.trim()
     if (!content) {
-      throw new InternalServerErrorException(
-        'A IA não retornou conteúdo válido.',
-      )
+      throw new Error('A IA não retornou conteúdo válido.')
     }
 
     return content

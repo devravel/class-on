@@ -4,6 +4,7 @@ import { type LucideIcon } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
 export interface QuickAction {
+  id: string
   label: string
   icon: LucideIcon
   href: string
@@ -21,7 +22,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
         const Icon = action.icon
         return (
           <Link
-            key={action.href}
+            key={action.id}
             href={action.href}
             className={cn(
               'flex flex-col items-center justify-center gap-2.5 rounded-card p-5 text-center transition-colors',

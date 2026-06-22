@@ -1,7 +1,7 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { AlertTriangle, Trash2, XCircle } from 'lucide-react'
+import { AlertTriangle, Archive, XCircle } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -97,8 +97,8 @@ export function DeleteClassDialog({
       onDeleted()
       onClose()
     } catch (err) {
-      console.error('Erro ao excluir turma:', err)
-      setError('Não foi possível excluir a turma. Tente novamente.')
+      console.error('Erro ao desativar turma:', err)
+      setError('Não foi possível desativar a turma. Tente novamente.')
     } finally {
       setIsDeleting(false)
     }
@@ -124,18 +124,18 @@ export function DeleteClassDialog({
         <header className="border-b border-border bg-muted/50 px-6 py-5">
           <div className="flex items-start justify-between gap-4">
             <div className="flex gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-destructive/10">
-                <Trash2 size={18} className="text-destructive" aria-hidden />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-amber-500/10">
+                <Archive size={18} className="text-amber-600" aria-hidden />
               </div>
               <div>
-                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-destructive">
-                  Ação irreversível
+                <p className="mb-0.5 text-xs font-semibold uppercase tracking-wide text-amber-600">
+                  Arquivar turma
                 </p>
                 <h2
                   id="delete-class-title"
                   className="text-lg font-bold text-text-primary"
                 >
-                  Excluir Turma
+                  Desativar Turma
                 </h2>
               </div>
             </div>
@@ -152,17 +152,19 @@ export function DeleteClassDialog({
         </header>
 
         <div className="px-6 py-6">
-          <div className="rounded-card bg-destructive/10 p-4 ring-1 ring-destructive/20">
+          <div className="rounded-card bg-amber-500/10 p-4 ring-1 ring-amber-500/20">
             <div className="flex gap-3">
               <AlertTriangle
                 size={18}
-                className="mt-0.5 shrink-0 text-destructive"
+                className="mt-0.5 shrink-0 text-amber-600"
                 aria-hidden
               />
               <p className="text-sm leading-relaxed text-text-secondary">
-                Tem certeza que deseja excluir a turma{' '}
+                Tem certeza que deseja desativar a turma{' '}
                 <strong className="text-text-primary">{className}</strong>?{' '}
-                Esta ação não pode ser desfeita.
+                Os dados históricos (alunos, notas e frequência) serão
+                preservados, mas a turma deixará de aparecer nas listagens
+                ativas.
               </p>
             </div>
           </div>
@@ -190,7 +192,7 @@ export function DeleteClassDialog({
               disabled={isDeleting}
               onClick={handleDelete}
             >
-              {isDeleting ? 'Excluindo...' : 'Excluir Turma'}
+              {isDeleting ? 'Desativando...' : 'Desativar Turma'}
             </Button>
           </div>
         </footer>

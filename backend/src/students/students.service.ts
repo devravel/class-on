@@ -19,6 +19,19 @@ const USER_SELECT = {
   created_at: true,
 } as const
 
+const STUDENT_LIST_INCLUDE = {
+  users: { select: USER_SELECT },
+  enrollments: {
+    include: {
+      classes: {
+        include: {
+          academic_years: true,
+        },
+      },
+    },
+  },
+} as const
+
 @Injectable()
 export class StudentsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -169,18 +182,36 @@ export class StudentsService {
     try {
       return await this.prisma.students.findMany({
         orderBy: { full_name: 'asc' },
-        include: { 
-          users: { select: USER_SELECT },
+        include: STUDENT_LIST_INCLUDE,
+      })
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
+  async findByTeacherClasses(teacherId: bigint) {
+    try {
+      const assignments = await this.prisma.assignments.findMany({
+        where: { teacher_id: teacherId },
+        select: { class_id: true },
+      })
+
+      const classIds = [...new Set(assignments.map((a) => a.class_id))]
+
+      if (classIds.length === 0) {
+        return []
+      }
+
+      return await this.prisma.students.findMany({
+        where: {
           enrollments: {
-            include: {
-              classes: {
-                include: {
-                  academic_years: true,
-                },
-              },
+            some: {
+              class_id: { in: classIds },
             },
           },
         },
+        orderBy: { full_name: 'asc' },
+        include: STUDENT_LIST_INCLUDE,
       })
     } catch (error) {
       handlePrismaError(error)
