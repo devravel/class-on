@@ -8,7 +8,7 @@ datasource db {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model academic_years {
-  id         BigInt      @id
+  id         BigInt      @id @default(autoincrement())
   year       Int         @unique(map: "academic_years_year_unique")
   status     String      @db.VarChar(255)
   created_at DateTime    @db.Timestamp(6)
@@ -19,7 +19,7 @@ model academic_years {
 }
 
 model announcement_reads {
-  id              BigInt        @id
+  id              BigInt        @id @default(autoincrement())
   announcement_id BigInt
   user_id         BigInt
   read_at         DateTime      @db.Timestamp(6)
@@ -31,7 +31,7 @@ model announcement_reads {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model announcements {
-  id                    BigInt                  @id
+  id                    BigInt                  @id @default(autoincrement())
   creator_id            BigInt
   title                 String                  @db.VarChar(255)
   message               String
@@ -46,7 +46,7 @@ model announcements {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model announcements_targets {
-  id              BigInt        @id
+  id              BigInt        @id @default(autoincrement())
   announcement_id BigInt
   class_id        BigInt?
   student_id      BigInt?
@@ -56,7 +56,7 @@ model announcements_targets {
 }
 
 model assignments {
-  id         BigInt    @id
+  id         BigInt    @id @default(autoincrement())
   teacher_id BigInt
   class_id   BigInt
   subject_id BigInt
@@ -73,7 +73,7 @@ model assignments {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model attendances {
-  id         BigInt   @id
+  id         BigInt   @id @default(autoincrement())
   student_id BigInt
   lesson_id  BigInt
   status     String   @db.VarChar(255)
@@ -86,7 +86,7 @@ model attendances {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model bimesters {
-  id             BigInt         @id
+  id             BigInt         @id @default(autoincrement())
   number         Int
   status         String         @db.VarChar(255)
   year_id        BigInt
@@ -98,7 +98,7 @@ model bimesters {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model classes {
-  id                    BigInt                  @id
+  id                    BigInt                  @id @default(autoincrement())
   year_id               BigInt
   education_level       String                  @default("FUNDAMENTAL") @db.VarChar(255)
   series                Int
@@ -115,7 +115,7 @@ model classes {
 }
 
 model conversations {
-  id         BigInt     @id
+  id         BigInt     @id @default(autoincrement())
   student_id BigInt
   teacher_id BigInt
   created_at DateTime   @db.Timestamp(6)
@@ -128,7 +128,7 @@ model conversations {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model enrollments {
-  id           BigInt   @id
+  id           BigInt   @id @default(autoincrement())
   student_id   BigInt
   class_id     BigInt
   final_result String   @db.VarChar(255)
@@ -141,7 +141,7 @@ model enrollments {
 }
 
 model grades {
-  id             BigInt      @id
+  id             BigInt      @id @default(autoincrement())
   enrollment_id  BigInt
   assignment_id  BigInt
   bimester_id    BigInt
@@ -161,7 +161,7 @@ model grades {
 }
 
 model lessons {
-  id            BigInt        @id
+  id            BigInt        @id @default(autoincrement())
   assignment_id BigInt
   date          DateTime      @db.Date
   lesson_order  Int
@@ -173,7 +173,7 @@ model lessons {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model messages {
-  id              BigInt        @id
+  id              BigInt        @id @default(autoincrement())
   conversation_id BigInt
   sender_id       BigInt
   content         String
@@ -185,7 +185,7 @@ model messages {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model students {
-  id                    BigInt                  @id
+  id                    BigInt                  @id @default(autoincrement())
   user_id               BigInt                  @unique(map: "students_user_id_unique")
   rm                    String                  @unique(map: "students_rm_unique") @db.VarChar(255)
   full_name             String                  @db.VarChar(255)
@@ -200,7 +200,7 @@ model students {
 }
 
 model subjects {
-  id          BigInt        @id
+  id          BigInt        @id @default(autoincrement())
   name        String        @unique(map: "subjects_name_unique") @db.VarChar(255)
   description String
   assignments assignments[]
@@ -208,7 +208,7 @@ model subjects {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model task_submissions {
-  id           BigInt   @id
+  id           BigInt   @id @default(autoincrement())
   task_id      BigInt
   student_id   BigInt
   status       String   @db.VarChar(255)
@@ -222,7 +222,7 @@ model task_submissions {
 }
 
 model task_targets {
-  id         BigInt   @id
+  id         BigInt   @id @default(autoincrement())
   task_id    BigInt
   student_id BigInt
   created_at DateTime @db.Timestamp(6)
@@ -234,7 +234,7 @@ model task_targets {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model tasks {
-  id               BigInt             @id
+  id               BigInt             @id @default(autoincrement())
   assignment_id    BigInt
   title            String             @db.VarChar(255)
   description      String
@@ -248,7 +248,7 @@ model tasks {
 }
 
 model teachers {
-  id                BigInt          @id
+  id                BigInt          @id @default(autoincrement())
   user_id           BigInt          @unique(map: "teachers_user_id_unique")
   full_name         String          @db.VarChar(255)
   registration_code String          @unique(map: "teachers_registration_code_unique") @db.VarChar(255)
@@ -259,7 +259,7 @@ model teachers {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model users {
-  id                 BigInt               @id
+  id                 BigInt               @id @default(autoincrement())
   email              String               @unique(map: "users_email_unique") @db.VarChar(255)
   password           String               @db.VarChar(255)
   role               String               @db.VarChar(255)
@@ -289,7 +289,7 @@ enum EventScopeType {
 
 /// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
 model events {
-  id         BigInt @id
+  id         BigInt @id @default(autoincrement())
   creator_id BigInt
   year_id    BigInt
 
@@ -312,7 +312,7 @@ model events {
 }
 
 model event_targets {
-  id       BigInt @id
+  id       BigInt @id @default(autoincrement())
   event_id BigInt
   class_id BigInt
 

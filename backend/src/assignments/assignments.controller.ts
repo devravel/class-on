@@ -63,8 +63,18 @@ export class AssignmentsController {
 
   @Get(':id')
   @Roles('SECRETARIA', 'PROFESSOR')
-  findOne(@Param('id') id: string) {
-    return this.assignmentsService.findOne(BigInt(id))
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    const assignmentId = BigInt(id)
+
+    if (user.role === 'PROFESSOR') {
+      if (!user.teacher) {
+        throw new ForbiddenException('Perfil de professor não encontrado.')
+      }
+
+      return this.assignmentsService.findOneForTeacher(assignmentId, user.teacher.id)
+    }
+
+    return this.assignmentsService.findOne(assignmentId)
   }
 
   @Delete(':id')

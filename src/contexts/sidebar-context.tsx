@@ -12,6 +12,12 @@ import { usePathname } from 'next/navigation'
 
 const BASE_ROUTES = ['/secretaria', '/professor', '/aluno']
 
+function isBaseRoute(pathname: string): boolean {
+  return BASE_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`),
+  )
+}
+
 interface SidebarContextValue {
   isCollapsed: boolean
   isMobileOpen: boolean
@@ -26,12 +32,12 @@ export function SidebarProvider({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
 
   const [isCollapsed, setIsCollapsed] = useState(
-    () => !BASE_ROUTES.includes(pathname),
+    () => !isBaseRoute(pathname),
   )
   const [isMobileOpen, setIsMobileOpen] = useState(false)
 
   useEffect(() => {
-    setIsCollapsed(!BASE_ROUTES.includes(pathname))
+    setIsCollapsed(!isBaseRoute(pathname))
     setIsMobileOpen(false)
   }, [pathname])
 

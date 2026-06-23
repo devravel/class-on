@@ -47,14 +47,6 @@ type TeacherAssignmentPlan = {
   subject_id: bigint
 }
 
-type IdCounters = {
-  nextClassId: () => bigint
-  nextAssignmentId: () => bigint
-  nextUserId: () => bigint
-  nextStudentId: () => bigint
-  nextEnrollmentId: () => bigint
-}
-
 @Injectable()
 export class ClassWizardService {
   constructor(private readonly prisma: PrismaService) {}
@@ -114,12 +106,9 @@ export class ClassWizardService {
 
       const result = await this.prisma.$transaction(async (tx) => {
         const now = new Date()
-        const ids = await this.createIdCounters(tx)
-        const classId = ids.nextClassId()
 
         const classRecord = await tx.classes.create({
           data: {
-            id: classId,
             year_id: yearId,
             education_level: dto.education_level,
             series: dto.series,
@@ -132,9 +121,8 @@ export class ClassWizardService {
         const assignments = await this.createAssignmentsFromPlan(
           tx,
           assignmentPlans,
-          classId,
+          classRecord.id,
           now,
-          ids,
         )
 
         const createdStudents = []
@@ -145,9 +133,8 @@ export class ClassWizardService {
             email: student.email,
             rm: student.rm,
             hashed_password: student.hashed_password,
-            classId,
+            classId: classRecord.id,
             now,
-            ids,
           })
 
           createdStudents.push({
@@ -471,70 +458,17 @@ export class ClassWizardService {
     return maxSequence + 1
   }
 
-  private async createIdCounters(tx: TransactionClient): Promise<IdCounters> {
-    const [maxClass, maxAssignment, maxUser, maxStudent, maxEnrollment] =
-      await Promise.all([
-        tx.classes.findFirst({ orderBy: { id: 'desc' }, select: { id: true } }),
-        tx.assignments.findFirst({
-          orderBy: { id: 'desc' },
-          select: { id: true },
-        }),
-        tx.users.findFirst({ orderBy: { id: 'desc' }, select: { id: true } }),
-        tx.students.findFirst({ orderBy: { id: 'desc' }, select: { id: true } }),
-        tx.enrollments.findFirst({
-          orderBy: { id: 'desc' },
-          select: { id: true },
-        }),
-      ])
-
-    let classId = (maxClass?.id ?? BigInt(0)) + BigInt(1)
-    let assignmentId = (maxAssignment?.id ?? BigInt(0)) + BigInt(1)
-    let userId = (maxUser?.id ?? BigInt(0)) + BigInt(1)
-    let studentId = (maxStudent?.id ?? BigInt(0)) + BigInt(1)
-    let enrollmentId = (maxEnrollment?.id ?? BigInt(0)) + BigInt(1)
-
-    return {
-      nextClassId: () => {
-        const id = classId
-        classId += BigInt(1)
-        return id
-      },
-      nextAssignmentId: () => {
-        const id = assignmentId
-        assignmentId += BigInt(1)
-        return id
-      },
-      nextUserId: () => {
-        const id = userId
-        userId += BigInt(1)
-        return id
-      },
-      nextStudentId: () => {
-        const id = studentId
-        studentId += BigInt(1)
-        return id
-      },
-      nextEnrollmentId: () => {
-        const id = enrollmentId
-        enrollmentId += BigInt(1)
-        return id
-      },
-    }
-  }
-
   private async createAssignmentsFromPlan(
     tx: TransactionClient,
     plans: TeacherAssignmentPlan[],
     classId: bigint,
     now: Date,
-    ids: IdCounters,
   ) {
     const created = []
 
     for (const plan of plans) {
       const assignment = await tx.assignments.create({
         data: {
-          id: ids.nextAssignmentId(),
           teacher_id: plan.teacher_id,
           class_id: classId,
           subject_id: plan.subject_id,
@@ -572,16 +506,10 @@ export class ClassWizardService {
       hashed_password: string
       classId: bigint
       now: Date
-      ids: IdCounters
     },
   ) {
-    const userId = params.ids.nextUserId()
-    const studentId = params.ids.nextStudentId()
-    const enrollmentId = params.ids.nextEnrollmentId()
-
-    await tx.users.create({
+    const user = await tx.users.create({
       data: {
-        id: userId,
         email: params.email,
         password: params.hashed_password,
         role: 'ALUNO',
@@ -592,8 +520,7 @@ export class ClassWizardService {
 
     const student = await tx.students.create({
       data: {
-        id: studentId,
-        user_id: userId,
+        user_id: user.id,
         full_name: params.full_name,
         rm: params.rm,
         status: 'ACTIVE',
@@ -603,8 +530,7 @@ export class ClassWizardService {
 
     await tx.enrollments.create({
       data: {
-        id: enrollmentId,
-        student_id: studentId,
+        student_id: student.id,
         class_id: params.classId,
         final_result: 'IN_PROGRESS',
         created_at: params.now,

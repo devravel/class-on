@@ -25,20 +25,20 @@ export class AnnouncementsController {
   @Post()
   @Roles('SECRETARIA', 'PROFESSOR')
   create(@Body() dto: CreateAnnouncementDto, @CurrentUser() user: any) {
-    return this.announcementsService.create(dto, user.id, user.role)
+    return this.announcementsService.create(dto, BigInt(user.id), user.role)
   }
 
   @Get()
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
   findAll(@CurrentUser() user: any) {
-    return this.announcementsService.findAll(user.id, user.role)
+    return this.announcementsService.findAll(BigInt(user.id), user.role)
   }
 
   @Get(':id')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
   findOne(@Param('id') id: string, @CurrentUser() user: any) {
     const announcementId = BigInt(id)
-    return this.announcementsService.findOne(announcementId, user.id, user.role)
+    return this.announcementsService.findOne(announcementId, BigInt(user.id), user.role)
   }
 
   @Post(':id/read')
@@ -46,7 +46,7 @@ export class AnnouncementsController {
   @HttpCode(HttpStatus.OK)
   markAsRead(@Param('id') id: string, @CurrentUser() user: any) {
     const announcementId = BigInt(id)
-    return this.announcementsService.markAsRead(announcementId, user.id)
+    return this.announcementsService.markAsRead(announcementId, BigInt(user.id))
   }
 
   @Patch(':id/archive')
@@ -57,13 +57,18 @@ export class AnnouncementsController {
     @CurrentUser() user: any,
   ) {
     const announcementId = BigInt(id)
-    return this.announcementsService.archive(announcementId, dto, user.id, user.role)
+    return this.announcementsService.archive(
+      announcementId,
+      dto,
+      BigInt(user.id),
+      user.role,
+    )
   }
 
   @Get(':id/stats')
   @Roles('SECRETARIA', 'PROFESSOR')
   getStats(@Param('id') id: string, @CurrentUser() user: any) {
     const announcementId = BigInt(id)
-    return this.announcementsService.getStats(announcementId, user.id, user.role)
+    return this.announcementsService.getStats(announcementId, BigInt(user.id), user.role)
   }
 }

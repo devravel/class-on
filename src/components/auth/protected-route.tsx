@@ -3,6 +3,8 @@
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth, UserRole } from '@/contexts/auth-context'
+import { getRoleHome } from '@/lib/auth-routes'
+import { PageLoader } from '@/components/ui/page-loader'
 
 interface ProtectedRouteProps {
   children: React.ReactNode
@@ -22,20 +24,18 @@ export function ProtectedRoute({ children, requiredRole }: ProtectedRouteProps) 
     }
 
     if (user?.role !== requiredRole) {
-      router.replace('/login')
+      router.replace(getRoleHome(user?.role))
     }
   }, [isAuthenticated, isLoading, requiredRole, router, user])
 
-  // Aguarda hidratação do contexto sem flash de conteúdo
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
-        <div className="h-8 w-8 animate-spin rounded-full border-4 border-brand-600 border-t-transparent" />
+        <PageLoader />
       </div>
     )
   }
 
-  // Bloqueia render enquanto o redirect ainda não navegou
   if (!isAuthenticated || user?.role !== requiredRole) {
     return null
   }

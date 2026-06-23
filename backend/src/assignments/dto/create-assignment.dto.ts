@@ -1,15 +1,13 @@
 import { IsString, Matches } from 'class-validator'
+import { IsBigIntId } from '../../common/dto/is-bigint-id.decorator'
 
 export class CreateAssignmentDto {
-  @IsString({ message: 'teacher_id deve ser uma string.' })
-  @Matches(/^\d+$/, { message: 'teacher_id deve ser um número válido.' })
+  @IsBigIntId('teacher_id deve ser um número válido.')
   teacher_id: string
 
-  @IsString({ message: 'class_id deve ser uma string.' })
-  @Matches(/^\d+$/, { message: 'class_id deve ser um número válido.' })
+  @IsBigIntId('class_id deve ser um número válido.')
   class_id: string
 
-  @IsString({ message: 'subject_id deve ser uma string.' })
-  @Matches(/^\d+$/, { message: 'subject_id deve ser um número válido.' })
+  @IsBigIntId('subject_id deve ser um número válido.')
   subject_id: string
 }

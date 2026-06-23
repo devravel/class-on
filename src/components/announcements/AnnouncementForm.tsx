@@ -25,6 +25,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Checkbox } from '@/components/ui/checkbox'
+import { InlineError } from '@/components/dashboard/InlineError'
 import { CreateAnnouncementDto } from '@/types/announcement'
 import { assignmentsApi, authApi } from '@/lib/api'
 import { classesApi } from '@/lib/api/classes'
@@ -196,11 +197,7 @@ export function AnnouncementForm({
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(handleSubmit)} className="space-y-6">
-        {error && (
-          <div className="rounded-md bg-red-50 p-3">
-            <p className="text-sm text-red-700">{error}</p>
-          </div>
-        )}
+        {error && <InlineError message={error} />}
 
         <FormField
           control={form.control}

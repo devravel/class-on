@@ -606,6 +606,39 @@ async function seedDemoAcademicData(
   })
 }
 
+async function syncIdSequences(tx: TransactionClient) {
+  const tables = [
+    'academic_years',
+    'users',
+    'teachers',
+    'students',
+    'subjects',
+    'classes',
+    'bimesters',
+    'enrollments',
+    'assignments',
+    'lessons',
+    'attendances',
+    'grades',
+    'tasks',
+    'task_targets',
+    'task_submissions',
+    'announcements',
+    'announcements_targets',
+    'announcement_reads',
+    'events',
+    'event_targets',
+    'conversations',
+    'messages',
+  ]
+
+  for (const table of tables) {
+    await tx.$executeRawUnsafe(
+      `SELECT setval('${table}_id_seq', COALESCE((SELECT MAX(id) FROM "${table}"), 0) + 1, false);`,
+    )
+  }
+}
+
 async function main() {
   const hashedPassword = await bcrypt.hash(DEMO_PASSWORD, 10)
   const now = new Date()
@@ -649,6 +682,8 @@ async function main() {
       studentRecords,
       now,
     )
+
+    await syncIdSequences(tx)
   })
 
   console.log('Seed de demonstração concluído com sucesso.')

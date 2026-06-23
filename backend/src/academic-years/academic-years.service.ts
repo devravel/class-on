@@ -24,18 +24,11 @@ export class AcademicYearsService {
         await this.ensureOnlyOneActiveYear()
       }
 
-      const maxIdRecord = await this.prisma.academic_years.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
       const now = new Date()
 
       return await this.prisma.$transaction(async (tx) => {
         const academicYear = await tx.academic_years.create({
           data: {
-            id: nextId,
             year: dto.year,
             status,
             created_at: now,
@@ -44,25 +37,12 @@ export class AcademicYearsService {
         })
 
         if (status === 'ACTIVE') {
-          const maxBimesterRecord = await tx.bimesters.findFirst({
-            orderBy: { id: 'desc' },
-            select: { id: true },
-          })
-
-          let nextBimesterId =
-            (maxBimesterRecord?.id ?? BigInt(0)) + BigInt(1)
-
           await tx.bimesters.createMany({
-            data: [1, 2, 3, 4].map((number) => {
-              const bimester = {
-                id: nextBimesterId,
-                number,
-                status: 'ABERTO',
-                year_id: nextId,
-              }
-              nextBimesterId += BigInt(1)
-              return bimester
-            }),
+            data: [1, 2, 3, 4].map((number) => ({
+              number,
+              status: 'ABERTO',
+              year_id: academicYear.id,
+            })),
           })
         }
 

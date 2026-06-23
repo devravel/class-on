@@ -30,22 +30,9 @@ export class TeachersService {
       const hashedPassword = await this.hashPassword(provisionalPassword)
       const now = new Date()
 
-      const maxUserId = await this.prisma.users.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextUserId = (maxUserId?.id ?? BigInt(0)) + BigInt(1)
-
-      const maxTeacherId = await this.prisma.teachers.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextTeacherId = (maxTeacherId?.id ?? BigInt(0)) + BigInt(1)
-
       const teacher = await this.prisma.$transaction(async (tx) => {
-        await tx.users.create({
+        const user = await tx.users.create({
           data: {
-            id: nextUserId,
             email: dto.email,
             password: hashedPassword,
             role: 'PROFESSOR',
@@ -56,8 +43,7 @@ export class TeachersService {
 
         return tx.teachers.create({
           data: {
-            id: nextTeacherId,
-            user_id: nextUserId,
+            user_id: user.id,
             full_name: dto.full_name,
             registration_code: dto.registration_code,
           },

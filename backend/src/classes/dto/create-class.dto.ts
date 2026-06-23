@@ -1,4 +1,5 @@
 import { IsEnum, IsInt, IsString, IsIn } from 'class-validator'
+import { IsBigIntId } from '../../common/dto/is-bigint-id.decorator'
 
 export enum Shift {
   MORNING = 'MORNING',
@@ -12,8 +13,8 @@ export enum EducationLevel {
 }
 
 export class CreateClassDto {
-  @IsInt({ message: 'year_id deve ser um número inteiro.' })
-  year_id: number
+  @IsBigIntId('year_id deve ser um número válido.')
+  year_id: string
 
   @IsEnum(EducationLevel, {
     message: 'education_level deve ser FUNDAMENTAL ou MEDIO.',

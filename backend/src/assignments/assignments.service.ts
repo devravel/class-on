@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -56,17 +57,10 @@ export class AssignmentsService {
       await this.ensureSubjectExists(subjectId)
       await this.ensureUniqueAssignment(teacherId, classId, subjectId)
 
-      const maxIdRecord = await this.prisma.assignments.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
       const now = new Date()
 
       return await this.prisma.assignments.create({
         data: {
-          id: nextId,
           teacher_id: teacherId,
           class_id: classId,
           subject_id: subjectId,
@@ -110,6 +104,16 @@ export class AssignmentsService {
     } catch (error) {
       handlePrismaError(error)
     }
+  }
+
+  async findOneForTeacher(id: bigint, teacherId: bigint) {
+    const assignment = await this.findOne(id)
+
+    if (assignment.teacher_id !== teacherId) {
+      throw new ForbiddenException('Você só pode visualizar suas próprias atribuições.')
+    }
+
+    return assignment
   }
 
   async findByTeacher(teacherId: bigint) {

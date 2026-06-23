@@ -1,10 +1,11 @@
 import { IsEnum, IsIn, IsInt, IsOptional, IsString } from 'class-validator'
 import { EducationLevel, Shift } from './create-class.dto'
+import { IsOptionalBigIntId } from '../../common/dto/is-bigint-id.decorator'
 
 export class UpdateClassDto {
   @IsOptional()
-  @IsInt({ message: 'year_id deve ser um número inteiro.' })
-  year_id?: number
+  @IsOptionalBigIntId('year_id deve ser um número válido.')
+  year_id?: string
 
   @IsOptional()
   @IsEnum(EducationLevel, {

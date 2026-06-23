@@ -9,7 +9,10 @@ import type { DateClickArg } from '@fullcalendar/interaction'
 import type { EventClickArg } from '@fullcalendar/core'
 import { CalendarEvent, eventsApi } from '@/lib/api/events'
 import { mapEventApiError, toastCalendarRetryInfo } from '@/lib/events/feedback'
-import { AlertCircle } from 'lucide-react'
+import { InlineError } from '@/components/dashboard/InlineError'
+import { PageLoader } from '@/components/ui/page-loader'
+import { Button } from '@/components/ui/button'
+import { RefreshCw } from 'lucide-react'
 
 interface CalendarViewProps {
   classId?: string
@@ -77,33 +80,27 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
 
   if (error) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-lg border border-danger/20 bg-danger/5 px-4">
-        <div className="max-w-md text-center">
-          <AlertCircle className="mx-auto mb-2 size-8 text-danger" aria-hidden />
-          <p className="text-sm font-medium text-text-primary mb-1">Não foi possível carregar o calendário</p>
-          <p className="text-xs text-text-secondary leading-relaxed">{error}</p>
-          <button
-            type="button"
-            onClick={() => {
-              toastCalendarRetryInfo()
-              void loadEvents()
-            }}
-            className="mt-4 text-sm font-medium text-primary hover:underline"
-          >
-            Tentar novamente
-          </button>
-        </div>
+      <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-card border border-border bg-surface px-4">
+        <InlineError message={error} className="max-w-md" />
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            toastCalendarRetryInfo()
+            void loadEvents()
+          }}
+        >
+          <RefreshCw size={16} className="mr-1" />
+          Tentar novamente
+        </Button>
       </div>
     )
   }
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50">
-        <div className="text-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent mx-auto mb-2" />
-          <p className="text-sm text-text-secondary">Carregando calendário...</p>
-        </div>
+      <div className="flex h-96 items-center justify-center rounded-card border border-border bg-neutral-100">
+        <PageLoader label="Carregando calendário..." />
       </div>
     )
   }
@@ -133,8 +130,8 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
         dayMaxEvents={3}
         eventDisplay="block"
         eventClassNames="cursor-pointer"
-        eventBackgroundColor="#3b82f6"
-        eventBorderColor="#3b82f6"
+        eventBackgroundColor="var(--color-brand-500)"
+        eventBorderColor="var(--color-brand-600)"
         eventTextColor="#ffffff"
         dayHeaderFormat={{
           weekday: 'short'
@@ -153,40 +150,42 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
         
         .fc-toolbar {
           margin-bottom: 1rem;
+          flex-wrap: wrap;
+          gap: 0.5rem;
         }
         
         .fc-toolbar-title {
           font-size: 1.25rem !important;
           font-weight: 600 !important;
-          color: #1f2937 !important;
+          color: var(--color-neutral-800) !important;
         }
         
         .fc-button {
-          background-color: #f3f4f6 !important;
-          border-color: #d1d5db !important;
-          color: #374151 !important;
+          background-color: var(--color-neutral-100) !important;
+          border-color: var(--color-neutral-300) !important;
+          color: var(--color-neutral-700) !important;
           font-size: 0.875rem !important;
           padding: 0.375rem 0.75rem !important;
         }
         
         .fc-button:hover {
-          background-color: #e5e7eb !important;
-          border-color: #9ca3af !important;
+          background-color: var(--color-neutral-200) !important;
+          border-color: var(--color-neutral-400) !important;
         }
         
         .fc-button:focus {
-          box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5) !important;
+          box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-brand-500) 50%, transparent) !important;
         }
         
         .fc-button-primary:not(:disabled):active,
         .fc-button-primary:not(:disabled).fc-button-active {
-          background-color: #3b82f6 !important;
-          border-color: #3b82f6 !important;
+          background-color: var(--color-brand-500) !important;
+          border-color: var(--color-brand-600) !important;
           color: #ffffff !important;
         }
         
         .fc-day-today {
-          background-color: #fef3c7 !important;
+          background-color: color-mix(in srgb, var(--color-warning) 15%, white) !important;
         }
         
         .fc-event {
@@ -203,7 +202,7 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
         }
         
         .fc-more-link {
-          color: #3b82f6 !important;
+          color: var(--color-brand-600) !important;
           font-size: 0.75rem !important;
         }
       `}</style>

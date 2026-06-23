@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -56,16 +57,8 @@ export class AttendanceService {
           results.push(updated)
         } else {
           // Criar novo registro
-          const maxIdRecord = await this.prisma.attendances.findFirst({
-            orderBy: { id: 'desc' },
-            select: { id: true },
-          })
-
-          const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
-
           const created = await this.prisma.attendances.create({
             data: {
-              id: nextId,
               student_id: studentId,
               lesson_id: lessonId,
               status: attendance.status,
@@ -262,7 +255,7 @@ export class AttendanceService {
     }
   }
 
-  async getClassStudentsAttendance(classId: bigint) {
+  async getClassStudentsAttendance(classId: bigint, teacherId?: bigint) {
     try {
       const classRecord = await this.prisma.classes.findUnique({
         where: { id: classId },
@@ -273,24 +266,15 @@ export class AttendanceService {
         throw new NotFoundException('Turma não encontrada')
       }
 
-      const enrollments = await this.prisma.enrollments.findMany({
-        where: { class_id: classId },
-        select: {
-          students: {
-            select: {
-              id: true,
-              full_name: true,
-              rm: true,
-            },
-          },
-        },
-        orderBy: {
-          students: { full_name: 'asc' },
-        },
-      })
+      if (teacherId) {
+        await this.ensureTeacherClassAccess(classId, teacherId)
+      }
 
       const classAssignments = await this.prisma.assignments.findMany({
-        where: { class_id: classId },
+        where: {
+          class_id: classId,
+          ...(teacherId !== undefined && { teacher_id: teacherId }),
+        },
         select: {
           id: true,
           subjects: {
@@ -311,6 +295,22 @@ export class AttendanceService {
         },
       })
 
+      const enrollments = await this.prisma.enrollments.findMany({
+        where: { class_id: classId },
+        select: {
+          students: {
+            select: {
+              id: true,
+              full_name: true,
+              rm: true,
+            },
+          },
+        },
+        orderBy: {
+          students: { full_name: 'asc' },
+        },
+      })
+
       const summaries = await Promise.all(
         enrollments.map(async ({ students: student }) => {
           const attendances = await this.prisma.attendances.findMany({
@@ -319,6 +319,7 @@ export class AttendanceService {
               lessons: {
                 assignments: {
                   class_id: classId,
+                  ...(teacherId !== undefined && { teacher_id: teacherId }),
                 },
               },
             },
@@ -476,7 +477,7 @@ export class AttendanceService {
       }
 
       if (lesson.assignments.teacher_id !== teacherId) {
-        throw new BadRequestException('Você não tem permissão para esta aula')
+        throw new ForbiddenException('Você não tem permissão para esta aula')
       }
 
       return lesson
@@ -534,7 +535,25 @@ export class AttendanceService {
       })
 
       if (!hasAccess) {
-        throw new BadRequestException('Você não tem acesso aos dados deste aluno')
+        throw new ForbiddenException('Você não tem acesso aos dados deste aluno')
+      }
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
+  private async ensureTeacherClassAccess(classId: bigint, teacherId: bigint) {
+    try {
+      const assignment = await this.prisma.assignments.findFirst({
+        where: {
+          class_id: classId,
+          teacher_id: teacherId,
+        },
+        select: { id: true },
+      })
+
+      if (!assignment) {
+        throw new ForbiddenException('Você não tem acesso à frequência desta turma.')
       }
     } catch (error) {
       handlePrismaError(error)

@@ -21,8 +21,20 @@ interface AuthContextValue {
 
 const TOKEN_KEY = 'access_token'
 const USER_KEY = 'auth_user'
+const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
+
+function setAuthCookies(token: string, role: UserRole) {
+  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
+  document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=${AUTH_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
+  document.cookie = `auth_role=${role}; path=/; max-age=${AUTH_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
+}
+
+function clearAuthCookies() {
+  document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
+  document.cookie = 'auth_role=; path=/; max-age=0; SameSite=Lax'
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null)
@@ -38,9 +50,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const parsedUser = JSON.parse(storedUser) as AuthUser
         setToken(storedToken)
         setUser(parsedUser)
+        setAuthCookies(storedToken, parsedUser.role)
       } catch {
         localStorage.removeItem(TOKEN_KEY)
         localStorage.removeItem(USER_KEY)
+        clearAuthCookies()
       }
     }
 
@@ -50,6 +64,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signIn = useCallback((newToken: string, newUser: AuthUser) => {
     localStorage.setItem(TOKEN_KEY, newToken)
     localStorage.setItem(USER_KEY, JSON.stringify(newUser))
+    setAuthCookies(newToken, newUser.role)
     setToken(newToken)
     setUser(newUser)
   }, [])
@@ -57,6 +72,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signOut = useCallback(() => {
     localStorage.removeItem(TOKEN_KEY)
     localStorage.removeItem(USER_KEY)
+    clearAuthCookies()
     setToken(null)
     setUser(null)
   }, [])

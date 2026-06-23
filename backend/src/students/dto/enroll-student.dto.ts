@@ -1,6 +1,6 @@
-import { IsInt } from 'class-validator'
+import { IsBigIntId } from '../../common/dto/is-bigint-id.decorator'
 
 export class EnrollStudentDto {
-  @IsInt({ message: 'class_id deve ser um número inteiro.' })
-  class_id: number
+  @IsBigIntId('class_id deve ser um número válido.')
+  class_id: string
 }

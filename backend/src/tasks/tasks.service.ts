@@ -88,13 +88,6 @@ export class TasksService {
         )
       }
 
-      // Gerar próximo ID
-      const maxTaskId = await this.prisma.tasks.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextTaskId = (maxTaskId?.id ?? BigInt(0)) + BigInt(1)
-
       const now = new Date()
 
       // Criar tarefa em transação
@@ -102,7 +95,6 @@ export class TasksService {
         // Criar a tarefa
         const newTask = await tx.tasks.create({
           data: {
-            id: nextTaskId,
             assignment_id: assignmentId,
             title: dto.title,
             description: dto.description,
@@ -117,22 +109,13 @@ export class TasksService {
         // Criar task_targets para todos os alunos matriculados na turma
         const enrollments = assignment.classes.enrollments
         if (enrollments.length > 0) {
-          for (const enrollment of enrollments) {
-            const maxTargetId = await tx.task_targets.findFirst({
-              orderBy: { id: 'desc' },
-              select: { id: true },
-            })
-            const nextTargetId = (maxTargetId?.id ?? BigInt(0)) + BigInt(1)
-
-            await tx.task_targets.create({
-              data: {
-                id: nextTargetId,
-                task_id: nextTaskId,
-                student_id: enrollment.student_id,
-                created_at: now,
-              },
-            })
-          }
+          await tx.task_targets.createMany({
+            data: enrollments.map((enrollment) => ({
+              task_id: newTask.id,
+              student_id: enrollment.student_id,
+              created_at: now,
+            })),
+          })
         }
 
         return newTask
@@ -290,15 +273,8 @@ export class TasksService {
         })
       } else {
         // Criar nova submissão
-        const maxSubmissionId = await this.prisma.task_submissions.findFirst({
-          orderBy: { id: 'desc' },
-          select: { id: true },
-        })
-        const nextSubmissionId = (maxSubmissionId?.id ?? BigInt(0)) + BigInt(1)
-
         return await this.prisma.task_submissions.create({
           data: {
-            id: nextSubmissionId,
             task_id: taskId,
             student_id: studentId,
             status: isLate ? 'LATE' : 'SUBMITTED',

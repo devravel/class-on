@@ -19,16 +19,8 @@ export class BimestersService {
       await this.ensureYearExists(yearId)
       await this.ensureNumberUniqueForYear(yearId, dto.number)
 
-      const maxIdRecord = await this.prisma.bimesters.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
-
       return await this.prisma.bimesters.create({
         data: {
-          id: nextId,
           number: dto.number,
           status: dto.status,
           year_id: yearId,

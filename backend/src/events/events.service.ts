@@ -148,18 +148,9 @@ export class EventsService {
         }
       }
 
-      // Buscar próximo ID
-      const maxIdRecord = await this.prisma.events.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
-
       // Criar evento
       const event = await this.prisma.events.create({
         data: {
-          id: nextId,
           creator_id: userId,
           year_id: yearId,
           title: dto.title,
@@ -176,19 +167,11 @@ export class EventsService {
 
       // Criar targets se necessário
       if (dto.scope_type === 'SPECIFIC_CLASSES' && dto.class_ids) {
-        const maxTargetId = await this.prisma.event_targets.findFirst({
-          orderBy: { id: 'desc' },
-          select: { id: true },
-        })
-
-        const targets = dto.class_ids.map((classId, index) => ({
-          id: (maxTargetId?.id ?? BigInt(0)) + BigInt(index + 1),
-          event_id: event.id,
-          class_id: BigInt(classId),
-        }))
-
         await this.prisma.event_targets.createMany({
-          data: targets,
+          data: dto.class_ids.map((classId) => ({
+            event_id: event.id,
+            class_id: BigInt(classId),
+          })),
         })
       }
 

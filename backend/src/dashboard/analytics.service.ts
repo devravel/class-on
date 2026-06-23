@@ -33,7 +33,7 @@ export interface RiskAnalyticsResponse {
 export class AnalyticsService {
   constructor(private readonly prisma: PrismaService) {}
 
-  async getRiskAnalytics(): Promise<RiskAnalyticsResponse> {
+  async getRiskAnalytics(teacherId?: bigint): Promise<RiskAnalyticsResponse> {
     try {
       const activeYear = await this.prisma.academic_years.findFirst({
         where: { status: 'ACTIVE' },
@@ -47,7 +47,16 @@ export class AnalyticsService {
       const students = await this.prisma.students.findMany({
         where: {
           enrollments: {
-            some: { classes: { year_id: activeYear.id } },
+            some: {
+              classes: {
+                year_id: activeYear.id,
+                ...(teacherId !== undefined && {
+                  assignments: {
+                    some: { teacher_id: teacherId },
+                  },
+                }),
+              },
+            },
           },
         },
         select: {
@@ -55,9 +64,23 @@ export class AnalyticsService {
           full_name: true,
           rm: true,
           enrollments: {
-            where: { classes: { year_id: activeYear.id } },
+            where: {
+              classes: {
+                year_id: activeYear.id,
+                ...(teacherId !== undefined && {
+                  assignments: {
+                    some: { teacher_id: teacherId },
+                  },
+                }),
+              },
+            },
             select: {
               grades: {
+                where: {
+                  ...(teacherId !== undefined && {
+                    assignments: { teacher_id: teacherId },
+                  }),
+                },
                 select: {
                   average: true,
                   final_average: true,
@@ -70,6 +93,7 @@ export class AnalyticsService {
               lessons: {
                 assignments: {
                   classes: { year_id: activeYear.id },
+                  ...(teacherId !== undefined && { teacher_id: teacherId }),
                 },
               },
             },

@@ -8,6 +8,7 @@ import { ToggleTeacherDialog } from '@/components/teachers/ToggleTeacherDialog'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageLoader } from '@/components/ui/page-loader'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { assignmentsApi, teachersApi } from '@/lib/api'
 import {
@@ -94,11 +95,7 @@ export default function ProfessoresPage() {
         </Link>
       </div>
 
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      )}
+      {isLoading && <PageLoader />}
 
       {error && (
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-4 text-sm text-destructive">

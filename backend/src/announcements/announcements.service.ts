@@ -146,7 +146,6 @@ export class AnnouncementsService {
       // Criar comunicado
       const announcement = await this.prisma.announcements.create({
         data: {
-          id: BigInt(Date.now()), // Usar timestamp como ID único
           creator_id: userId,
           title: dto.title,
           message: dto.message,
@@ -159,28 +158,22 @@ export class AnnouncementsService {
 
       // Criar targets se necessário
       if (dto.target_type === 'CLASS' && dto.class_ids) {
-        const targets = dto.class_ids.map((classId, index) => ({
-          id: BigInt(Date.now() + index + 1),
-          announcement_id: announcement.id,
-          class_id: BigInt(classId),
-          student_id: null,
-        }))
-
         await this.prisma.announcements_targets.createMany({
-          data: targets,
+          data: dto.class_ids.map((classId) => ({
+            announcement_id: announcement.id,
+            class_id: BigInt(classId),
+            student_id: null,
+          })),
         })
       }
 
       if (dto.target_type === 'STUDENT' && dto.student_ids) {
-        const targets = dto.student_ids.map((studentId, index) => ({
-          id: BigInt(Date.now() + index + 1),
-          announcement_id: announcement.id,
-          class_id: null,
-          student_id: BigInt(studentId),
-        }))
-
         await this.prisma.announcements_targets.createMany({
-          data: targets,
+          data: dto.student_ids.map((studentId) => ({
+            announcement_id: announcement.id,
+            class_id: null,
+            student_id: BigInt(studentId),
+          })),
         })
       }
 
@@ -323,7 +316,6 @@ export class AnnouncementsService {
       // Marcar como lido
       await this.prisma.announcement_reads.create({
         data: {
-          id: BigInt(Date.now()),
           announcement_id: announcementId,
           user_id: userId,
           read_at: new Date(),

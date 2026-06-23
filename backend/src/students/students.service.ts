@@ -45,22 +45,9 @@ export class StudentsService {
       const hashedPassword = await bcrypt.hash(provisionalPassword, 10)
       const now = new Date()
 
-      const maxUserId = await this.prisma.users.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextUserId = (maxUserId?.id ?? BigInt(0)) + BigInt(1)
-
-      const maxStudentId = await this.prisma.students.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextStudentId = (maxStudentId?.id ?? BigInt(0)) + BigInt(1)
-
       const student = await this.prisma.$transaction(async (tx) => {
-        await tx.users.create({
+        const user = await tx.users.create({
           data: {
-            id: nextUserId,
             email: dto.email,
             password: hashedPassword,
             role: 'ALUNO',
@@ -71,8 +58,7 @@ export class StudentsService {
 
         return tx.students.create({
           data: {
-            id: nextStudentId,
-            user_id: nextUserId,
+            user_id: user.id,
             full_name: dto.full_name,
             rm: dto.rm,
             status: 'ACTIVE',
@@ -132,21 +118,8 @@ export class StudentsService {
           const provisionalPassword = this.generateProvisionalPassword()
           const hashedPassword = await bcrypt.hash(provisionalPassword, 10)
 
-          const maxUserId = await tx.users.findFirst({
-            orderBy: { id: 'desc' },
-            select: { id: true },
-          })
-          const nextUserId = (maxUserId?.id ?? BigInt(0)) + BigInt(1)
-
-          const maxStudentId = await tx.students.findFirst({
-            orderBy: { id: 'desc' },
-            select: { id: true },
-          })
-          const nextStudentId = (maxStudentId?.id ?? BigInt(0)) + BigInt(1)
-
-          await tx.users.create({
+          const user = await tx.users.create({
             data: {
-              id: nextUserId,
               email: studentDto.email,
               password: hashedPassword,
               role: 'ALUNO',
@@ -157,8 +130,7 @@ export class StudentsService {
 
           const student = await tx.students.create({
             data: {
-              id: nextStudentId,
-              user_id: nextUserId,
+              user_id: user.id,
               full_name: studentDto.full_name,
               rm: studentDto.rm,
               status: 'ACTIVE',
@@ -331,17 +303,10 @@ export class StudentsService {
         throw new BadRequestException('Aluno já está matriculado nesta turma')
       }
 
-      const maxEnrollmentId = await this.prisma.enrollments.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-      const nextEnrollmentId = (maxEnrollmentId?.id ?? BigInt(0)) + BigInt(1)
-
       const now = new Date()
 
       return await this.prisma.enrollments.create({
         data: {
-          id: nextEnrollmentId,
           student_id: studentId,
           class_id: classId,
           final_result: 'IN_PROGRESS',

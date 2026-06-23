@@ -27,16 +27,8 @@ export class ClassesService {
         dto.shift,
       )
 
-      const maxIdRecord = await this.prisma.classes.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
-
       return await this.prisma.classes.create({
         data: {
-          id: nextId,
           year_id: yearId,
           education_level: dto.education_level,
           series: dto.series,

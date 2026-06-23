@@ -31,6 +31,12 @@ import { useAuth, UserRole } from "@/contexts/auth-context";
 
 type Profile = "ALUNO" | "PROFESSOR" | "SECRETARIA";
 
+const PROFILE_LABELS: Record<Profile, string> = {
+  ALUNO: "Aluno",
+  PROFESSOR: "Professor",
+  SECRETARIA: "Secretaria",
+};
+
 const loginSchema = z.object({
   email: z.string().email({ message: "Informe um e-mail valido." }),
   password: z.string().min(6, { message: "Minimo 6 caracteres." }),
@@ -93,6 +99,13 @@ export default function LoginPage() {
         access_token: string;
         user: { id: string; email: string; role: UserRole };
       };
+
+      if (result.user.role !== profile) {
+        setAuthError(
+          `Esta conta pertence ao perfil ${PROFILE_LABELS[result.user.role]}. Selecione o perfil correto e tente novamente.`,
+        );
+        return;
+      }
 
       signIn(result.access_token, result.user);
 

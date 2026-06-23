@@ -15,6 +15,8 @@ import {
 import { AnnouncementCard } from './AnnouncementCard'
 import { AnnouncementForm } from './AnnouncementForm'
 import { AnnouncementStats } from './AnnouncementStats'
+import { InlineError } from '@/components/dashboard/InlineError'
+import { PageLoader } from '@/components/ui/page-loader'
 import { Announcement, CreateAnnouncementDto } from '@/types/announcement'
 import { announcementsApi } from '@/lib/api/announcements'
 import { useAuth } from '@/contexts/auth-context'
@@ -49,6 +51,7 @@ export function AnnouncementList({
   const loadAnnouncements = async () => {
     try {
       setIsLoading(true)
+      setError(null)
       const data = await announcementsApi.findAll()
       const items = Array.isArray(data) ? data : []
       setAnnouncements(items)
@@ -252,10 +255,15 @@ export function AnnouncementList({
 
       {/* Lista de comunicados */}
       {isLoading ? (
-        <div className="flex items-center justify-center py-12">
-          <div className="text-center">
-            <RefreshCw className="mx-auto h-8 w-8 animate-spin text-neutral-400" />
-            <p className="mt-2 text-sm text-neutral-500">Carregando comunicados...</p>
+        <PageLoader label="Carregando comunicados..." />
+      ) : error ? (
+        <div className="space-y-4">
+          <InlineError message={error} />
+          <div className="flex justify-center">
+            <Button variant="outline" onClick={loadAnnouncements}>
+              <RefreshCw size={16} className="mr-1" />
+              Tentar novamente
+            </Button>
           </div>
         </div>
       ) : filteredAnnouncements.length === 0 ? (

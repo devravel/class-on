@@ -8,6 +8,7 @@ import { CloseAcademicYearModal } from "@/components/academic-years/CloseAcademi
 import { ListCard } from "@/components/dashboard/ListCard";
 import { Section } from "@/components/dashboard/Section";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PageLoader } from "@/components/ui/page-loader";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -90,11 +91,7 @@ export default function AcademicYearsPage() {
       </div>
 
       {/* Loading state */}
-      {isLoading && (
-        <div className="flex items-center justify-center py-12">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary border-t-transparent" />
-        </div>
-      )}
+      {isLoading && <PageLoader />}
 
       {/* Error state */}
       {error && (

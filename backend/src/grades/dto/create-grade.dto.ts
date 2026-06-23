@@ -3,25 +3,19 @@ import {
   IsNumber,
   Min,
   Max,
-  IsInt,
 } from 'class-validator'
 import { Transform } from 'class-transformer'
+import { IsBigIntId } from '../../common/dto/is-bigint-id.decorator'
 
 export class CreateGradeDto {
-  @IsNotEmpty({ message: 'ID da matrícula é obrigatório' })
-  @IsInt({ message: 'ID da matrícula deve ser um número inteiro' })
-  @Transform(({ value }) => parseInt(value))
-  enrollment_id: number
+  @IsBigIntId('ID da matrícula deve ser um número válido.')
+  enrollment_id: string
 
-  @IsNotEmpty({ message: 'ID da atribuição é obrigatório' })
-  @IsInt({ message: 'ID da atribuição deve ser um número inteiro' })
-  @Transform(({ value }) => parseInt(value))
-  assignment_id: number
+  @IsBigIntId('ID da atribuição deve ser um número válido.')
+  assignment_id: string
 
-  @IsNotEmpty({ message: 'ID do bimestre é obrigatório' })
-  @IsInt({ message: 'ID do bimestre deve ser um número inteiro' })
-  @Transform(({ value }) => parseInt(value))
-  bimester_id: number
+  @IsBigIntId('ID do bimestre deve ser um número válido.')
+  bimester_id: string
 
   @IsNotEmpty({ message: 'N1 é obrigatória' })
   @IsNumber({}, { message: 'N1 deve ser um número' })

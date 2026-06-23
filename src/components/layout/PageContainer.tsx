@@ -10,7 +10,12 @@ interface PageContainerProps {
 
 export function PageContainer({ children, className }: PageContainerProps) {
   return (
-    <div className={cn('mx-auto max-w-7xl p-6 lg:p-8', className)}>
+    <div
+      className={cn(
+        'mx-auto max-w-7xl p-6 pt-14 pl-14 lg:p-8 lg:pt-8 lg:pl-8',
+        className,
+      )}
+    >
       {children}
     </div>
   )

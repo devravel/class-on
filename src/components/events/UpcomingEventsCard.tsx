@@ -4,7 +4,9 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { Calendar, Clock, ChevronRight } from 'lucide-react'
 import { Section } from '@/components/dashboard/Section'
+import { InlineError } from '@/components/dashboard/InlineError'
 import { ListCard } from '@/components/dashboard/ListCard'
+import { PageLoader } from '@/components/ui/page-loader'
 import { eventsApi } from '@/lib/api/events'
 import { mapEventApiError, parseLocalDateFromApi } from '@/lib/events/feedback'
 
@@ -132,10 +134,7 @@ export function UpcomingEventsCard({
   if (error) {
     return (
       <Section title="Próximos Eventos">
-        <div className="flex h-24 flex-col items-center justify-center gap-1 rounded-lg border border-danger/20 bg-danger/5 px-3 py-4">
-          <p className="text-sm font-medium text-text-primary text-center">Não foi possível carregar os eventos</p>
-          <p className="text-xs text-text-secondary text-center leading-relaxed">{error}</p>
-        </div>
+        <InlineError message={error} />
       </Section>
     )
   }
@@ -143,12 +142,7 @@ export function UpcomingEventsCard({
   if (isLoading) {
     return (
       <Section title="Próximos Eventos">
-        <div className="flex h-24 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50">
-          <div className="text-center">
-            <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent mx-auto mb-2" />
-            <p className="text-sm text-text-secondary">Carregando eventos...</p>
-          </div>
-        </div>
+        <PageLoader label="Carregando eventos..." size="sm" inline className="h-24 rounded-lg border border-border bg-neutral-100" />
       </Section>
     )
   }

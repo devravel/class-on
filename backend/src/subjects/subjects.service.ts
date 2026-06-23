@@ -16,16 +16,8 @@ export class SubjectsService {
     try {
       await this.ensureNameUnique(dto.name)
 
-      const maxIdRecord = await this.prisma.subjects.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
-
       return await this.prisma.subjects.create({
         data: {
-          id: nextId,
           name: dto.name,
           description: dto.description,
         },

@@ -20,7 +20,7 @@ import {
   type LucideIcon,
 } from 'lucide-react'
 
-import { useAuth } from '@/contexts/auth-context'
+import { useAuth, type UserRole } from '@/contexts/auth-context'
 import { studentsApi } from '@/lib/api/students'
 import { cn } from '@/lib/utils'
 import type { Student } from '@/types/student'
@@ -34,40 +34,86 @@ type PaletteItem = {
   keywords?: string[]
 }
 
-const NAV_ACTIONS: PaletteItem[] = [
-  {
-    id: 'nav-secretaria',
-    label: 'Ir para Secretaria',
-    description: 'Painel administrativo',
-    href: '/secretaria',
-    icon: Building2,
-    keywords: ['secretaria', 'admin', 'dashboard'],
-  },
-  {
-    id: 'nav-professor-notas',
-    label: 'Lançar Notas (Professor)',
-    description: 'Gestão de turmas e avaliações',
-    href: '/professor/turmas',
-    icon: ClipboardList,
-    keywords: ['professor', 'notas', 'turmas', 'lançar'],
-  },
-  {
-    id: 'nav-aluno-boletim',
-    label: 'Ver Meu Boletim (Alunos)',
-    description: 'Notas e frequência escolar',
-    href: '/aluno/notas',
-    icon: GraduationCap,
-    keywords: ['aluno', 'boletim', 'notas', 'frequência'],
-  },
-  {
-    id: 'nav-comunicados',
-    label: 'Enviar Comunicado',
-    description: 'Comunicados institucionais',
-    href: '/secretaria/comunicados',
-    icon: Megaphone,
-    keywords: ['comunicado', 'avisos', 'mensagem'],
-  },
-]
+const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
+  SECRETARIA: [
+    {
+      id: 'nav-secretaria',
+      label: 'Ir para Secretaria',
+      description: 'Painel administrativo',
+      href: '/secretaria',
+      icon: Building2,
+      keywords: ['secretaria', 'admin', 'dashboard'],
+    },
+    {
+      id: 'nav-comunicados',
+      label: 'Enviar Comunicado',
+      description: 'Comunicados institucionais',
+      href: '/secretaria/comunicados',
+      icon: Megaphone,
+      keywords: ['comunicado', 'avisos', 'mensagem'],
+    },
+    {
+      id: 'nav-alunos',
+      label: 'Gerenciar Alunos',
+      description: 'Cadastro e matrículas',
+      href: '/secretaria/alunos',
+      icon: UserRound,
+      keywords: ['alunos', 'matricula', 'cadastro'],
+    },
+  ],
+  PROFESSOR: [
+    {
+      id: 'nav-professor',
+      label: 'Ir para Início (Professor)',
+      description: 'Painel do professor',
+      href: '/professor',
+      icon: Building2,
+      keywords: ['professor', 'inicio', 'dashboard'],
+    },
+    {
+      id: 'nav-professor-notas',
+      label: 'Minhas Turmas',
+      description: 'Notas, chamada e tarefas',
+      href: '/professor/turmas',
+      icon: ClipboardList,
+      keywords: ['professor', 'notas', 'turmas', 'chamada'],
+    },
+    {
+      id: 'nav-professor-comunicados',
+      label: 'Comunicados',
+      description: 'Avisos da escola',
+      href: '/professor/comunicados',
+      icon: Megaphone,
+      keywords: ['comunicado', 'avisos'],
+    },
+  ],
+  ALUNO: [
+    {
+      id: 'nav-aluno',
+      label: 'Ir para Início (Aluno)',
+      description: 'Painel do aluno',
+      href: '/aluno',
+      icon: Building2,
+      keywords: ['aluno', 'inicio', 'dashboard'],
+    },
+    {
+      id: 'nav-aluno-boletim',
+      label: 'Ver Meu Boletim',
+      description: 'Notas e frequência escolar',
+      href: '/aluno/notas',
+      icon: GraduationCap,
+      keywords: ['aluno', 'boletim', 'notas', 'frequência'],
+    },
+    {
+      id: 'nav-aluno-tarefas',
+      label: 'Minhas Tarefas',
+      description: 'Atividades pendentes',
+      href: '/aluno/tarefas',
+      icon: ClipboardList,
+      keywords: ['tarefas', 'atividades'],
+    },
+  ],
+}
 
 /** Alunos previstos no seed de demonstração (PROMPT 04) para busca offline na paleta. */
 const SEED_DEMO_STUDENTS: Array<{
@@ -249,6 +295,10 @@ export function CommandPalette() {
 
     if (apiItems.length > 0) return apiItems
 
+    if (process.env.NODE_ENV !== 'development') {
+      return []
+    }
+
     return SEED_DEMO_STUDENTS.filter((seed) => {
       const haystack = [seed.full_name, seed.rm, seed.email, seed.className].join(
         ' ',
@@ -257,10 +307,10 @@ export function CommandPalette() {
     }).map(seedStudentToPaletteItem)
   }, [query, students])
 
-  const navItems = useMemo(
-    () => NAV_ACTIONS.filter((item) => matchesQuery(item, query)),
-    [query],
-  )
+  const navItems = useMemo(() => {
+    const roleNav = user?.role ? NAV_BY_ROLE[user.role] : []
+    return roleNav.filter((item) => matchesQuery(item, query))
+  }, [query, user?.role])
 
   const items = useMemo(
     () => [...navItems, ...studentItems],

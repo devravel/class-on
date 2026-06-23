@@ -114,14 +114,23 @@ export class GradesService {
 
       // Calcular médias
       const average = this.calculateAverage(dto.n1, dto.n2, dto.n3, dto.n4)
-      const final_average = average // Sem recuperação inicialmente
 
-      const maxIdRecord = await this.prisma.grades.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
+      const existingGrade = await this.prisma.grades.findUnique({
+        where: {
+          enrollment_id_assignment_id_bimester_id: {
+            enrollment_id: enrollmentId,
+            assignment_id: assignmentId,
+            bimester_id: bimesterId,
+          },
+        },
+        select: { recovery_grade: true },
       })
 
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
+      const final_average = this.resolveFinalAverage(
+        average,
+        existingGrade?.recovery_grade ?? null,
+      )
+
       const now = new Date()
 
       // Usar upsert para criar ou atualizar
@@ -140,9 +149,9 @@ export class GradesService {
           n4: dto.n4,
           average,
           final_average,
+          ...(average >= 6.0 ? { recovery_grade: null } : {}),
         },
         create: {
-          id: nextId,
           enrollment_id: enrollmentId,
           assignment_id: assignmentId,
           bimester_id: bimesterId,
@@ -378,6 +387,21 @@ export class GradesService {
   private calculateAverage(n1: number, n2: number, n3: number, n4: number): number {
     const average = (n1 + n2 + n3 + n4) / 4
     return Math.round(average * 100) / 100 // Arredondar para 2 casas decimais
+  }
+
+  private resolveFinalAverage(
+    average: number,
+    recoveryGrade: Prisma.Decimal | number | null,
+  ): number {
+    if (average >= 6.0) {
+      return average
+    }
+
+    if (recoveryGrade != null) {
+      return this.calculateFinalAverage(average, Number(recoveryGrade))
+    }
+
+    return average
   }
 
   private calculateFinalAverage(average: number, recoveryGrade: number): number {

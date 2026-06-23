@@ -57,17 +57,10 @@ export class LessonsService {
       // Verificar se já existe aula duplicada
       await this.ensureUniqueLessonOrder(assignmentId, dto.date, dto.lesson_order)
 
-      const maxIdRecord = await this.prisma.lessons.findFirst({
-        orderBy: { id: 'desc' },
-        select: { id: true },
-      })
-
-      const nextId = (maxIdRecord?.id ?? BigInt(0)) + BigInt(1)
       const now = new Date()
 
       return await this.prisma.lessons.create({
         data: {
-          id: nextId,
           assignment_id: assignmentId,
           date: lessonDate,
           lesson_order: dto.lesson_order,
