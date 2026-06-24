@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { ClassCreationWizard } from '@/components/classes/ClassCreationWizard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { ClassWizardResponse } from '@/types/class'
 import { cn } from '@/lib/utils'
@@ -19,8 +20,8 @@ export default function NovaTurmaPage() {
   if (result) {
     return (
       <PageContainer>
+        <PageHeaderTitle title="Turma criada" />
         <div className="mb-8">
-          <h1 className="text-2xl font-bold text-text-primary">Turma criada</h1>
           <p className="text-sm text-text-secondary">
             A turma e todos os vínculos foram criados com sucesso.
           </p>
@@ -96,6 +97,7 @@ export default function NovaTurmaPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Nova Turma" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -105,7 +107,6 @@ export default function NovaTurmaPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Nova Turma</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Crie a turma, atribua professores e matricule alunos em um fluxo

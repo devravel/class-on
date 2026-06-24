@@ -1,22 +1,25 @@
 'use client'
 
-import { ArrowLeft, Archive, Loader2, Pencil } from 'lucide-react'
+import { ArrowLeft, Archive, Loader2, Pencil, Trash2 } from 'lucide-react'
 import Link from 'next/link'
-import { useParams } from 'next/navigation'
+import { useParams, useRouter } from 'next/navigation'
 import { useEffect, useMemo, useState } from 'react'
 
 import { ClassInfoCard } from '@/components/classes/ClassInfoCard'
 import { ClassStudentsList } from '@/components/classes/ClassStudentsList'
 import { ClassTeachersList } from '@/components/classes/ClassTeachersList'
+import { PermanentDeleteClassDialog } from '@/components/classes/PermanentDeleteClassDialog'
 import { PageContainer } from '@/components/layout/PageContainer'
-import { buttonVariants } from '@/components/ui/button'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
+import { Button, buttonVariants } from '@/components/ui/button'
 import { attendanceApi, classesApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
 import { ClassStudentAttendanceSummary } from '@/types/attendance'
-import { ClassDetails } from '@/types/class'
+import { Class, ClassDetails } from '@/types/class'
 
 export default function TurmaDetailPage() {
   const params = useParams<{ id: string }>()
+  const router = useRouter()
   const classId = params.id
 
   const [classDetails, setClassDetails] = useState<ClassDetails | null>(null)
@@ -25,6 +28,8 @@ export default function TurmaDetailPage() {
   >([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [isPermanentDeleteDialogOpen, setIsPermanentDeleteDialogOpen] =
+    useState(false)
 
   useEffect(() => {
     const load = async () => {
@@ -91,14 +96,14 @@ export default function TurmaDetailPage() {
             <ArrowLeft size={16} />
           </Link>
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Detalhes da Turma</h1>
-            <p className="mt-1 text-sm text-text-secondary">
+            <PageHeaderTitle title="Detalhes da Turma" />
+            <p className="text-sm text-text-secondary">
               Informações acadêmicas, professores e alunos
             </p>
           </div>
         </div>
 
-        {classDetails.is_active !== false && (
+        {classDetails.is_active !== false ? (
           <Link
             href={`/secretaria/turmas/${classId}/editar`}
             className={cn(buttonVariants({ variant: 'outline' }))}
@@ -106,6 +111,15 @@ export default function TurmaDetailPage() {
             <Pencil size={16} />
             Editar Turma
           </Link>
+        ) : (
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={() => setIsPermanentDeleteDialogOpen(true)}
+          >
+            <Trash2 size={16} />
+            Excluir permanentemente
+          </Button>
         )}
       </div>
 
@@ -114,7 +128,9 @@ export default function TurmaDetailPage() {
           <Archive size={18} className="mt-0.5 shrink-0" />
           <p>
             Esta turma está <strong className="text-text-primary">desativada</strong>.
-            Os dados históricos permanecem disponíveis apenas para consulta.
+            Os dados históricos permanecem disponíveis para consulta. Para remover
+            a turma e todos os dados vinculados do sistema, use a exclusão
+            permanente.
           </p>
         </div>
       )}
@@ -128,6 +144,13 @@ export default function TurmaDetailPage() {
           attendanceByStudentId={attendanceByStudentId}
         />
       </div>
+
+      <PermanentDeleteClassDialog
+        open={isPermanentDeleteDialogOpen}
+        onClose={() => setIsPermanentDeleteDialogOpen(false)}
+        classRecord={classDetails as Class}
+        onDeleted={() => router.push('/secretaria/turmas')}
+      />
     </PageContainer>
   )
 }

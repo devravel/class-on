@@ -10,7 +10,7 @@ import {
 } from 'react'
 import { usePathname } from 'next/navigation'
 
-const BASE_ROUTES = ['/secretaria', '/professor', '/aluno']
+const BASE_ROUTES = ['/secretaria', '/professor', '/aluno', '/monitoramento']
 
 function isBaseRoute(pathname: string): boolean {
   return BASE_ROUTES.some(

@@ -1,28 +1,31 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { PageContainer } from '@/components/layout/PageContainer'
-import { CalendarView } from '@/components/events/CalendarView'
-import { EventDialog } from '@/components/events/EventDialog'
-import { CalendarEvent } from '@/lib/api/events'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState } from "react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeaderTitle } from "@/contexts/page-header-context";
+import { CalendarView } from "@/components/events/CalendarView";
+import { EventDialog } from "@/components/events/EventDialog";
+import { CalendarEvent } from "@/lib/api/events";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function AlunoCalendarioPage() {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null,
+  );
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
 
   const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event)
-    setIsEventDialogOpen(true)
-  }
+    setSelectedEvent(event);
+    setIsEventDialogOpen(true);
+  };
 
   return (
     <PageContainer>
       {/* Page heading */}
+      <PageHeaderTitle title="Agendão" />
       <div className="mb-6">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Meu Calendário</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary">
             Eventos da sua turma e eventos gerais da escola
           </p>
         </div>
@@ -31,9 +34,7 @@ export default function AlunoCalendarioPage() {
       {/* Calendar */}
       <Card>
         <CardContent className="p-6">
-          <CalendarView
-            onEventClick={handleEventClick}
-          />
+          <CalendarView onEventClick={handleEventClick} />
         </CardContent>
       </Card>
 
@@ -42,10 +43,10 @@ export default function AlunoCalendarioPage() {
         event={selectedEvent}
         isOpen={isEventDialogOpen}
         onClose={() => {
-          setIsEventDialogOpen(false)
-          setSelectedEvent(null)
+          setIsEventDialogOpen(false);
+          setSelectedEvent(null);
         }}
       />
     </PageContainer>
-  )
+  );
 }

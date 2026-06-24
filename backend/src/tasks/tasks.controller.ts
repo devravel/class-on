@@ -7,6 +7,7 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   UseGuards,
 } from '@nestjs/common'
@@ -18,6 +19,7 @@ import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { TasksService } from './tasks.service'
 import { CreateTaskDto } from './dto/create-task.dto'
 import { SubmitTaskDto } from './dto/submit-task.dto'
+import { UpdateTaskDto } from './dto/update-task.dto'
 
 @Controller('tasks')
 @UseGuards(JwtAuthGuard, RolesGuard)
@@ -97,6 +99,19 @@ export class TasksController {
       return this.tasksService.findOne(taskId, user.teacher.id)
     }
     return this.tasksService.findOne(taskId)
+  }
+
+  @Patch(':id')
+  @Roles('PROFESSOR')
+  update(
+    @Param('id') id: string,
+    @Body() dto: UpdateTaskDto,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (!user.teacher) {
+      throw new ForbiddenException('Perfil de professor não encontrado.')
+    }
+    return this.tasksService.update(BigInt(id), dto, user.teacher.id)
   }
 
   @Delete(':id')

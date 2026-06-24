@@ -13,6 +13,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -164,9 +165,9 @@ export default function AlunoTarefasPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Minhas Tarefas" />
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Minhas Tarefas</h1>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary">
           {pendingCount > 0
             ? `${pendingCount} tarefa${pendingCount !== 1 ? 's' : ''} aguardando entrega`
             : 'Todas as tarefas foram entregues'}
@@ -195,7 +196,7 @@ export default function AlunoTarefasPage() {
               'rounded-full px-4 py-1.5 text-xs font-medium transition-colors',
               filter === option.id
                 ? 'bg-primary text-primary-foreground'
-                : 'bg-neutral-100 text-text-secondary hover:bg-neutral-200',
+                : 'nav-item-light rounded-full bg-neutral-100 px-4 py-1.5 text-xs font-medium',
             )}
           >
             {option.label}

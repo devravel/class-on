@@ -6,8 +6,8 @@ import { useState, useEffect } from "react";
 
 import { CloseAcademicYearModal } from "@/components/academic-years/CloseAcademicYearModal";
 import { ListCard } from "@/components/dashboard/ListCard";
-import { Section } from "@/components/dashboard/Section";
 import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeaderTitle } from "@/contexts/page-header-context";
 import { PageLoader } from "@/components/ui/page-loader";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -72,18 +72,15 @@ export default function AcademicYearsPage() {
 
   return (
     <PageContainer>
-      {/* Page heading */}
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Anos Letivos</h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            Gerencie os ciclos acadêmicos institucionais
-          </p>
-        </div>
+      <PageHeaderTitle title="Anos Letivos" />
 
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-text-secondary">
+          Lista de todos os anos letivos cadastrados no sistema
+        </p>
         <Link
           href="/secretaria/academic-years/novo"
-          className={cn(buttonVariants())}
+          className={cn(buttonVariants(), "shrink-0")}
         >
           <Plus size={16} />
           Novo ano letivo
@@ -102,11 +99,7 @@ export default function AcademicYearsPage() {
 
       {/* Lista de anos letivos */}
       {!isLoading && !error && (
-        <Section
-          title="Anos Letivos Cadastrados"
-          description="Lista de todos os anos letivos cadastrados no sistema"
-        >
-          <ListCard
+        <ListCard
             items={academicYears}
             emptyMessage="Nenhum ano letivo encontrado."
             renderItem={(item) => {
@@ -150,7 +143,6 @@ export default function AcademicYearsPage() {
             );
           }}
         />
-        </Section>
       )}
 
       <CloseAcademicYearModal

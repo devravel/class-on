@@ -20,6 +20,20 @@ export function getClassLabel(classInfo: ClassLabelInfo): string {
   return `${seriesLabel} ${classInfo.letter} — ${shiftLabel}`
 }
 
+export function getClassLabelLoose(classInfo: {
+  series: number | string
+  letter: string
+  shift: string
+  education_level?: string | null
+}): string {
+  return getClassLabel({
+    series: Number(classInfo.series),
+    letter: classInfo.letter,
+    shift: classInfo.shift,
+    education_level: normalizeEducationLevel(classInfo.education_level),
+  })
+}
+
 export function getClassShortLabel(classInfo: Pick<ClassLabelInfo, 'series' | 'letter' | 'education_level'>): string {
   return formatClassShortLabel({
     ...classInfo,
@@ -38,9 +52,30 @@ export function calculateAverage(n1: number, n2: number, n3: number, n4: number)
   return Math.round(avg * 100) / 100
 }
 
-export function parseGradeValue(value: string | number | null | undefined): number {
+function parseDecimalJsShape(value: { s: number; e: number; d: number[] }): number {
+  let coefficient = value.d[0] ?? 0
+  for (let index = 1; index < value.d.length; index += 1) {
+    coefficient = coefficient * 1e7 + value.d[index]
+  }
+
+  const digitCount = String(value.d[0] ?? 0).length + (value.d.length - 1) * 7
+  const parsed = value.s * coefficient * 10 ** (value.e - digitCount + 1)
+  return Number.isNaN(parsed) ? 0 : parsed
+}
+
+export function parseGradeValue(
+  value: string | number | { s: number; e: number; d: number[] } | null | undefined,
+): number {
   if (value === null || value === undefined || value === '') return 0
-  const num = typeof value === 'string' ? parseFloat(value) : value
+  if (typeof value === 'number') return Number.isNaN(value) ? 0 : value
+  if (typeof value === 'string') {
+    const num = parseFloat(value)
+    return Number.isNaN(num) ? 0 : num
+  }
+  if (typeof value === 'object' && Array.isArray(value.d)) {
+    return parseDecimalJsShape(value)
+  }
+  const num = Number(value)
   return Number.isNaN(num) ? 0 : num
 }
 

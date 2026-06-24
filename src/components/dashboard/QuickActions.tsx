@@ -28,7 +28,7 @@ export function QuickActions({ actions }: QuickActionsProps) {
               'flex flex-col items-center justify-center gap-2.5 rounded-card p-5 text-center transition-colors',
               action.variant === 'default'
                 ? 'bg-primary text-white hover:bg-primary/90'
-                : 'bg-surface text-text-secondary ring-1 ring-border hover:bg-neutral-200 hover:text-text-primary',
+                : 'nav-item-light bg-surface ring-1 ring-border',
             )}
           >
             <Icon size={22} className="shrink-0" />

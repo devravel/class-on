@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  ForbiddenException,
   Get,
   Param,
   Patch,
@@ -59,8 +60,22 @@ export class GradesController {
   }
 
   @Get('student/:studentId')
-  @Roles('SECRETARIA')
-  findByStudent(@Param('studentId') studentId: string) {
+  @Roles('SECRETARIA', 'PROFESSOR')
+  findByStudent(
+    @Param('studentId') studentId: string,
+    @CurrentUser() user: AuthenticatedUser,
+  ) {
+    if (user.role === 'PROFESSOR') {
+      if (!user.teacher) {
+        throw new ForbiddenException('Perfil de professor não encontrado.')
+      }
+
+      return this.gradesService.findByStudentForTeacher(
+        BigInt(studentId),
+        user.teacher.id,
+      )
+    }
+
     return this.gradesService.findByStudent(BigInt(studentId))
   }
 }

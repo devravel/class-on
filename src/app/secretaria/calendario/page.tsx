@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { Plus } from 'lucide-react'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button } from '@/components/ui/button'
 import { CalendarView } from '@/components/events/CalendarView'
 import { EventForm } from '@/components/events/EventForm'
@@ -43,8 +44,8 @@ export default function SecretariaCalendarioPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Agendão Escolar</h1>
-            <p className="mt-1 text-sm text-text-secondary">
+            <PageHeaderTitle title="Agendão Escolar" />
+            <p className="text-sm text-text-secondary">
               {viewMode === 'institutional' 
                 ? 'Calendário institucional completo' 
                 : 'Calendário filtrado por turma'

@@ -11,16 +11,39 @@ import {
 import { useRouter } from 'next/navigation'
 import { getClassShortLabel } from '@/lib/class-utils'
 import {
-  Building2,
+  assignmentToClassOption,
+  buildProfessorActionHref,
+  createLocalIntentResponse,
+  detectLocalCommandIntent,
+  filterProfessorClasses,
+  getProfessorActionLabel,
+  getUnrecognizedFallbackMessage,
+  normalizeCommandText,
+  resolveCommandIntentResponse,
+  resolveLocalIntentForRole,
+  shouldShowUnrecognizedFallback,
+  type CommandIntentResponse,
+  type PaletteNestedView,
+  type ProfessorClassOption,
+  type ProfessorCommandAction,
+} from '@/lib/command-intent'
+import {
+  BarChart2,
+  BookOpen,
+  Calendar,
   ClipboardList,
   GraduationCap,
+  ListTodo,
+  Loader2,
   Megaphone,
   Search,
+  UserCheck,
   UserRound,
   type LucideIcon,
 } from 'lucide-react'
 
 import { useAuth, type UserRole } from '@/contexts/auth-context'
+import { assignmentsApi, authApi } from '@/lib/api'
 import { studentsApi } from '@/lib/api/students'
 import { cn } from '@/lib/utils'
 import type { Student } from '@/types/student'
@@ -32,85 +55,123 @@ type PaletteItem = {
   href: string
   icon: LucideIcon
   keywords?: string[]
+  professorIntent?: ProfessorCommandAction
 }
+
+const COMMAND_INTENT_TIMEOUT_MS = 1500
 
 const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
   SECRETARIA: [
     {
-      id: 'nav-secretaria',
-      label: 'Ir para Secretaria',
-      description: 'Painel administrativo',
+      id: 'nav-secretaria-painel',
+      label: 'Painel e Métricas',
+      description: 'Gráfico de risco e evasão escolar',
       href: '/secretaria',
-      icon: Building2,
-      keywords: ['secretaria', 'admin', 'dashboard'],
-    },
-    {
-      id: 'nav-comunicados',
-      label: 'Enviar Comunicado',
-      description: 'Comunicados institucionais',
-      href: '/secretaria/comunicados',
-      icon: Megaphone,
-      keywords: ['comunicado', 'avisos', 'mensagem'],
+      icon: BarChart2,
+      keywords: ['secretaria', 'painel', 'dashboard', 'risco', 'evasao', 'metricas', 'grafico'],
     },
     {
       id: 'nav-alunos',
       label: 'Gerenciar Alunos',
-      description: 'Cadastro e matrículas',
+      description: 'Cadastro, matrículas e busca',
       href: '/secretaria/alunos',
       icon: UserRound,
-      keywords: ['alunos', 'matricula', 'cadastro'],
+      keywords: ['alunos', 'matricula', 'cadastro', 'estudante', 'listar', 'buscar'],
+    },
+    {
+      id: 'nav-secretaria-turmas',
+      label: 'Gerenciar Turmas',
+      description: 'Turmas, séries e matrículas',
+      href: '/secretaria/turmas',
+      icon: BookOpen,
+      keywords: ['turmas', 'series', 'classes', 'matricula'],
+    },
+    {
+      id: 'nav-comunicados',
+      label: 'Enviar Comunicado',
+      description: 'Avisos institucionais e comunicados',
+      href: '/secretaria/comunicados',
+      icon: Megaphone,
+      keywords: ['comunicado', 'avisos', 'mensagem', 'gerar comunicado', 'pais'],
     },
   ],
   PROFESSOR: [
     {
-      id: 'nav-professor',
-      label: 'Ir para Início (Professor)',
-      description: 'Painel do professor',
-      href: '/professor',
-      icon: Building2,
-      keywords: ['professor', 'inicio', 'dashboard'],
+      id: 'prof-chamada',
+      label: 'Realizar Chamada',
+      description: 'Registrar presença e faltas',
+      href: '/professor/turmas',
+      icon: UserCheck,
+      professorIntent: 'chamada',
+      keywords: ['chamada', 'presenca', 'frequencia', 'faltas', 'diario'],
     },
     {
-      id: 'nav-professor-notas',
-      label: 'Minhas Turmas',
-      description: 'Notas, chamada e tarefas',
+      id: 'prof-notas',
+      label: 'Lançar Notas',
+      description: 'Lançamento e recuperação',
       href: '/professor/turmas',
       icon: ClipboardList,
-      keywords: ['professor', 'notas', 'turmas', 'chamada'],
+      professorIntent: 'notas',
+      keywords: ['notas', 'lancar notas', 'medias', 'recuperacao', 'boletim'],
     },
     {
-      id: 'nav-professor-comunicados',
-      label: 'Comunicados',
-      description: 'Avisos da escola',
-      href: '/professor/comunicados',
-      icon: Megaphone,
-      keywords: ['comunicado', 'avisos'],
+      id: 'prof-tarefa',
+      label: 'Criar Tarefa',
+      description: 'Dever de casa e atividades',
+      href: '/professor/turmas',
+      icon: ListTodo,
+      professorIntent: 'tarefa',
+      keywords: ['tarefa', 'tarefas', 'atividade', 'dever de casa'],
+    },
+    {
+      id: 'nav-professor-turmas',
+      label: 'Minhas Turmas',
+      description: 'Ver todas as turmas atribuídas',
+      href: '/professor/turmas',
+      icon: BookOpen,
+      keywords: ['turmas', 'disciplinas', 'salas'],
     },
   ],
   ALUNO: [
     {
-      id: 'nav-aluno',
-      label: 'Ir para Início (Aluno)',
-      description: 'Painel do aluno',
-      href: '/aluno',
-      icon: Building2,
-      keywords: ['aluno', 'inicio', 'dashboard'],
-    },
-    {
       id: 'nav-aluno-boletim',
       label: 'Ver Meu Boletim',
-      description: 'Notas e frequência escolar',
+      description: 'Notas por disciplina e bimestre',
       href: '/aluno/notas',
       icon: GraduationCap,
-      keywords: ['aluno', 'boletim', 'notas', 'frequência'],
+      keywords: ['boletim', 'notas', 'minhas notas'],
+    },
+    {
+      id: 'nav-aluno-frequencia',
+      label: 'Minha Frequência',
+      description: 'Frequência geral e por disciplina',
+      href: '/aluno/frequencia',
+      icon: GraduationCap,
+      keywords: ['frequencia', 'frequência', 'presenca', 'presença', 'faltas', 'chamada'],
     },
     {
       id: 'nav-aluno-tarefas',
       label: 'Minhas Tarefas',
-      description: 'Atividades pendentes',
+      description: 'Atividades pendentes e entregas',
       href: '/aluno/tarefas',
       icon: ClipboardList,
-      keywords: ['tarefas', 'atividades'],
+      keywords: ['tarefas', 'atividades', 'entregar', 'pendentes'],
+    },
+    {
+      id: 'nav-aluno-comunicados',
+      label: 'Comunicados',
+      description: 'Avisos e mensagens da escola',
+      href: '/aluno/comunicados',
+      icon: Megaphone,
+      keywords: ['comunicado', 'avisos', 'mensagens'],
+    },
+    {
+      id: 'nav-aluno-calendario',
+      label: 'Agendão Escolar',
+      description: 'Eventos e calendário acadêmico',
+      href: '/aluno/calendario',
+      icon: Calendar,
+      keywords: ['agendao', 'calendario', 'eventos', 'datas'],
     },
   ],
 }
@@ -155,11 +216,7 @@ const SEED_DEMO_STUDENTS: Array<{
 ]
 
 function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .trim()
+  return normalizeCommandText(value)
 }
 
 function matchesQuery(item: PaletteItem, query: string): boolean {
@@ -204,15 +261,54 @@ function seedStudentToPaletteItem(
   }
 }
 
+async function fetchCommandIntent(
+  input: string,
+  role: UserRole,
+  availableClasses: string[],
+  token: string | null,
+): Promise<CommandIntentResponse | null> {
+  if (!token) return null
+
+  const controller = new AbortController()
+  const timeoutId = window.setTimeout(
+    () => controller.abort(),
+    COMMAND_INTENT_TIMEOUT_MS,
+  )
+
+  try {
+    const response = await fetch('/api/ai/command-intent', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ input, role, availableClasses }),
+      signal: controller.signal,
+    })
+
+    if (!response.ok) return null
+    return (await response.json()) as CommandIntentResponse
+  } catch {
+    return null
+  } finally {
+    window.clearTimeout(timeoutId)
+  }
+}
+
 export function CommandPalette() {
   const router = useRouter()
-  const { isAuthenticated, user } = useAuth()
+  const { isAuthenticated, user, token } = useAuth()
   const [isOpen, setIsOpen] = useState(false)
   const [query, setQuery] = useState('')
   const [activeIndex, setActiveIndex] = useState(0)
   const [students, setStudents] = useState<Student[]>([])
+  const [professorClasses, setProfessorClasses] = useState<ProfessorClassOption[]>([])
+  const [nestedView, setNestedView] = useState<PaletteNestedView | null>(null)
+  const [isResolvingIntent, setIsResolvingIntent] = useState(false)
+  const [forceUnrecognized, setForceUnrecognized] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
   const listRef = useRef<HTMLDivElement>(null)
+  const prevQueryRef = useRef('')
 
   const loadStudents = useCallback(async () => {
     if (user?.role !== 'SECRETARIA') return
@@ -225,18 +321,44 @@ export function CommandPalette() {
     }
   }, [user?.role])
 
+  const loadProfessorClasses = useCallback(async () => {
+    if (user?.role !== 'PROFESSOR') return
+
+    try {
+      const me = await authApi.getMe()
+      if (!me.teacher) {
+        setProfessorClasses([])
+        return
+      }
+
+      const assignments = await assignmentsApi.getByTeacher(me.teacher.id)
+      setProfessorClasses(assignments.map(assignmentToClassOption))
+    } catch {
+      setProfessorClasses([])
+    }
+  }, [user?.role])
+
   const closePalette = useCallback(() => {
     setIsOpen(false)
     setQuery('')
     setActiveIndex(0)
+    setNestedView(null)
+    setIsResolvingIntent(false)
+    setForceUnrecognized(false)
+    prevQueryRef.current = ''
   }, [])
 
   const openPalette = useCallback(() => {
     setIsOpen(true)
     setQuery('')
     setActiveIndex(0)
+    setNestedView(null)
+    setIsResolvingIntent(false)
+    setForceUnrecognized(false)
+    prevQueryRef.current = ''
     void loadStudents()
-  }, [loadStudents])
+    void loadProfessorClasses()
+  }, [loadProfessorClasses, loadStudents])
 
   useEffect(() => {
     function handleKeyDown(event: KeyboardEvent) {
@@ -277,6 +399,39 @@ export function CommandPalette() {
     }
   }, [isOpen])
 
+  useEffect(() => {
+    const hadQuery = prevQueryRef.current.trim().length > 0
+    const hasQuery = query.trim().length > 0
+
+    // Reset nested view only when the user clears typed text — not when opening
+    // a class picker from a nav shortcut with an empty query.
+    if (hadQuery && !hasQuery && nestedView) {
+      setNestedView(null)
+    }
+
+    prevQueryRef.current = query
+    setForceUnrecognized(false)
+  }, [nestedView, query])
+
+  const heuristicIntent = useMemo(() => {
+    if (user?.role !== 'PROFESSOR') return null
+    return detectLocalCommandIntent(query)
+  }, [query, user?.role])
+
+  const activePickerAction = nestedView?.action ?? heuristicIntent
+
+  const classPickerOptions = useMemo(() => {
+    if (!activePickerAction) return []
+    return filterProfessorClasses(
+      professorClasses,
+      query,
+      activePickerAction,
+    )
+  }, [activePickerAction, professorClasses, query])
+
+  const isClassPickerMode =
+    user?.role === 'PROFESSOR' && Boolean(activePickerAction)
+
   const studentItems = useMemo(() => {
     const normalizedQuery = normalizeText(query)
     if (!normalizedQuery) return []
@@ -307,19 +462,36 @@ export function CommandPalette() {
     }).map(seedStudentToPaletteItem)
   }, [query, students])
 
-  const navItems = useMemo(() => {
-    const roleNav = user?.role ? NAV_BY_ROLE[user.role] : []
-    return roleNav.filter((item) => matchesQuery(item, query))
-  }, [query, user?.role])
+  const staticNavItems = useMemo(() => {
+    return user?.role ? NAV_BY_ROLE[user.role] : []
+  }, [user?.role])
 
-  const items = useMemo(
+  const navItems = useMemo(() => {
+    return staticNavItems.filter((item) => matchesQuery(item, query))
+  }, [query, staticNavItems])
+
+  const defaultItems = useMemo(
     () => [...navItems, ...studentItems],
     [navItems, studentItems],
   )
 
+  const isUnrecognized = useMemo(() => {
+    if (forceUnrecognized) return true
+    if (!query.trim() || isClassPickerMode) return false
+    if (defaultItems.length > 0) return false
+    return shouldShowUnrecognizedFallback(query, user?.role, false)
+  }, [defaultItems.length, forceUnrecognized, isClassPickerMode, query, user?.role])
+
+  const displayNavItems = isUnrecognized ? staticNavItems : navItems
+  const displayItems = isUnrecognized ? staticNavItems : defaultItems
+
+  const visibleItemCount = isClassPickerMode
+    ? classPickerOptions.length
+    : displayItems.length
+
   useEffect(() => {
     setActiveIndex(0)
-  }, [query])
+  }, [query, isClassPickerMode, classPickerOptions.length, displayItems.length])
 
   useEffect(() => {
     if (!listRef.current) return
@@ -328,31 +500,237 @@ export function CommandPalette() {
       `[data-index="${activeIndex}"]`,
     )
     activeElement?.scrollIntoView({ block: 'nearest' })
-  }, [activeIndex, items.length])
+  }, [activeIndex, visibleItemCount])
 
-  function navigateTo(href: string) {
-    closePalette()
-    router.push(href)
-  }
+  const navigateTo = useCallback(
+    (href: string) => {
+      closePalette()
+      router.push(href)
+    },
+    [closePalette, router],
+  )
 
-  function handleInputKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
-    if (event.key === 'ArrowDown') {
-      event.preventDefault()
-      setActiveIndex((current) => (current + 1) % Math.max(items.length, 1))
-    }
+  const navigateProfessorAction = useCallback(
+    (assignmentId: string, action: ProfessorCommandAction) => {
+      navigateTo(buildProfessorActionHref(assignmentId, action))
+    },
+    [navigateTo],
+  )
 
-    if (event.key === 'ArrowUp') {
-      event.preventDefault()
-      setActiveIndex((current) =>
-        current === 0 ? Math.max(items.length - 1, 0) : current - 1,
+  const openProfessorIntentPicker = useCallback(
+    (action: ProfessorCommandAction) => {
+      setForceUnrecognized(false)
+      setNestedView({ mode: 'class-picker', action, source: 'heuristic' })
+      setActiveIndex(0)
+    },
+    [],
+  )
+
+  const handlePaletteItemSelect = useCallback(
+    (item: PaletteItem) => {
+      if (item.professorIntent && user?.role === 'PROFESSOR') {
+        openProfessorIntentPicker(item.professorIntent)
+        return
+      }
+
+      navigateTo(item.href)
+    },
+    [navigateTo, openProfessorIntentPicker, user?.role],
+  )
+
+  const resolveHybridIntent = useCallback(async (): Promise<boolean> => {
+    const trimmedQuery = query.trim()
+    if (!trimmedQuery || !user?.role) return false
+
+    setForceUnrecognized(false)
+    setIsResolvingIntent(true)
+
+    try {
+      const localResolution = resolveLocalIntentForRole(
+        user.role,
+        trimmedQuery,
+        professorClasses,
       )
+
+      if (localResolution?.type === 'navigate') {
+        navigateTo(localResolution.href)
+        return true
+      }
+
+      const aiResponse = await fetchCommandIntent(
+        trimmedQuery,
+        user.role,
+        user.role === 'PROFESSOR'
+          ? professorClasses.map((classOption) => classOption.shortLabel)
+          : [],
+        token,
+      )
+
+      if (aiResponse) {
+        const aiResolution = resolveCommandIntentResponse(
+          user.role,
+          aiResponse,
+          professorClasses,
+        )
+
+        if (aiResolution?.type === 'navigate') {
+          navigateTo(aiResolution.href)
+          return true
+        }
+
+        if (aiResolution?.type === 'class-picker') {
+          setNestedView({
+            mode: 'class-picker',
+            action: aiResolution.action,
+            source: 'ai',
+          })
+          return true
+        }
+
+        if (aiResolution?.type === 'unknown') {
+          const fallbackResponse = createLocalIntentResponse(
+            user.role,
+            trimmedQuery,
+            professorClasses,
+          )
+          const fallbackResolution = resolveCommandIntentResponse(
+            user.role,
+            fallbackResponse,
+            professorClasses,
+          )
+
+          if (fallbackResolution?.type === 'navigate') {
+            navigateTo(fallbackResolution.href)
+            return true
+          }
+
+          if (fallbackResolution?.type === 'class-picker') {
+            setNestedView({
+              mode: 'class-picker',
+              action: fallbackResolution.action,
+              source: 'heuristic',
+            })
+            return true
+          }
+
+          setForceUnrecognized(true)
+          return true
+        }
+      }
+
+      if (localResolution?.type === 'class-picker') {
+        setNestedView({
+          mode: 'class-picker',
+          action: localResolution.action,
+          source: 'heuristic',
+        })
+        return true
+      }
+
+      if (shouldShowUnrecognizedFallback(trimmedQuery, user.role, false)) {
+        setForceUnrecognized(true)
+        return true
+      }
+    } catch {
+      const fallbackResponse = createLocalIntentResponse(
+        user.role,
+        trimmedQuery,
+        professorClasses,
+      )
+      const fallbackResolution = resolveCommandIntentResponse(
+        user.role,
+        fallbackResponse,
+        professorClasses,
+      )
+
+      if (fallbackResolution?.type === 'navigate') {
+        navigateTo(fallbackResolution.href)
+        return true
+      }
+
+      if (fallbackResolution?.type === 'class-picker') {
+        setNestedView({
+          mode: 'class-picker',
+          action: fallbackResolution.action,
+          source: 'heuristic',
+        })
+        return true
+      }
+
+      setForceUnrecognized(true)
+      return true
+    } finally {
+      setIsResolvingIntent(false)
     }
 
-    if (event.key === 'Enter' && items[activeIndex]) {
-      event.preventDefault()
-      navigateTo(items[activeIndex].href)
-    }
-  }
+    return false
+  }, [
+    navigateTo,
+    professorClasses,
+    query,
+    token,
+    user?.role,
+  ])
+
+  const handleInputKeyDown = useCallback(
+    async (event: ReactKeyboardEvent<HTMLInputElement>) => {
+      if (event.key === 'ArrowDown') {
+        event.preventDefault()
+        setActiveIndex(
+          (current) => (current + 1) % Math.max(visibleItemCount, 1),
+        )
+        return
+      }
+
+      if (event.key === 'ArrowUp') {
+        event.preventDefault()
+        setActiveIndex((current) =>
+          current === 0 ? Math.max(visibleItemCount - 1, 0) : current - 1,
+        )
+        return
+      }
+
+      if (event.key !== 'Enter') return
+
+      if (isClassPickerMode && classPickerOptions[activeIndex]) {
+        event.preventDefault()
+        const selected = classPickerOptions[activeIndex]
+        if (activePickerAction) {
+          navigateProfessorAction(selected.assignmentId, activePickerAction)
+        }
+        return
+      }
+
+      if (query.trim() && !isClassPickerMode) {
+        event.preventDefault()
+        const handled = await resolveHybridIntent()
+        if (handled) return
+      }
+
+      const selectedItem = displayItems[activeIndex]
+      if (selectedItem) {
+        event.preventDefault()
+        handlePaletteItemSelect(selectedItem)
+      }
+    },
+    [
+      activeIndex,
+      activePickerAction,
+      classPickerOptions,
+      displayItems,
+      handlePaletteItemSelect,
+      isClassPickerMode,
+      navigateProfessorAction,
+      query,
+      resolveHybridIntent,
+      visibleItemCount,
+    ],
+  )
+
+  const inputPlaceholder =
+    user?.role === 'PROFESSOR'
+      ? 'Buscar ações ou digite um comando (ex: Realizar chamada)...'
+      : 'Buscar ações ou alunos...'
 
   if (!isAuthenticated) return null
 
@@ -383,29 +761,89 @@ export function CommandPalette() {
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
                 onKeyDown={handleInputKeyDown}
-                placeholder="Buscar ações ou alunos..."
+                placeholder={inputPlaceholder}
                 className="flex-1 bg-transparent text-sm text-text-primary outline-none placeholder:text-text-secondary"
                 aria-label="Buscar na paleta de comandos"
               />
+              {isResolvingIntent && (
+                <Loader2 className="h-4 w-4 shrink-0 animate-spin text-text-secondary" />
+              )}
               <kbd className="hidden rounded border border-border bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-text-secondary sm:inline">
                 ESC
               </kbd>
             </div>
 
             <div ref={listRef} className="max-h-[min(50vh,360px)] overflow-y-auto p-2">
-              {items.length === 0 ? (
-                <p className="px-3 py-8 text-center text-sm text-text-secondary">
-                  Nenhum resultado para &ldquo;{query}&rdquo;
-                </p>
-              ) : (
+              {isClassPickerMode && activePickerAction ? (
                 <>
-                  {navItems.length > 0 && (
-                    <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
-                      Navegação rápida
-                    </p>
-                  )}
+                  <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                    {getProfessorActionLabel(activePickerAction)} — escolha a turma
+                  </p>
 
-                  {navItems.map((item, index) => {
+                  {classPickerOptions.length === 0 ? (
+                    <p className="px-3 py-8 text-center text-sm text-text-secondary">
+                      Nenhuma turma atribuída encontrada.
+                    </p>
+                  ) : (
+                    classPickerOptions.map((classOption, index) => {
+                      const isActive = activeIndex === index
+
+                      return (
+                        <button
+                          key={classOption.assignmentId}
+                          type="button"
+                          data-index={index}
+                          onMouseEnter={() => setActiveIndex(index)}
+                          onClick={() =>
+                            navigateProfessorAction(
+                              classOption.assignmentId,
+                              activePickerAction,
+                            )
+                          }
+                          className={cn(
+                            'flex w-full items-center gap-3 rounded-component px-3 py-2.5 text-left transition-colors',
+                            isActive
+                              ? 'bg-primary text-white'
+                              : 'nav-item-light-emphasis',
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'flex h-9 w-9 shrink-0 items-center justify-center rounded-component',
+                              isActive
+                                ? 'bg-white/20 text-white'
+                                : 'bg-brand-100 text-brand-700',
+                            )}
+                          >
+                            <BookOpen size={18} />
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span className="block truncate text-sm font-medium">
+                              {classOption.shortLabel}
+                            </span>
+                            <span
+                              className={cn(
+                                'block truncate text-xs',
+                                isActive ? 'text-white/80' : 'text-text-secondary',
+                              )}
+                            >
+                              {classOption.subjectName}
+                            </span>
+                          </span>
+                        </button>
+                      )
+                    })
+                  )}
+                </>
+              ) : isUnrecognized && user?.role ? (
+                <>
+                  <p className="px-3 py-4 text-center text-sm text-text-secondary">
+                    {getUnrecognizedFallbackMessage(user.role)}
+                  </p>
+                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                    Atalhos disponíveis
+                  </p>
+                  {displayNavItems.map((item, index) => {
                     const Icon = item.icon
                     const isActive = activeIndex === index
 
@@ -415,12 +853,71 @@ export function CommandPalette() {
                         type="button"
                         data-index={index}
                         onMouseEnter={() => setActiveIndex(index)}
-                        onClick={() => navigateTo(item.href)}
+                        onClick={() => handlePaletteItemSelect(item)}
                         className={cn(
                           'flex w-full items-center gap-3 rounded-component px-3 py-2.5 text-left transition-colors',
                           isActive
                             ? 'bg-primary text-white'
-                            : 'text-text-primary hover:bg-neutral-200',
+                            : 'nav-item-light-emphasis',
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            'flex h-9 w-9 shrink-0 items-center justify-center rounded-component',
+                            isActive
+                              ? 'bg-white/20 text-white'
+                              : 'bg-brand-100 text-brand-700',
+                          )}
+                        >
+                          <Icon size={18} />
+                        </span>
+                        <span className="min-w-0 flex-1">
+                          <span className="block truncate text-sm font-medium">
+                            {item.label}
+                          </span>
+                          {item.description && (
+                            <span
+                              className={cn(
+                                'block truncate text-xs',
+                                isActive ? 'text-white/80' : 'text-text-secondary',
+                              )}
+                            >
+                              {item.description}
+                            </span>
+                          )}
+                        </span>
+                      </button>
+                    )
+                  })}
+                </>
+              ) : displayItems.length === 0 ? (
+                <p className="px-3 py-8 text-center text-sm text-text-secondary">
+                  Nenhum resultado para &ldquo;{query}&rdquo;
+                </p>
+              ) : (
+                <>
+                  {displayNavItems.length > 0 && (
+                    <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                      Navegação rápida
+                    </p>
+                  )}
+
+                  {displayNavItems.map((item, index) => {
+                    const Icon = item.icon
+                    const isActive = activeIndex === index
+
+                    return (
+                      <button
+                        key={item.id}
+                        type="button"
+                        data-index={index}
+                        onMouseEnter={() => setActiveIndex(index)}
+                        onClick={() => handlePaletteItemSelect(item)}
+                        className={cn(
+                          'flex w-full items-center gap-3 rounded-component px-3 py-2.5 text-left transition-colors',
+                          isActive
+                            ? 'bg-primary text-white'
+                            : 'nav-item-light-emphasis',
                         )}
                       >
                         <span
@@ -452,7 +949,7 @@ export function CommandPalette() {
                     )
                   })}
 
-                  {studentItems.length > 0 && (
+                  {studentItems.length > 0 && !isUnrecognized && (
                     <>
                       <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
                         Alunos
@@ -460,7 +957,7 @@ export function CommandPalette() {
 
                       {studentItems.map((item, studentIndex) => {
                         const Icon = item.icon
-                        const index = navItems.length + studentIndex
+                        const index = displayNavItems.length + studentIndex
                         const isActive = activeIndex === index
 
                         return (
@@ -469,12 +966,12 @@ export function CommandPalette() {
                             type="button"
                             data-index={index}
                             onMouseEnter={() => setActiveIndex(index)}
-                            onClick={() => navigateTo(item.href)}
+                            onClick={() => handlePaletteItemSelect(item)}
                             className={cn(
                               'flex w-full items-center gap-3 rounded-component px-3 py-2.5 text-left transition-colors',
                               isActive
                                 ? 'bg-primary text-white'
-                                : 'text-text-primary hover:bg-neutral-200',
+                                : 'nav-item-light-emphasis',
                             )}
                           >
                             <span
@@ -514,12 +1011,18 @@ export function CommandPalette() {
             </div>
 
             <div className="flex items-center justify-between border-t border-border bg-neutral-100 px-4 py-2.5 text-[11px] text-text-secondary">
-              <span>Use ↑ ↓ para navegar</span>
+              <span>
+                {isClassPickerMode
+                  ? 'Escolha a turma com ↑ ↓'
+                  : isUnrecognized
+                    ? 'Escolha um atalho abaixo'
+                    : 'Use ↑ ↓ para navegar'}
+              </span>
               <span className="flex items-center gap-1">
                 <kbd className="rounded border border-border bg-surface px-1.5 py-0.5 font-medium">
                   Enter
                 </kbd>
-                <span>para abrir</span>
+                <span>{isClassPickerMode ? 'para confirmar' : 'para abrir'}</span>
               </span>
             </div>
           </div>

@@ -1,3 +1,4 @@
+import { AppPageHeader } from '@/components/layout/AppPageHeader'
 import { cn } from '@/lib/utils'
 
 /** Top offset shared with sidebar logo — keeps logo aligned with page titles. */
@@ -16,6 +17,7 @@ export function PageContainer({ children, className }: PageContainerProps) {
         className,
       )}
     >
+      <AppPageHeader />
       {children}
     </div>
   )

@@ -64,6 +64,13 @@ export class ClassesController {
     return this.classesService.update(BigInt(id), dto)
   }
 
+  @Delete(':id/permanent')
+  @Roles('SECRETARIA')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  permanentRemove(@Param('id') id: string) {
+    return this.classesService.permanentRemove(BigInt(id))
+  }
+
   @Delete(':id')
   @Roles('SECRETARIA')
   @HttpCode(HttpStatus.NO_CONTENT)

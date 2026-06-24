@@ -1,37 +1,40 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Plus } from 'lucide-react'
-import { PageContainer } from '@/components/layout/PageContainer'
-import { Button } from '@/components/ui/button'
-import { CalendarView } from '@/components/events/CalendarView'
-import { EventForm } from '@/components/events/EventForm'
-import { EventDialog } from '@/components/events/EventDialog'
-import { CalendarEvent } from '@/lib/api/events'
-import { Dialog, DialogContent } from '@/components/ui/dialog'
-import { Card, CardContent } from '@/components/ui/card'
+import { useState } from "react";
+import { Plus } from "lucide-react";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { PageHeaderTitle } from "@/contexts/page-header-context";
+import { Button } from "@/components/ui/button";
+import { CalendarView } from "@/components/events/CalendarView";
+import { EventForm } from "@/components/events/EventForm";
+import { EventDialog } from "@/components/events/EventDialog";
+import { CalendarEvent } from "@/lib/api/events";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Card, CardContent } from "@/components/ui/card";
 
 export default function ProfessorCalendarioPage() {
-  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(null)
-  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false)
-  const [isFormOpen, setIsFormOpen] = useState(false)
-  const [initialFormDate, setInitialFormDate] = useState<Date>()
-  const [refreshKey, setRefreshKey] = useState(0)
+  const [selectedEvent, setSelectedEvent] = useState<CalendarEvent | null>(
+    null,
+  );
+  const [isEventDialogOpen, setIsEventDialogOpen] = useState(false);
+  const [isFormOpen, setIsFormOpen] = useState(false);
+  const [initialFormDate, setInitialFormDate] = useState<Date>();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   const handleEventClick = (event: CalendarEvent) => {
-    setSelectedEvent(event)
-    setIsEventDialogOpen(true)
-  }
+    setSelectedEvent(event);
+    setIsEventDialogOpen(true);
+  };
 
   const handleDateClick = (date: Date) => {
-    setInitialFormDate(date)
-    setIsFormOpen(true)
-  }
+    setInitialFormDate(date);
+    setIsFormOpen(true);
+  };
 
   const handleFormSuccess = () => {
-    setIsFormOpen(false)
-    setRefreshKey(prev => prev + 1) // Force calendar reload
-  }
+    setIsFormOpen(false);
+    setRefreshKey((prev) => prev + 1); // Force calendar reload
+  };
 
   return (
     <PageContainer>
@@ -39,12 +42,17 @@ export default function ProfessorCalendarioPage() {
       <div className="mb-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-text-primary">Meu Calendário</h1>
-            <p className="mt-1 text-sm text-text-secondary">
+            <PageHeaderTitle title="Agendão" />
+            <p className="text-sm text-text-secondary">
               Eventos das suas turmas e eventos gerais da escola
             </p>
           </div>
-          <Button onClick={() => { setInitialFormDate(undefined); setIsFormOpen(true); }}>
+          <Button
+            onClick={() => {
+              setInitialFormDate(undefined);
+              setIsFormOpen(true);
+            }}
+          >
             <Plus size={16} />
             Novo Evento
           </Button>
@@ -67,19 +75,22 @@ export default function ProfessorCalendarioPage() {
         event={selectedEvent}
         isOpen={isEventDialogOpen}
         onClose={() => {
-          setIsEventDialogOpen(false)
-          setSelectedEvent(null)
+          setIsEventDialogOpen(false);
+          setSelectedEvent(null);
         }}
       />
 
       {/* Event Form Dialog */}
-      <Dialog open={isFormOpen} onOpenChange={(open) => {
-        setIsFormOpen(open)
-        if (!open) setInitialFormDate(undefined)
-      }}>
+      <Dialog
+        open={isFormOpen}
+        onOpenChange={(open) => {
+          setIsFormOpen(open);
+          if (!open) setInitialFormDate(undefined);
+        }}
+      >
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <EventForm
-            key={initialFormDate ? initialFormDate.getTime() : 'novo'}
+            key={initialFormDate ? initialFormDate.getTime() : "novo"}
             initialDate={initialFormDate}
             onSuccess={handleFormSuccess}
             onCancel={() => setIsFormOpen(false)}
@@ -87,5 +98,5 @@ export default function ProfessorCalendarioPage() {
         </DialogContent>
       </Dialog>
     </PageContainer>
-  )
+  );
 }

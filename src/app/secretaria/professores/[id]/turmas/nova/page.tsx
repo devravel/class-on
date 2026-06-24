@@ -11,6 +11,7 @@ import {
 } from '@/components/assignments/AssignmentForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { buttonVariants } from '@/components/ui/button'
 import { assignmentsApi, teachersApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -58,6 +59,7 @@ export default function NovaAtribuicaoProfessorPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Nova Atribuição" />
       <div className="mb-8 flex items-start gap-3">
         <Link
           href={`/secretaria/professores/${teacherId}/turmas`}
@@ -70,8 +72,7 @@ export default function NovaAtribuicaoProfessorPage() {
           <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Nova Atribuição</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary">
             {teacher
               ? `Atribuir disciplina e turma para ${teacher.full_name}`
               : 'Atribua uma disciplina em uma turma'}

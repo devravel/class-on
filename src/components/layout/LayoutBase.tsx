@@ -1,8 +1,10 @@
 'use client'
 
 import { type UserRole } from '@/contexts/auth-context'
+import { PageHeaderProvider } from '@/contexts/page-header-context'
 import { SidebarProvider } from '@/contexts/sidebar-context'
 import { alunoNav, professorNav, secretariaNav } from '@/lib/nav-config'
+import { cn } from '@/lib/utils'
 import { CommandPalette } from './CommandPalette'
 import { Sidebar } from './Sidebar'
 
@@ -22,16 +24,23 @@ export function LayoutBase({ children, role }: LayoutBaseProps) {
 
   return (
     <SidebarProvider>
-      <CommandPalette />
-      <div className="flex h-screen overflow-hidden bg-background">
-        <Sidebar navItems={navItems} />
+      <PageHeaderProvider>
+        <CommandPalette />
+        <div className="app-shell-gradient flex h-screen overflow-hidden">
+          <Sidebar navItems={navItems} />
 
-        <div className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <main className="flex-1 overflow-y-auto">
-            {children}
-          </main>
+          <div className="flex min-w-0 flex-1 flex-col overflow-hidden pt-3 pb-3 pl-3 lg:pt-4 lg:pb-4 lg:pl-4">
+            <main
+              className={cn(
+                'content-panel flex min-h-0 flex-1 flex-col overflow-hidden',
+                'rounded-l-[32px] shadow-medium ring-1 ring-white/10',
+              )}
+            >
+              <div className="min-h-0 flex-1 overflow-y-auto">{children}</div>
+            </main>
+          </div>
         </div>
-      </div>
+      </PageHeaderProvider>
     </SidebarProvider>
   )
 }

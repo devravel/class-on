@@ -8,6 +8,7 @@ import { useEffect, useState } from 'react'
 import { Section } from '@/components/dashboard/Section'
 import { getClassLabel } from '@/lib/class-utils'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import {
   Form,
@@ -131,6 +132,7 @@ export default function EditarAlunoPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Editar Aluno" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -140,7 +142,6 @@ export default function EditarAlunoPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Editar Aluno</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Atualize as informações do aluno

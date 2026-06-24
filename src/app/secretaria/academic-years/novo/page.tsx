@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation'
 
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { CreateAcademicYearRequest } from '@/types/academic-year'
@@ -66,6 +67,7 @@ export default function NovoAnoLetivoPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Novo Ano Letivo" />
       {/* Page heading */}
       <div className="mb-8">
         <div className="flex items-center gap-3 mb-2">
@@ -76,7 +78,6 @@ export default function NovoAnoLetivoPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Novo Ano Letivo</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Cadastre um novo ano letivo para a instituição

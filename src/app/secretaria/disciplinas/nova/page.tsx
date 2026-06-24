@@ -11,6 +11,7 @@ import {
 } from '@/components/subjects/SubjectForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { buttonVariants } from '@/components/ui/button'
 import { subjectsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -39,6 +40,7 @@ export default function NovaDisciplinaPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Nova Disciplina" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -52,9 +54,6 @@ export default function NovaDisciplinaPage() {
             <div className="flex h-10 w-10 items-center justify-center rounded-component bg-primary/10">
               <BookOpen size={20} className="text-primary" />
             </div>
-            <h1 className="text-2xl font-bold text-text-primary">
-              Nova Disciplina
-            </h1>
           </div>
         </div>
         <p className="text-sm text-text-secondary">

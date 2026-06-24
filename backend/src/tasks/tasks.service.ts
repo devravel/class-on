@@ -7,6 +7,7 @@ import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { CreateTaskDto } from './dto/create-task.dto'
 import { SubmitTaskDto } from './dto/submit-task.dto'
+import { UpdateTaskDto } from './dto/update-task.dto'
 
 const TASK_INCLUDE = {
   assignments: {
@@ -341,6 +342,36 @@ export class TasksService {
     try {
       return await this.prisma.tasks.findMany({
         orderBy: { created_at: 'desc' },
+        include: TASK_INCLUDE,
+      })
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
+  async update(id: bigint, dto: UpdateTaskDto, teacherId: bigint) {
+    try {
+      await this.findOne(id, teacherId)
+
+      const data: {
+        title?: string
+        description?: string
+        deadline?: Date
+        status?: string
+      } = {}
+
+      if (dto.title !== undefined) data.title = dto.title
+      if (dto.description !== undefined) data.description = dto.description
+      if (dto.deadline !== undefined) data.deadline = new Date(dto.deadline)
+      if (dto.status !== undefined) data.status = dto.status
+
+      if (Object.keys(data).length === 0) {
+        throw new BadRequestException('Nenhum campo para atualizar')
+      }
+
+      return await this.prisma.tasks.update({
+        where: { id },
+        data,
         include: TASK_INCLUDE,
       })
     } catch (error) {

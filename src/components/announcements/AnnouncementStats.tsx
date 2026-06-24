@@ -81,7 +81,6 @@ export function AnnouncementStats({ announcementId, onBack }: AnnouncementStatsP
         </Button>
         
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Estatísticas do Comunicado</h1>
           <p className="text-sm text-text-secondary">Acompanhe o engajamento e alcance</p>
         </div>
       </div>

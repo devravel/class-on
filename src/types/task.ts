@@ -7,6 +7,23 @@ export interface Task {
   target_mode: string
   deadline: string
   created_at: string
+  assignments?: {
+    subjects: {
+      id: string
+      name: string
+    }
+    classes: {
+      id?: string
+      series: number | string
+      letter: string
+      shift: string
+      education_level?: 'FUNDAMENTAL' | 'MEDIO'
+      academic_years: {
+        id: string
+        year: number
+      }
+    }
+  }
 }
 
 export interface CreateTaskRequest {
@@ -14,6 +31,31 @@ export interface CreateTaskRequest {
   title: string
   description: string
   deadline: string
+}
+
+export interface UpdateTaskRequest {
+  title?: string
+  description?: string
+  deadline?: string
+  status?: 'OPEN' | 'CLOSED'
+}
+
+export interface TaskStudentSubmission {
+  student: {
+    id: string
+    full_name: string
+    rm: string
+  }
+  submission: {
+    status: string
+    observation: string | null
+    submitted_at: string | null
+  }
+}
+
+export interface TaskSubmissionsResponse {
+  task: Task
+  submissions: TaskStudentSubmission[]
 }
 
 export interface TaskSubmissionSummary {

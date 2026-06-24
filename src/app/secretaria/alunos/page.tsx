@@ -9,8 +9,8 @@ import { ToggleStudentDialog } from '@/components/students/ToggleStudentDialog'
 import { EnrollmentDialog } from '@/components/students/EnrollmentDialog'
 import { InlineError } from '@/components/dashboard/InlineError'
 import { ListCard } from '@/components/dashboard/ListCard'
-import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { PageLoader } from '@/components/ui/page-loader'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { studentsApi } from '@/lib/api'
@@ -84,15 +84,13 @@ export default function AlunosPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Alunos</h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            Gerencie os alunos da instituição
-          </p>
-        </div>
+      <PageHeaderTitle title="Alunos" />
 
-        <div className="flex gap-2">
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-text-secondary">
+          Lista de todos os alunos cadastrados no sistema
+        </p>
+        <div className="flex shrink-0 gap-2">
           <Link
             href="/secretaria/alunos/lote"
             className={cn(buttonVariants({ variant: 'outline' }))}
@@ -112,10 +110,7 @@ export default function AlunosPage() {
       {error && <InlineError message={error} className="mb-4" />}
 
       {!isLoading && !error && (
-        <Section
-          title="Alunos Cadastrados"
-          description="Lista de todos os alunos cadastrados no sistema"
-        >
+        <div>
           <div className="mb-4">
             <input
               type="text"
@@ -198,7 +193,7 @@ export default function AlunosPage() {
               </div>
             )}
           />
-        </Section>
+        </div>
       )}
 
       <ToggleStudentDialog

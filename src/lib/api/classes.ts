@@ -44,4 +44,8 @@ export const classesApi = {
   async delete(id: string): Promise<void> {
     return apiClient.delete<void>(`/classes/${id}`)
   },
+
+  async permanentDelete(id: string): Promise<void> {
+    return apiClient.delete<void>(`/classes/${id}/permanent`)
+  },
 }

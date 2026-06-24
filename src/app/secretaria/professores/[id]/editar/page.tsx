@@ -9,6 +9,7 @@ import { TeacherForm, TeacherFormValues } from '@/components/teachers/TeacherFor
 import { TeacherPasswordSection } from '@/components/teachers/TeacherPasswordSection'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { buttonVariants } from '@/components/ui/button'
 import { teachersApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -69,6 +70,7 @@ export default function EditarProfessorPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Editar Professor" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -78,7 +80,6 @@ export default function EditarProfessorPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Editar Professor</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Atualize as informações do professor

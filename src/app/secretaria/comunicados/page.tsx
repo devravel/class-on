@@ -6,8 +6,7 @@ import { AnnouncementList } from '@/components/announcements/AnnouncementList'
 export default function SecretariaComunicadosPage() {
   return (
     <PageContainer>
-      <AnnouncementList 
-        title="Comunicados"
+      <AnnouncementList
         showCreateButton={true}
         emptyMessage="Nenhum comunicado criado ainda. Crie o primeiro comunicado para a comunidade escolar."
       />

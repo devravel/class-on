@@ -5,10 +5,14 @@ import Link from 'next/link'
 import { Calendar, Clock, ChevronRight } from 'lucide-react'
 import { Section } from '@/components/dashboard/Section'
 import { InlineError } from '@/components/dashboard/InlineError'
-import { ListCard } from '@/components/dashboard/ListCard'
+import {
+  DASHBOARD_LIST_AREA_HEIGHT,
+  ListCard,
+} from '@/components/dashboard/ListCard'
 import { PageLoader } from '@/components/ui/page-loader'
 import { eventsApi } from '@/lib/api/events'
 import { mapEventApiError, parseLocalDateFromApi } from '@/lib/events/feedback'
+import { cn } from '@/lib/utils'
 
 interface UpcomingEventsCardProps {
   role: 'SECRETARIA' | 'PROFESSOR' | 'ALUNO'
@@ -27,7 +31,7 @@ interface UpcomingEvent {
 
 export function UpcomingEventsCard({ 
   role, 
-  limit = 5, 
+  limit = 4, 
   showViewAll = true 
 }: UpcomingEventsCardProps) {
   const [events, setEvents] = useState<UpcomingEvent[]>([])
@@ -69,7 +73,6 @@ export function UpcomingEventsCard({
             }
           })
           .sort((a, b) => a.daysUntil - b.daysUntil)
-          .slice(0, limit)
 
         setEvents(upcomingEvents)
       } catch (err) {
@@ -142,7 +145,12 @@ export function UpcomingEventsCard({
   if (isLoading) {
     return (
       <Section title="Próximos Eventos">
-        <PageLoader label="Carregando eventos..." size="sm" inline className="h-24 rounded-lg border border-border bg-neutral-100" />
+        <div
+          className="flex items-center justify-center rounded-lg border border-border bg-neutral-100"
+          style={{ height: DASHBOARD_LIST_AREA_HEIGHT }}
+        >
+          <PageLoader label="Carregando eventos..." size="sm" inline />
+        </div>
       </Section>
     )
   }
@@ -154,13 +162,16 @@ export function UpcomingEventsCard({
         action={showViewAll ? (
           <Link
             href={getCalendarLink()}
-            className="flex items-center gap-1 text-xs text-primary hover:underline"
+            className="link-action flex items-center gap-1 text-xs"
           >
             Ver calendário <ChevronRight size={14} />
           </Link>
         ) : undefined}
       >
-        <div className="flex h-24 items-center justify-center rounded-lg border border-neutral-200 bg-neutral-50">
+        <div
+          className="flex items-center justify-center rounded-card bg-surface shadow-light ring-1 ring-border"
+          style={{ height: DASHBOARD_LIST_AREA_HEIGHT }}
+        >
           <div className="text-center">
             <Calendar size={24} className="text-neutral-400 mx-auto mb-2" />
             <p className="text-sm text-text-secondary">
@@ -178,7 +189,7 @@ export function UpcomingEventsCard({
       action={showViewAll ? (
         <Link
           href={getCalendarLink()}
-          className="flex items-center gap-1 text-xs text-primary hover:underline"
+          className="link-action flex items-center gap-1 text-xs"
         >
           Ver todos <ChevronRight size={14} />
         </Link>
@@ -186,37 +197,37 @@ export function UpcomingEventsCard({
     >
       <ListCard
         items={events}
+        limit={limit}
+        fixedRowArea
         renderItem={(event) => (
           <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
             <div className="flex min-w-0 items-center gap-3">
-              <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-component bg-primary/10">
-                <Calendar size={16} className="text-primary" />
+              <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                <Calendar size={14} className="text-primary" />
               </div>
               <div className="min-w-0">
                 <p className="truncate text-sm font-medium text-text-primary">
                   {event.title}
                 </p>
-                <div className="flex items-center gap-2 text-xs text-text-secondary">
-                  <Clock size={12} />
-                  <span>{formatEventDate(event.start_date, event.all_day)}</span>
-                  <span>•</span>
-                  <span>{getScopeLabel(event.scope_type)}</span>
-                </div>
+                <p className="flex items-center gap-1 truncate text-xs text-text-secondary">
+                  <Clock size={10} />
+                  {formatEventDate(event.start_date, event.all_day)} ·{' '}
+                  {getScopeLabel(event.scope_type)}
+                </p>
               </div>
             </div>
-            <div className="shrink-0 pl-4 text-right">
-              <span 
-                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ${
-                  event.daysUntil === 0 
-                    ? 'bg-warning/10 text-warning' 
-                    : event.daysUntil <= 3
+            <span
+              className={cn(
+                'ml-2 shrink-0 rounded-full px-2 py-1 text-xs font-medium',
+                event.daysUntil === 0
+                  ? 'bg-warning/10 text-warning'
+                  : event.daysUntil <= 3
                     ? 'bg-primary/10 text-primary'
-                    : 'bg-neutral-200 text-neutral-700'
-                }`}
-              >
-                {getDaysUntilText(event.daysUntil)}
-              </span>
-            </div>
+                    : 'bg-neutral-200 text-neutral-700',
+              )}
+            >
+              {getDaysUntilText(event.daysUntil)}
+            </span>
           </div>
         )}
       />

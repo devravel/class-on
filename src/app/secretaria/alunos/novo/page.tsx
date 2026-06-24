@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { StudentForm, StudentFormValues } from '@/components/students/StudentForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { studentsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -51,15 +52,13 @@ export default function NovoAlunoPage() {
   if (result) {
     return (
       <PageContainer>
+        <PageHeaderTitle title="Aluno cadastrado!" />
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-component bg-emerald-100">
               <GraduationCap size={20} className="text-emerald-700" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">
-                Aluno cadastrado!
-              </h1>
               <p className="text-sm text-text-secondary">
                 O acesso foi gerado com sucesso
               </p>
@@ -147,6 +146,7 @@ export default function NovoAlunoPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Novo Aluno" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -156,7 +156,6 @@ export default function NovoAlunoPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Novo Aluno</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Cadastre um novo aluno. A senha de acesso será gerada automaticamente.

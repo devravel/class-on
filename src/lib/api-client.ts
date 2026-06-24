@@ -40,9 +40,17 @@ export const apiClient = {
 
     const url = `${API_BASE_URL}${endpoint}`
 
+    const isFormData =
+      typeof FormData !== 'undefined' && restOptions.body instanceof FormData
+
     const requestHeaders: Record<string, string> = {
-      'Content-Type': 'application/json',
+      ...(isFormData ? {} : { 'Content-Type': 'application/json' }),
       ...(headers as Record<string, string>),
+    }
+
+    // Para FormData o navegador define o boundary automaticamente.
+    if (isFormData) {
+      delete requestHeaders['Content-Type']
     }
 
     // Adiciona token automaticamente se a requisição requer autenticação
@@ -127,6 +135,22 @@ export const apiClient = {
       ...options,
       method: 'POST',
       body: JSON.stringify(data),
+    })
+  },
+
+  /**
+   * POST request com FormData (multipart). Não serializa o body como JSON,
+   * permitindo upload de arquivos.
+   */
+  postForm<T = unknown>(
+    endpoint: string,
+    formData: FormData,
+    options?: RequestOptions
+  ): Promise<T> {
+    return this.request<T>(endpoint, {
+      ...options,
+      method: 'POST',
+      body: formData,
     })
   },
 

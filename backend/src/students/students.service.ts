@@ -1,5 +1,6 @@
 import {
   BadRequestException,
+  ForbiddenException,
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
@@ -218,6 +219,11 @@ export class StudentsService {
     }
   }
 
+  async findOneForTeacher(id: bigint, teacherId: bigint) {
+    await this.ensureTeacherStudentAccess(id, teacherId)
+    return this.findOne(id)
+  }
+
   async update(id: bigint, dto: UpdateStudentDto) {
     try {
       const current = await this.findOne(id)
@@ -383,6 +389,37 @@ export class StudentsService {
 
       if (existing && existing.id !== excludeId) {
         throw new BadRequestException('Já existe um aluno com este RM')
+      }
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
+  private async ensureTeacherStudentAccess(
+    studentId: bigint,
+    teacherId: bigint,
+  ) {
+    try {
+      const hasAccess = await this.prisma.students.findFirst({
+        where: {
+          id: studentId,
+          enrollments: {
+            some: {
+              classes: {
+                assignments: {
+                  some: {
+                    teacher_id: teacherId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      if (!hasAccess) {
+        throw new ForbiddenException('Você não tem acesso aos dados deste aluno')
       }
     } catch (error) {
       handlePrismaError(error)

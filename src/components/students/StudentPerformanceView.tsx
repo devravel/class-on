@@ -1,6 +1,6 @@
 'use client'
 
-import { BarChart2, GraduationCap, Loader2, UserCheck } from 'lucide-react'
+import { GraduationCap, Loader2, UserCheck } from 'lucide-react'
 
 import { GradeStatusBadge } from '@/components/grades/GradeStatusBadge'
 import { formatGradeCell, parseGradeValue } from '@/lib/class-utils'
@@ -10,6 +10,7 @@ import {
   getSubjectOverallStatus,
   groupGradesBySubject,
 } from '@/lib/grade-utils'
+import { getSubjectIcon } from '@/lib/subject-icons'
 import { cn } from '@/lib/utils'
 import { DisciplineAttendanceEntry } from '@/types/attendance'
 import { StudentGradeRecord } from '@/types/grade'
@@ -120,13 +121,13 @@ export function StudentPerformanceView({
 
         {disciplineEntries.length === 0 ? (
           <div className="rounded-card border border-border bg-neutral-50 p-12 text-center">
-            <BarChart2 className="mx-auto mb-3 h-10 w-10 text-text-secondary/50" />
             <p className="text-sm font-medium text-text-primary">
               Nenhuma disciplina atribuída
             </p>
           </div>
         ) : (
           disciplineEntries.map((discipline) => {
+            const SubjectIcon = getSubjectIcon(discipline.subject_name)
             const subject = subjects.find(
               (entry) => entry.assignmentId === discipline.assignment_id,
             )
@@ -148,7 +149,7 @@ export function StudentPerformanceView({
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                     <div>
                       <h4 className="flex items-center gap-2 text-base font-semibold text-text-primary">
-                        <BarChart2 size={16} className="text-primary" />
+                        <SubjectIcon size={16} className="text-primary" />
                         {discipline.subject_name}
                       </h4>
                       <p className="mt-1 text-sm text-text-secondary">

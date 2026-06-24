@@ -6,6 +6,7 @@ import {
   Check,
   ChevronLeft,
   ClipboardList,
+  GraduationCap,
   ListTodo,
   Loader2,
   Plus,
@@ -13,13 +14,19 @@ import {
   Sparkles,
   UserCheck,
   UserX,
+  ChevronRight,
 } from 'lucide-react'
 import Link from 'next/link'
+import { useSearchParams } from 'next/navigation'
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
 import { PageContainer } from '@/components/layout/PageContainer'
+import { usePageHeaderTitle } from '@/contexts/page-header-context'
+import { AiTaskGeneratorModal } from '@/components/ai/AiTaskGeneratorModal'
 import { MarkdownContent } from '@/components/ai/MarkdownContent'
+import { ProfessorStudentDetailDialog } from '@/components/students/ProfessorStudentDetailDialog'
+import { TaskDetailDialog } from '@/components/tasks/TaskDetailDialog'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -47,16 +54,26 @@ import { GradeRow } from '@/types/grade'
 import { Lesson } from '@/types/lesson'
 import { Task } from '@/types/task'
 
-type TabId = 'diario' | 'notas' | 'tarefas'
+type TabId = 'diario' | 'notas' | 'tarefas' | 'alunos'
+
+function resolveTabFromParam(value: string | null): TabId {
+  if (value === 'notas') return 'notas'
+  if (value === 'tarefas' || value === 'tarefa') return 'tarefas'
+  if (value === 'alunos') return 'alunos'
+  if (value === 'diario' || value === 'chamada') return 'diario'
+  return 'diario'
+}
 
 const TABS: { id: TabId; label: string; icon: typeof BookOpen }[] = [
   { id: 'diario', label: 'Diário de Classe', icon: BookOpen },
   { id: 'notas', label: 'Lançamento de Notas', icon: ClipboardList },
   { id: 'tarefas', label: 'Tarefas', icon: ListTodo },
+  { id: 'alunos', label: 'Alunos', icon: GraduationCap },
 ]
 
 interface GradeFormRow {
   enrollmentId: string
+  studentId: string
   studentName: string
   studentRm: string
   gradeId: string | null
@@ -71,6 +88,7 @@ function toGradeFormRow(row: GradeRow): GradeFormRow {
   const grade = row.grade
   return {
     enrollmentId: row.enrollment.id,
+    studentId: row.enrollment.student.id,
     studentName: row.enrollment.student.full_name,
     studentRm: row.enrollment.student.rm,
     gradeId: grade?.id ?? null,
@@ -87,10 +105,17 @@ interface TurmaDetailPageProps {
 }
 
 export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) {
-  const [activeTab, setActiveTab] = useState<TabId>('diario')
+  const searchParams = useSearchParams()
+  const [activeTab, setActiveTab] = useState<TabId>(() =>
+    resolveTabFromParam(searchParams.get('tab')),
+  )
   const [assignment, setAssignment] = useState<Assignment | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    setActiveTab(resolveTabFromParam(searchParams.get('tab')))
+  }, [searchParams])
 
   useEffect(() => {
     const load = async () => {
@@ -108,6 +133,9 @@ export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) 
     load()
   }, [assignmentId])
 
+  const headerTitle = assignment ? getClassLabel(assignment.classes) : ''
+  usePageHeaderTitle(headerTitle)
+
   if (isLoading) {
     return (
       <PageContainer>
@@ -124,7 +152,7 @@ export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) 
         <div className="rounded-lg border border-destructive/20 bg-destructive/10 p-6 text-sm text-destructive">
           {error ?? 'Turma não encontrada.'}
         </div>
-        <Link href="/professor/turmas" className="mt-4 inline-flex text-sm text-primary hover:underline">
+        <Link href="/professor/turmas" className="link-action mt-4 inline-flex text-sm">
           ← Voltar para Minhas Turmas
         </Link>
       </PageContainer>
@@ -138,13 +166,12 @@ export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) 
       <div className="mb-6">
         <Link
           href="/professor/turmas"
-          className="mb-4 inline-flex items-center gap-1 text-sm text-text-secondary hover:text-primary"
+          className="nav-item-light mb-4 inline-flex items-center gap-1 text-sm"
         >
           <ChevronLeft size={16} />
           Minhas Turmas
         </Link>
-        <h1 className="text-2xl font-bold text-text-primary">{classLabel}</h1>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary">
           {assignment.subjects.name} · Ano Letivo {assignment.classes.academic_years.year}
         </p>
       </div>
@@ -162,7 +189,7 @@ export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) 
                 'inline-flex items-center gap-2 rounded-t-lg px-4 py-2.5 text-sm font-medium transition-colors',
                 isActive
                   ? 'border-b-2 border-primary bg-primary/5 text-primary'
-                  : 'text-text-secondary hover:bg-neutral-100 hover:text-text-primary',
+                  : 'nav-item-light',
               )}
             >
               <Icon size={16} />
@@ -178,7 +205,12 @@ export default function TurmaDetailPage({ assignmentId }: TurmaDetailPageProps) 
       {activeTab === 'notas' && (
         <NotasTab assignmentId={assignmentId} assignment={assignment} />
       )}
-      {activeTab === 'tarefas' && <TarefasTab assignmentId={assignmentId} />}
+      {activeTab === 'tarefas' && (
+        <TarefasTab assignmentId={assignmentId} assignment={assignment} />
+      )}
+      {activeTab === 'alunos' && (
+        <AlunosTab assignmentId={assignmentId} assignment={assignment} />
+      )}
     </PageContainer>
   )
 }
@@ -848,15 +880,40 @@ function NotasTab({
   )
 }
 
-function TarefasTab({ assignmentId }: { assignmentId: string }) {
+function TarefasTab({
+  assignmentId,
+  assignment,
+}: {
+  assignmentId: string
+  assignment: Assignment
+}) {
   const [tasks, setTasks] = useState<Task[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isCreating, setIsCreating] = useState(false)
+  const [showAiModal, setShowAiModal] = useState(false)
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null)
   const [form, setForm] = useState({
     title: '',
     description: '',
     deadline: '',
   })
+
+  const classLabel = getClassLabel(assignment.classes)
+
+  const handleAiInsert = ({
+    title,
+    content,
+  }: {
+    title: string
+    content: string
+  }) => {
+    setForm((prev) => ({
+      ...prev,
+      title: prev.title.trim() ? prev.title : title,
+      description: content,
+    }))
+    toast.success('Tarefa da IA inserida no formulário. Revise e publique!')
+  }
 
   const loadTasks = useCallback(async () => {
     try {
@@ -917,7 +974,18 @@ function TarefasTab({ assignmentId }: { assignmentId: string }) {
         onSubmit={handleSubmit}
         className="rounded-xl border border-border bg-card p-5 shadow-sm"
       >
-        <h3 className="mb-4 font-medium text-text-primary">Nova Tarefa</h3>
+        <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+          <h3 className="font-medium text-text-primary">Nova Tarefa</h3>
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => setShowAiModal(true)}
+            className="border-primary/30 bg-primary/5 text-primary hover:bg-primary/10"
+          >
+            <Sparkles size={16} />
+            Gerar tarefa com IA
+          </Button>
+        </div>
         <div className="grid gap-4">
           <div>
             <Label htmlFor="task-title">Título</Label>
@@ -978,37 +1046,168 @@ function TarefasTab({ assignmentId }: { assignmentId: string }) {
         ) : (
           <ul className="divide-y divide-border">
             {tasks.map((task) => (
-              <li key={task.id} className="px-4 py-4">
-                <div className="flex flex-wrap items-start justify-between gap-3">
-                  <div>
+              <li key={task.id}>
+                <button
+                  type="button"
+                  onClick={() => setSelectedTaskId(task.id)}
+                  className="flex w-full flex-wrap items-start justify-between gap-3 px-4 py-4 text-left transition-colors hover:bg-neutral-50"
+                >
+                  <div className="min-w-0 flex-1">
                     <p className="font-medium text-text-primary">{task.title}</p>
-                    <p className="mt-1 text-sm text-text-secondary">{task.description}</p>
-                  </div>
-                  <div className="text-right text-xs text-text-secondary">
-                    <p>
-                      Entrega:{' '}
-                      {new Date(task.deadline).toLocaleString('pt-BR', {
-                        dateStyle: 'short',
-                        timeStyle: 'short',
-                      })}
+                    <p className="mt-1 line-clamp-2 text-sm text-text-secondary">
+                      {task.description}
                     </p>
-                    <span
-                      className={cn(
-                        'mt-1 inline-flex rounded-full px-2 py-0.5 font-medium',
-                        task.status === 'OPEN'
-                          ? 'bg-success/10 text-success'
-                          : 'bg-neutral-200 text-neutral-600',
-                      )}
-                    >
-                      {task.status === 'OPEN' ? 'Aberta' : task.status}
-                    </span>
                   </div>
-                </div>
+                  <div className="flex shrink-0 items-center gap-3">
+                    <div className="text-right text-xs text-text-secondary">
+                      <p>
+                        Entrega:{' '}
+                        {new Date(task.deadline).toLocaleString('pt-BR', {
+                          dateStyle: 'short',
+                          timeStyle: 'short',
+                        })}
+                      </p>
+                      <span
+                        className={cn(
+                          'mt-1 inline-flex rounded-full px-2 py-0.5 font-medium',
+                          task.status === 'OPEN'
+                            ? 'bg-success/10 text-success'
+                            : 'bg-neutral-200 text-neutral-600',
+                        )}
+                      >
+                        {task.status === 'OPEN' ? 'Aberta' : 'Fechada'}
+                      </span>
+                    </div>
+                    <ChevronRight size={16} className="text-text-secondary" />
+                  </div>
+                </button>
               </li>
             ))}
           </ul>
         )}
       </div>
+
+      <TaskDetailDialog
+        taskId={selectedTaskId}
+        open={selectedTaskId !== null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedTaskId(null)
+        }}
+        onUpdated={loadTasks}
+        onDeleted={loadTasks}
+      />
+
+      <AiTaskGeneratorModal
+        open={showAiModal}
+        onOpenChange={setShowAiModal}
+        defaultClassLabel={classLabel}
+        defaultTitle={form.title}
+        onInsert={handleAiInsert}
+      />
+    </div>
+  )
+}
+
+function AlunosTab({
+  assignmentId,
+  assignment,
+}: {
+  assignmentId: string
+  assignment: Assignment
+}) {
+  const [rows, setRows] = useState<GradeFormRow[]>([])
+  const [selectedStudentId, setSelectedStudentId] = useState<string | null>(null)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const load = async () => {
+      try {
+        setIsLoading(true)
+        const yearId = assignment.classes.academic_years.id
+        const bimesters = await bimestersApi.getByYear(yearId)
+        const openBimester = bimesters.find((b) => b.status === 'ABERTO') ?? bimesters[0]
+        if (!openBimester) {
+          setRows([])
+          return
+        }
+
+        const gradeRows = await gradesApi.getByAssignmentAndBimester(
+          assignmentId,
+          openBimester.id,
+        )
+        setRows(gradeRows.map(toGradeFormRow))
+      } catch {
+        toast.error('Erro ao carregar alunos da turma.')
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    void load()
+  }, [assignmentId, assignment.classes.academic_years.id])
+
+  const sortedRows = [...rows].sort((a, b) =>
+    a.studentName.localeCompare(b.studentName, 'pt-BR'),
+  )
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h2 className="text-lg font-semibold text-text-primary">Alunos da Turma</h2>
+        <p className="text-sm text-text-secondary">
+          {assignment.subjects.name} · {getClassLabel(assignment.classes)}
+        </p>
+      </div>
+
+      {isLoading ? (
+        <div className="flex justify-center py-12">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        </div>
+      ) : sortedRows.length === 0 ? (
+        <p className="py-12 text-center text-sm text-text-secondary">
+          Nenhum aluno matriculado nesta turma.
+        </p>
+      ) : (
+        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+          <ul className="divide-y divide-border">
+            {sortedRows.map((row) => (
+              <li
+                key={row.enrollmentId}
+                className="flex flex-col gap-4 px-4 py-4 sm:flex-row sm:items-center sm:justify-between"
+              >
+                <div className="flex min-w-0 items-center gap-4">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-component bg-primary/10">
+                    <GraduationCap size={18} className="text-primary" />
+                  </div>
+                  <div className="min-w-0">
+                    <p className="text-base font-semibold text-text-primary">{row.studentName}</p>
+                    <p className="text-sm text-text-secondary">RM: {row.studentRm}</p>
+                  </div>
+                </div>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setSelectedStudentId(row.studentId)}
+                >
+                  Ver desempenho
+                </Button>
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+
+      <ProfessorStudentDetailDialog
+        open={selectedStudentId != null}
+        onOpenChange={(open) => {
+          if (!open) setSelectedStudentId(null)
+        }}
+        studentId={selectedStudentId}
+        assignmentId={assignmentId}
+        classId={assignment.class_id}
+        subjectName={assignment.subjects.name}
+      />
     </div>
   )
 }

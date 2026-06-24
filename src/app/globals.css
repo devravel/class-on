@@ -5,8 +5,7 @@
 
 @custom-variant dark (&:is(.dark *));
 
-@theme inline {
-  --color-background: var(--background);
+@theme inline {  --color-background: var(--background);
   --color-foreground: var(--foreground);
   --font-sans: var(--font-sans);
   --font-mono: var(--font-geist-mono);
@@ -47,16 +46,18 @@
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
+  --spacing-dashboard-header: 56px;
+  --spacing-page-header: 24px;
 }
 
 :root {
-  --color-brand-100: #ebf8ff;
-  --color-brand-200: #bee3f8;
-  --color-brand-300: #90cdf4;
-  --color-brand-400: #63b3ed;
-  --color-brand-500: #4299e1;
-  --color-brand-600: #3182ce;
-  --color-brand-700: #2b6cb0;
+  --color-brand-100: #e3f2fc;
+  --color-brand-200: #b0daf5;
+  --color-brand-300: #7fc0ee;
+  --color-brand-400: #52a8e8;
+  --color-brand-500: #2b85d9;
+  --color-brand-600: #2270be;
+  --color-brand-700: #1b5c9e;
 
   --color-neutral-100: #f7fafc;
   --color-neutral-200: #edf2f7;
@@ -82,8 +83,11 @@
   --color-disabled-bg: #edf2f7;
   --color-disabled-text: #cbd5e0;
 
-  --radius: 0.625rem;
-  --background: var(--color-bg);
+  --color-app-gradient-start: #000000;
+  --color-app-gradient-end: #263670;
+  --color-content-panel: #cddfed;
+
+  --radius: 0.625rem;  --background: var(--color-bg);
   --foreground: var(--color-text-primary);
   --card: var(--color-surface);
   --card-foreground: var(--color-text-primary);
@@ -157,11 +161,106 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    scrollbar-width: thin;
+    scrollbar-color: var(--color-neutral-400) transparent;
   }
+
+  *::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+
+  *::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  *::-webkit-scrollbar-thumb {
+    background-color: var(--color-neutral-400);
+    border-radius: 9999px;
+    border: 2px solid transparent;
+    background-clip: padding-box;
+  }
+
+  *::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-neutral-500);
+  }
+
+  *::-webkit-scrollbar-corner {
+    background: transparent;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply text-foreground;
   }
   html {
     @apply font-sans;
+  }
+}
+
+.app-shell-gradient {
+  background: linear-gradient(
+    135deg,
+    var(--color-app-gradient-start) 0%,
+    var(--color-app-gradient-end) 100%
+  );
+}
+
+.content-panel {
+  background-color: var(--color-content-panel);
+}
+.mb-dashboard-header {
+  margin-bottom: var(--spacing-dashboard-header);
+}
+.mb-page-header {
+  margin-bottom: var(--spacing-page-header);
+}
+
+@layer components {
+  /* Sidebar e superfícies escuras / glass */
+  .nav-item-dark {
+    @apply text-white/80 transition-colors hover:bg-white/15 hover:text-white;
+  }
+
+  .nav-item-dark-icon {
+    @apply text-white/60 transition-colors group-hover:text-white;
+  }
+
+  .nav-item-dark-trigger {
+    @apply text-white transition-colors hover:bg-white/15;
+  }
+
+  .nav-item-signout-panel {
+    @apply rounded-[28px] bg-red-950/45 shadow-medium ring-1 ring-red-500/20 backdrop-blur-sm;
+  }
+
+  .nav-item-signout {
+    @apply text-red-200/80 transition-colors hover:bg-red-500/15 hover:text-red-100;
+  }
+
+  .nav-item-signout-icon {
+    @apply text-red-300/60 transition-colors group-hover:text-red-100;
+  }
+
+  /* Itens de navegação em painéis claros */
+  .nav-item-light {
+    @apply text-text-secondary transition-colors hover:bg-neutral-200 hover:text-text-primary;
+  }
+
+  .nav-item-light-emphasis {
+    @apply text-text-primary transition-colors hover:bg-neutral-200;
+  }
+
+  /* Links de ação inline (ex.: "Ver todos") */
+  .link-action {
+    @apply text-primary transition-colors hover:text-brand-700 hover:underline;
+  }
+
+  /* Botão de busca / ações rápidas no header */
+  .nav-search-trigger {
+    @apply text-text-primary transition-colors hover:bg-white hover:text-text-primary;
+  }
+
+  .nav-search-trigger-icon {
+    @apply text-text-secondary transition-colors group-hover:text-text-primary;
   }
 }

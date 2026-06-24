@@ -384,6 +384,53 @@ export class GradesService {
     }
   }
 
+  async findByStudentForTeacher(studentId: bigint, teacherId: bigint) {
+    try {
+      const hasAccess = await this.prisma.students.findFirst({
+        where: {
+          id: studentId,
+          enrollments: {
+            some: {
+              classes: {
+                assignments: {
+                  some: {
+                    teacher_id: teacherId,
+                  },
+                },
+              },
+            },
+          },
+        },
+        select: { id: true },
+      })
+
+      if (!hasAccess) {
+        throw new ForbiddenException('Você não tem acesso aos dados deste aluno')
+      }
+
+      const grades = await this.prisma.grades.findMany({
+        where: {
+          enrollments: {
+            student_id: studentId,
+          },
+          assignments: {
+            teacher_id: teacherId,
+          },
+        },
+        include: GRADE_INCLUDE,
+        orderBy: [
+          { assignments: { classes: { series: 'asc' } } },
+          { assignments: { subjects: { name: 'asc' } } },
+          { bimesters: { number: 'asc' } },
+        ],
+      })
+
+      return grades.map((grade) => this.addStatusToGrade(grade))
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
   private calculateAverage(n1: number, n2: number, n3: number, n4: number): number {
     const average = (n1 + n2 + n3 + n4) / 4
     return Math.round(average * 100) / 100 // Arredondar para 2 casas decimais

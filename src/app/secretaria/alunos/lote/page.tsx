@@ -11,6 +11,7 @@ import {
 } from '@/components/students/BulkStudentForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { studentsApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -67,15 +68,13 @@ export default function CadastroLoteAlunosPage() {
   if (result) {
     return (
       <PageContainer>
+        <PageHeaderTitle title="Alunos cadastrados com sucesso!" />
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-component bg-emerald-100">
               <Check size={20} className="text-emerald-700" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">
-                Alunos cadastrados com sucesso!
-              </h1>
               <p className="text-sm text-text-secondary">
                 {result.created.length} aluno(s) cadastrado(s)
               </p>
@@ -163,6 +162,7 @@ export default function CadastroLoteAlunosPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Cadastro em Lote" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -172,9 +172,6 @@ export default function CadastroLoteAlunosPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">
-            Cadastro em Lote
-          </h1>
         </div>
         <p className="text-sm text-text-secondary">
           Cadastre vários alunos de uma só vez. As senhas serão geradas

@@ -6,8 +6,8 @@ import { useEffect, useState } from 'react'
 
 import { DeleteSubjectDialog } from '@/components/subjects/DeleteSubjectDialog'
 import { ListCard } from '@/components/dashboard/ListCard'
-import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { PageLoader } from '@/components/ui/page-loader'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { subjectsApi } from '@/lib/api'
@@ -61,17 +61,15 @@ export default function DisciplinasPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Disciplinas</h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            Gerencie as disciplinas da instituição
-          </p>
-        </div>
+      <PageHeaderTitle title="Disciplinas" />
 
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-text-secondary">
+          Lista de todas as disciplinas cadastradas no sistema
+        </p>
         <Link
           href="/secretaria/disciplinas/nova"
-          className={cn(buttonVariants())}
+          className={cn(buttonVariants(), 'shrink-0')}
         >
           <Plus size={16} />
           Nova Disciplina
@@ -87,10 +85,7 @@ export default function DisciplinasPage() {
       )}
 
       {!isLoading && !error && (
-        <Section
-          title="Disciplinas Cadastradas"
-          description="Lista de todas as disciplinas cadastradas no sistema"
-        >
+        <div>
           <div className="mb-4">
             <input
               type="text"
@@ -147,7 +142,7 @@ export default function DisciplinasPage() {
               </div>
             )}
           />
-        </Section>
+        </div>
       )}
 
       <DeleteSubjectDialog

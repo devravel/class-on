@@ -59,8 +59,16 @@ export class StudentsController {
   }
 
   @Get(':id')
-  @Roles('SECRETARIA')
-  findOne(@Param('id') id: string) {
+  @Roles('SECRETARIA', 'PROFESSOR')
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
+    if (user.role === 'PROFESSOR') {
+      if (!user.teacher) {
+        throw new ForbiddenException('Perfil de professor não encontrado.')
+      }
+
+      return this.studentsService.findOneForTeacher(BigInt(id), user.teacher.id)
+    }
+
     return this.studentsService.findOne(BigInt(id))
   }
 

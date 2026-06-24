@@ -1,8 +1,8 @@
 import { Module } from '@nestjs/common'
 import { ConfigModule } from '@nestjs/config'
 import { APP_INTERCEPTOR, APP_PIPE } from '@nestjs/core'
-import { ValidationPipe } from '@nestjs/common'
 import { BigIntSerializationInterceptor } from './common/interceptors/bigint-serialization.interceptor'
+import { AppValidationPipe } from './common/pipes/app-validation.pipe'
 import { PrismaModule } from './prisma/prisma.module'
 import { AuthModule } from './auth/auth.module'
 import { AcademicYearsModule } from './academic-years/academic-years.module'
@@ -49,7 +49,7 @@ import { AiModule } from './ai/ai.module'
     },
     {
       provide: APP_PIPE,
-      useValue: new ValidationPipe({
+      useValue: new AppValidationPipe({
         whitelist: true,
         forbidNonWhitelisted: true,
         transform: true,

@@ -6,8 +6,8 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { ToggleTeacherDialog } from '@/components/teachers/ToggleTeacherDialog'
 import { ListCard } from '@/components/dashboard/ListCard'
-import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { PageLoader } from '@/components/ui/page-loader'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { assignmentsApi, teachersApi } from '@/lib/api'
@@ -81,15 +81,13 @@ export default function ProfessoresPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-text-primary">Professores</h1>
-          <p className="mt-1 text-sm text-text-secondary">
-            Gerencie professores, turmas e atribuições
-          </p>
-        </div>
+      <PageHeaderTitle title="Professores" />
 
-        <Link href="/secretaria/professores/novo" className={cn(buttonVariants())}>
+      <div className="mb-4 flex items-center justify-between gap-4">
+        <p className="text-sm text-text-secondary">
+          Lista de todos os professores cadastrados no sistema
+        </p>
+        <Link href="/secretaria/professores/novo" className={cn(buttonVariants(), 'shrink-0')}>
           <Plus size={16} />
           Novo Professor
         </Link>
@@ -104,10 +102,7 @@ export default function ProfessoresPage() {
       )}
 
       {!isLoading && !error && (
-        <Section
-          title="Professores Cadastrados"
-          description="Lista de todos os professores cadastrados no sistema"
-        >
+        <div>
           <div className="mb-4">
             <input
               type="text"
@@ -191,7 +186,7 @@ export default function ProfessoresPage() {
               )
             }}
           />
-        </Section>
+        </div>
       )}
 
       <ToggleTeacherDialog

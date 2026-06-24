@@ -20,6 +20,7 @@ import { PageLoader } from '@/components/ui/page-loader'
 import { Announcement, CreateAnnouncementDto } from '@/types/announcement'
 import { announcementsApi } from '@/lib/api/announcements'
 import { useAuth } from '@/contexts/auth-context'
+import { usePageHeaderTitle } from '@/contexts/page-header-context'
 import { toast } from 'sonner'
 
 interface AnnouncementListProps {
@@ -149,16 +150,21 @@ export function AnnouncementList({
     return user?.role === 'SECRETARIA' || user?.role === 'PROFESSOR'
   }
 
+  const headerTitle = showStats
+    ? 'Estatísticas do Comunicado'
+    : showForm && canCreate()
+      ? 'Novo Comunicado'
+      : title
+
+  usePageHeaderTitle(headerTitle)
+
   if (showForm && canCreate()) {
     return (
       <div className="space-y-6">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-text-primary">Novo Comunicado</h1>
-            <p className="text-sm text-text-secondary">
-              Envie informações importantes para a comunidade escolar
-            </p>
-          </div>
+        <div>
+          <p className="text-sm text-text-secondary">
+            Envie informações importantes para a comunidade escolar
+          </p>
         </div>
 
         <AnnouncementForm
@@ -185,7 +191,6 @@ export function AnnouncementList({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{title}</h1>
           <p className="text-sm text-text-secondary">
             Acompanhe os comunicados da escola
           </p>

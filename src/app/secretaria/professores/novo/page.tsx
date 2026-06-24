@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import { TeacherForm, TeacherFormValues } from '@/components/teachers/TeacherForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button, buttonVariants } from '@/components/ui/button'
 import { teachersApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -51,15 +52,13 @@ export default function NovoProfessorPage() {
   if (result) {
     return (
       <PageContainer>
+        <PageHeaderTitle title="Professor cadastrado!" />
         <div className="mb-8">
           <div className="mb-2 flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-component bg-emerald-100">
               <GraduationCap size={20} className="text-emerald-700" />
             </div>
             <div>
-              <h1 className="text-2xl font-bold text-text-primary">
-                Professor cadastrado!
-              </h1>
               <p className="text-sm text-text-secondary">
                 O acesso foi gerado com sucesso
               </p>
@@ -157,6 +156,7 @@ export default function NovoProfessorPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Novo Professor" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -166,7 +166,6 @@ export default function NovoProfessorPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Novo Professor</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Cadastre um novo professor. A senha de acesso será gerada automaticamente.

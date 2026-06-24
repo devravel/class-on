@@ -8,6 +8,7 @@ import { useRouter, useParams } from 'next/navigation'
 import { ClassForm, ClassFormValues } from '@/components/classes/ClassForm'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { buttonVariants } from '@/components/ui/button'
 import { classesApi } from '@/lib/api'
 import { cn } from '@/lib/utils'
@@ -70,6 +71,7 @@ export default function EditarTurmaPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Editar Turma" />
       <div className="mb-8">
         <div className="mb-2 flex items-center gap-3">
           <Link
@@ -79,7 +81,6 @@ export default function EditarTurmaPage() {
           >
             <ArrowLeft size={16} />
           </Link>
-          <h1 className="text-2xl font-bold text-text-primary">Editar Turma</h1>
         </div>
         <p className="text-sm text-text-secondary">
           Atualize as informações da turma

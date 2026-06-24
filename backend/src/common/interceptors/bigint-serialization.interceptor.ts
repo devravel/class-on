@@ -25,6 +25,13 @@ export class BigIntSerializationInterceptor implements NestInterceptor {
       return value
     }
 
+    if (typeof value === 'object') {
+      const decimalLike = value as { toNumber?: () => number }
+      if (typeof decimalLike.toNumber === 'function') {
+        return decimalLike.toNumber()
+      }
+    }
+
     if (Array.isArray(value)) {
       return value.map((item) => this.serialize(item))
     }

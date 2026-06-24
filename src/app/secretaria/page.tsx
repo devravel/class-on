@@ -7,25 +7,21 @@ import {
   Clock,
   GraduationCap,
   Plus,
-  UserCheck,
-  UserPlus,
   Users,
 } from 'lucide-react'
 import Link from 'next/link'
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import { InlineError } from '@/components/dashboard/InlineError'
+import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
+import { DASHBOARD_LIST_LIMIT, ListCard } from '@/components/dashboard/ListCard'
 import { KpiCard } from '@/components/dashboard/KpiCard'
-import { ListCard } from '@/components/dashboard/ListCard'
-import { QuickActions } from '@/components/dashboard/QuickActions'
-import { RiskDonutChart } from '@/components/dashboard/RiskDonutChart'
 import { Section } from '@/components/dashboard/Section'
 import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { buttonVariants } from '@/components/ui/button'
 import {
   academicYearsApi,
-  analyticsApi,
   classesApi,
   studentsApi,
   teachersApi,
@@ -36,14 +32,7 @@ import { getClassLabel } from '@/lib/class-utils'
 import { cn } from '@/lib/utils'
 import { AcademicYear } from '@/types/academic-year'
 import { Announcement } from '@/types/announcement'
-import { RiskAnalyticsResponse } from '@/types/analytics'
 import { Class, SHIFT_LABELS, Shift } from '@/types/class'
-
-const quickActions = [
-  { id: 'cadastrar-aluno', label: 'Cadastrar Aluno', icon: UserPlus, href: '/secretaria/alunos/novo', variant: 'default' as const },
-  { id: 'cadastrar-professor', label: 'Cadastrar Professor', icon: UserCheck, href: '/secretaria/professores/novo', variant: 'outline' as const },
-  { id: 'nova-turma', label: 'Nova Turma', icon: Plus, href: '/secretaria/turmas/nova', variant: 'outline' as const },
-]
 
 const shiftBadge: Record<string, string> = {
   MORNING: 'bg-brand-100 text-brand-700',
@@ -62,30 +51,12 @@ export default function SecretariaPage() {
   const [announcements, setAnnouncements] = useState<Announcement[]>([])
   const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
   const [announcementsError, setAnnouncementsError] = useState<string | null>(null)
-  const [riskAnalytics, setRiskAnalytics] = useState<RiskAnalyticsResponse | null>(null)
-  const [isRiskLoading, setIsRiskLoading] = useState(true)
-  const [riskError, setRiskError] = useState<string | null>(null)
   const [studentCount, setStudentCount] = useState<number | null>(null)
   const [teacherCount, setTeacherCount] = useState<number | null>(null)
   const [classCount, setClassCount] = useState<number | null>(null)
   const [recentClasses, setRecentClasses] = useState<ClassWithStudents[]>([])
   const [isKpisLoading, setIsKpisLoading] = useState(true)
   const [kpisError, setKpisError] = useState<string | null>(null)
-
-  const loadRiskAnalytics = useCallback(async () => {
-    try {
-      setIsRiskLoading(true)
-      setRiskError(null)
-      const data = await analyticsApi.getRiskAnalytics()
-      setRiskAnalytics(data)
-    } catch (error) {
-      console.error('Erro ao carregar analytics de risco:', error)
-      setRiskAnalytics(null)
-      setRiskError('Não foi possível carregar o índice de risco.')
-    } finally {
-      setIsRiskLoading(false)
-    }
-  }, [])
 
   useEffect(() => {
     let isMounted = true
@@ -127,7 +98,7 @@ export default function SecretariaPage() {
         const data = await announcementsApi.findAll()
 
         if (isMounted) {
-          setAnnouncements(Array.isArray(data) ? data.slice(0, 4) : [])
+          setAnnouncements(Array.isArray(data) ? data : [])
         }
       } catch (error) {
         console.error('Failed to fetch announcements:', error)
@@ -138,27 +109,6 @@ export default function SecretariaPage() {
       } finally {
         if (isMounted) {
           setIsAnnouncementsLoading(false)
-        }
-      }
-    }
-
-    const loadRiskAnalyticsOnMount = async () => {
-      try {
-        setIsRiskLoading(true)
-        setRiskError(null)
-        const data = await analyticsApi.getRiskAnalytics()
-        if (isMounted) {
-          setRiskAnalytics(data)
-        }
-      } catch (error) {
-        console.error('Erro ao carregar analytics de risco:', error)
-        if (isMounted) {
-          setRiskAnalytics(null)
-          setRiskError('Não foi possível carregar o índice de risco.')
-        }
-      } finally {
-        if (isMounted) {
-          setIsRiskLoading(false)
         }
       }
     }
@@ -190,12 +140,10 @@ export default function SecretariaPage() {
         setTeacherCount(teachers.length)
         setClassCount(classes.length)
 
-        const classesWithStudents: ClassWithStudents[] = classes
-          .slice(0, 4)
-          .map((classRecord) => ({
-            ...classRecord,
-            studentCount: enrollmentCounts.get(classRecord.id) ?? 0,
-          }))
+        const classesWithStudents: ClassWithStudents[] = classes.map((classRecord) => ({
+          ...classRecord,
+          studentCount: enrollmentCounts.get(classRecord.id) ?? 0,
+        }))
 
         setRecentClasses(classesWithStudents)
       } catch (error) {
@@ -212,33 +160,12 @@ export default function SecretariaPage() {
 
     loadActiveAcademicYear()
     loadAnnouncements()
-    loadRiskAnalyticsOnMount()
     loadKpis()
 
     return () => {
       isMounted = false
     }
   }, [])
-
-  useEffect(() => {
-    function handleVisibilityChange() {
-      if (document.visibilityState === 'visible') {
-        void loadRiskAnalytics()
-      }
-    }
-
-    function handleWindowFocus() {
-      void loadRiskAnalytics()
-    }
-
-    document.addEventListener('visibilitychange', handleVisibilityChange)
-    window.addEventListener('focus', handleWindowFocus)
-
-    return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-      window.removeEventListener('focus', handleWindowFocus)
-    }
-  }, [loadRiskAnalytics])
 
   const academicYearValue = isAcademicYearLoading
     ? 'Carregando...'
@@ -284,14 +211,7 @@ export default function SecretariaPage() {
 
   return (
     <PageContainer>
-      <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Dashboard</h1>
-        <p className="mt-1 text-sm text-text-secondary">
-          {activeAcademicYear
-            ? `Visão geral do sistema — Ano Letivo ${activeAcademicYear.year}`
-            : 'Visão geral do sistema'}
-        </p>
-      </div>
+      <DashboardPageHeader title="Dashboard" />
 
       <Section title="Indicadores Gerais" className="mb-8">
         {kpisError && <InlineError message={kpisError} className="mb-4" />}
@@ -321,25 +241,6 @@ export default function SecretariaPage() {
         </div>
       </Section>
 
-      <Section
-        title="Monitoramento Preditivo"
-        description="Heurística analítica baseada em notas e frequência dos alunos"
-        className="mb-8"
-      >
-        {isRiskLoading ? (
-          <div className="flex h-48 items-center justify-center rounded-card bg-surface shadow-light ring-1 ring-border">
-            <div className="text-center">
-              <div className="mx-auto h-8 w-8 animate-spin rounded-full border-2 border-neutral-200 border-t-primary" />
-              <p className="mt-2 text-sm text-text-secondary">Calculando índice de risco...</p>
-            </div>
-          </div>
-        ) : riskError ? (
-          <InlineError message={riskError} />
-        ) : riskAnalytics ? (
-          <RiskDonutChart data={riskAnalytics} />
-        ) : null}
-      </Section>
-
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
           <Section
@@ -347,7 +248,7 @@ export default function SecretariaPage() {
             action={
               <Link
                 href="/secretaria/turmas"
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                className="link-action flex items-center gap-1 text-xs"
               >
                 Ver todas <ChevronRight size={14} />
               </Link>
@@ -360,6 +261,7 @@ export default function SecretariaPage() {
             ) : (
               <ListCard
                 items={recentClasses}
+                limit={DASHBOARD_LIST_LIMIT}
                 emptyMessage="Nenhuma turma cadastrada."
                 renderItem={(item) => (
                   <div className="flex items-center justify-between px-4 py-3 transition-colors hover:bg-neutral-100">
@@ -398,7 +300,7 @@ export default function SecretariaPage() {
             action={
               <Link
                 href="/secretaria/comunicados"
-                className="flex items-center gap-1 text-xs text-primary hover:underline"
+                className="link-action flex items-center gap-1 text-xs"
               >
                 Ver todos <ChevronRight size={14} />
               </Link>
@@ -416,6 +318,7 @@ export default function SecretariaPage() {
             ) : (
               <ListCard
                 items={announcements}
+                limit={DASHBOARD_LIST_LIMIT}
                 renderItem={(item) => (
                   <div className="flex flex-col gap-1.5 px-4 py-3 transition-colors hover:bg-neutral-100">
                     <p className="text-sm font-medium leading-snug text-text-primary">
@@ -434,13 +337,6 @@ export default function SecretariaPage() {
           </Section>
         </div>
       </div>
-
-      <Section
-        title="Ações Rápidas"
-        description="Acesso direto às principais funcionalidades"
-      >
-        <QuickActions actions={quickActions} />
-      </Section>
     </PageContainer>
   )
 }

@@ -221,6 +221,109 @@ export class ClassesService {
     }
   }
 
+  async permanentRemove(id: bigint) {
+    try {
+      const classRecord = await this.findOne(id)
+
+      if (classRecord.is_active) {
+        throw new BadRequestException(
+          'Apenas turmas desativadas podem ser excluídas permanentemente',
+        )
+      }
+
+      await this.prisma.$transaction(async (tx) => {
+        const assignments = await tx.assignments.findMany({
+          where: { class_id: id },
+          select: { id: true },
+        })
+        const assignmentIds = assignments.map((assignment) => assignment.id)
+
+        const enrollments = await tx.enrollments.findMany({
+          where: { class_id: id },
+          select: { id: true },
+        })
+        const enrollmentIds = enrollments.map((enrollment) => enrollment.id)
+
+        if (assignmentIds.length > 0) {
+          const tasks = await tx.tasks.findMany({
+            where: { assignment_id: { in: assignmentIds } },
+            select: { id: true },
+          })
+          const taskIds = tasks.map((task) => task.id)
+
+          if (taskIds.length > 0) {
+            await tx.task_submissions.deleteMany({
+              where: { task_id: { in: taskIds } },
+            })
+            await tx.task_targets.deleteMany({
+              where: { task_id: { in: taskIds } },
+            })
+            await tx.tasks.deleteMany({
+              where: { id: { in: taskIds } },
+            })
+          }
+
+          const lessons = await tx.lessons.findMany({
+            where: { assignment_id: { in: assignmentIds } },
+            select: { id: true },
+          })
+          const lessonIds = lessons.map((lesson) => lesson.id)
+
+          if (lessonIds.length > 0) {
+            await tx.attendances.deleteMany({
+              where: { lesson_id: { in: lessonIds } },
+            })
+            await tx.lessons.deleteMany({
+              where: { id: { in: lessonIds } },
+            })
+          }
+        }
+
+        const gradeFilters: Array<
+          | { assignment_id: { in: bigint[] } }
+          | { enrollment_id: { in: bigint[] } }
+        > = []
+        if (assignmentIds.length > 0) {
+          gradeFilters.push({ assignment_id: { in: assignmentIds } })
+        }
+        if (enrollmentIds.length > 0) {
+          gradeFilters.push({ enrollment_id: { in: enrollmentIds } })
+        }
+        if (gradeFilters.length > 0) {
+          await tx.grades.deleteMany({
+            where: { OR: gradeFilters },
+          })
+        }
+
+        if (assignmentIds.length > 0) {
+          await tx.assignments.deleteMany({
+            where: { class_id: id },
+          })
+        }
+
+        if (enrollmentIds.length > 0) {
+          await tx.enrollments.deleteMany({
+            where: { class_id: id },
+          })
+        }
+
+        await tx.announcements_targets.deleteMany({
+          where: { class_id: id },
+        })
+
+        await tx.event_targets.deleteMany({
+          where: { class_id: id },
+        })
+
+        await tx.classes.delete({
+          where: { id },
+        })
+      })
+    } catch (error) {
+      handlePrismaError(error)
+    }
+  }
+
   private async ensureAcademicYearExists(yearId: bigint) {
     try {
       const academicYear = await this.prisma.academic_years.findUnique({

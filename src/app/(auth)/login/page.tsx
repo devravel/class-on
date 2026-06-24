@@ -44,11 +44,19 @@ const loginSchema = z.object({
 
 type LoginFormValues = z.infer<typeof loginSchema>;
 
+const DEMO_PASSWORD = "123456";
+
 const DEMO_CREDENTIALS = [
-  { role: "Secretaria", email: "admin@classon.com" },
-  { role: "Professor", email: "prof1@classon.com" },
-  { role: "Aluno", email: "aluno1@classon.com" },
+  { role: "Secretaria", email: "admin@classon.com", password: DEMO_PASSWORD },
+  { role: "Professor", email: "prof1@classon.com", password: DEMO_PASSWORD },
+  { role: "Aluno", email: "aluno0001@classon.com", password: DEMO_PASSWORD },
 ] as const;
+
+const DEMO_PROFILE_BY_ROLE: Record<(typeof DEMO_CREDENTIALS)[number]["role"], Profile> = {
+  Secretaria: "SECRETARIA",
+  Professor: "PROFESSOR",
+  Aluno: "ALUNO",
+};
 
 const isDevEnvironment = process.env.NODE_ENV === "development";
 
@@ -124,34 +132,42 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <div className="min-h-screen bg-neutral-100 font-sans">
-      <div className="flex min-h-screen items-center justify-center gap-6 p-6">
-        {isDevEnvironment && (
-          <Card className="hidden w-full max-w-[280px] rounded-[12px] border border-neutral-200 bg-white p-5 shadow-sm lg:block">
-            <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Contas de demonstração
-            </p>
-            <ul className="space-y-2.5">
-              {DEMO_CREDENTIALS.map((account) => (
-                <li key={account.email} className="rounded-lg bg-neutral-50 px-3 py-2">
-                  <p className="text-xs font-medium text-neutral-500">{account.role}</p>
-                  <p className="text-sm font-semibold text-neutral-900">{account.email}</p>
-                </li>
-              ))}
-            </ul>
-            <p className="mt-3 text-xs text-neutral-500">
-              Senha padrão: <span className="font-mono font-semibold text-neutral-700">123456</span>
-            </p>
-          </Card>
-        )}
+  function fillDemoCredentials(account: (typeof DEMO_CREDENTIALS)[number]) {
+    setProfile(DEMO_PROFILE_BY_ROLE[account.role]);
+    form.setValue("email", account.email, { shouldValidate: true });
+    form.setValue("password", account.password, { shouldValidate: true });
+    setAuthError(null);
+  }
 
-        <Card className="w-full max-w-[400px] rounded-[12px] border-0 bg-neutral-100 p-8 shadow-none ring-0">
+  const showDemoPanel = isDevEnvironment && step === 2;
+
+  const demoAccountsList = (
+    <>
+      {DEMO_CREDENTIALS.map((account) => (
+        <li key={account.email}>
+          <button
+            type="button"
+            onClick={() => fillDemoCredentials(account)}
+            className="w-full rounded-lg bg-neutral-50 px-3 py-2 text-left transition-colors hover:bg-primary/10 hover:ring-1 hover:ring-primary/20"
+          >
+            <p className="text-xs font-medium text-neutral-500">{account.role}</p>
+            <p className="text-sm font-semibold text-neutral-900">{account.email}</p>
+          </button>
+        </li>
+      ))}
+    </>
+  );
+
+  return (
+    <div className="app-shell-gradient min-h-screen font-sans">
+      <div className="flex min-h-screen items-center justify-center p-6">
+        <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-center">
+          <Card className="content-panel w-full max-w-[400px] shrink-0 rounded-[32px] border-0 p-8 shadow-medium ring-1 ring-white/10">
           {step === 2 && (
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 hover:text-primary/80"
+              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 transition-colors hover:text-brand-700"
             >
               <ChevronLeft className="h-4 w-4" />
               Voltar
@@ -162,8 +178,8 @@ export default function LoginPage() {
             <Image
               src="/assets/logo/no_name_logo.svg"
               alt="Logo ClassOn"
-              width={33}
-              height={30}
+              width={35}
+              height={32}
               className="mx-auto mb-10"
             />
             <h1 className="text-2xl font-bold text-neutral-900">
@@ -277,22 +293,21 @@ export default function LoginPage() {
               </form>
             </Form>
           )}
-        </Card>
-
-        {isDevEnvironment && (
-          <Card className="w-full max-w-[400px] rounded-[12px] border border-neutral-200 bg-white p-4 shadow-sm lg:hidden">
-            <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-neutral-500">
-              Demo — senha: 123456
-            </p>
-            <div className="flex flex-wrap gap-2 text-xs text-neutral-700">
-              {DEMO_CREDENTIALS.map((account) => (
-                <span key={account.email} className="rounded-full bg-neutral-100 px-2.5 py-1">
-                  {account.role}: {account.email}
-                </span>
-              ))}
-            </div>
           </Card>
-        )}
+
+          {showDemoPanel && (
+            <Card className="w-full max-w-[280px] shrink-0 rounded-[20px] border border-white/10 bg-white/95 p-5 shadow-medium backdrop-blur-sm">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+                Contas de demonstração
+              </p>
+              <ul className="space-y-2.5">{demoAccountsList}</ul>
+              <p className="mt-3 text-xs text-neutral-500">
+                Clique em um perfil para preencher e-mail e senha. Senha:{" "}
+                <span className="font-mono font-semibold text-neutral-700">{DEMO_PASSWORD}</span>
+              </p>
+            </Card>
+          )}
+        </div>
       </div>
     </div>
   );

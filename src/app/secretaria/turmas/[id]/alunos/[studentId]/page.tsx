@@ -6,6 +6,7 @@ import { useParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { StudentPerformanceView } from '@/components/students/StudentPerformanceView'
 import { buttonVariants } from '@/components/ui/button'
 import { attendanceApi, classesApi, gradesApi, studentsApi } from '@/lib/api'
@@ -91,6 +92,7 @@ export default function TurmaAlunoDesempenhoPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Desempenho do Aluno" />
       <div className="mb-8 flex items-start gap-3">
         <Link
           href={`/secretaria/turmas/${classId}`}
@@ -103,8 +105,7 @@ export default function TurmaAlunoDesempenhoPage() {
           <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">Desempenho do Aluno</h1>
-          <p className="mt-1 text-sm text-text-secondary">
+          <p className="text-sm text-text-secondary">
             Notas, frequência e situação por disciplina
           </p>
         </div>

@@ -7,6 +7,7 @@ import { useEffect, useMemo, useState } from 'react'
 
 import { DeleteAssignmentDialog } from '@/components/assignments/DeleteAssignmentDialog'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { usePageHeaderTitle } from '@/contexts/page-header-context'
 import { TeacherAssignmentsList } from '@/components/teachers/TeacherAssignmentsList'
 import { TeacherClassesList } from '@/components/teachers/TeacherClassesList'
 import { buttonVariants } from '@/components/ui/button'
@@ -60,6 +61,8 @@ export default function ProfessorTurmasPage() {
     [assignments],
   )
 
+  usePageHeaderTitle(teacher?.full_name ?? '')
+
   const handleDeleteClick = (assignment: Assignment) => {
     setSelectedAssignment(assignment)
     setIsDeleteDialogOpen(true)
@@ -106,8 +109,7 @@ export default function ProfessorTurmasPage() {
           <ArrowLeft size={16} />
         </Link>
         <div>
-          <h1 className="text-2xl font-bold text-text-primary">{teacher.full_name}</h1>
-          <p className="mt-1 text-sm font-medium text-primary">{primarySubject}</p>
+          <p className="text-sm font-medium text-primary">{primarySubject}</p>
           <p className="text-sm text-text-secondary">
             Turmas e atribuições do professor
           </p>

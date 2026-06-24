@@ -7,6 +7,7 @@ import { useEffect, useState } from 'react'
 import { ListCard } from '@/components/dashboard/ListCard'
 import { Section } from '@/components/dashboard/Section'
 import { PageContainer } from '@/components/layout/PageContainer'
+import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { assignmentsApi, authApi } from '@/lib/api'
 import { getClassLabel } from '@/lib/class-utils'
 import { Assignment } from '@/types/assignment'
@@ -39,9 +40,9 @@ export default function ProfessorTurmasPage() {
 
   return (
     <PageContainer>
+      <PageHeaderTitle title="Minhas Turmas" />
       <div className="mb-8">
-        <h1 className="text-2xl font-bold text-text-primary">Minhas Turmas</h1>
-        <p className="mt-1 text-sm text-text-secondary">
+        <p className="text-sm text-text-secondary">
           Selecione uma turma para gerenciar aulas, chamadas, notas e tarefas.
         </p>
       </div>
