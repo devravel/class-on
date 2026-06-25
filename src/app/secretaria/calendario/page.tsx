@@ -103,6 +103,7 @@ export default function SecretariaCalendarioPage() {
           setIsEventDialogOpen(false)
           setSelectedEvent(null)
         }}
+        onDeleted={() => setRefreshKey(prev => prev + 1)}
       />
 
       {/* Event Form Dialog */}

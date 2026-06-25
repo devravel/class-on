@@ -38,7 +38,7 @@ export function AppPageHeader() {
         size={20}
         className="nav-search-trigger-icon shrink-0"
       />
-      <span className="flex-1 truncate text-left">Ações rápidas</span>
+      <span className="flex-1 whitespace-nowrap text-left">Ações rápidas</span>
       <kbd className="hidden shrink-0 rounded border border-border bg-surface px-1 py-0.5 font-mono text-[10px] text-text-secondary sm:inline">
         {commandShortcut}
       </kbd>
@@ -47,15 +47,17 @@ export function AppPageHeader() {
 
   if (isDashboard) {
     return (
-      <div className="mb-dashboard-header grid grid-cols-1 gap-3 lg:grid-cols-3 lg:items-center lg:gap-6">
-        <div className="flex min-w-0 items-center gap-3 lg:col-span-2 lg:gap-4">
+      <div className="mb-dashboard-header">
+        <div className="flex min-w-0 items-center gap-3 lg:gap-4">
           {title ? (
             <h1 className="shrink-0 text-2xl font-bold text-text-primary">
               {title}
             </h1>
           ) : null}
-          <UserProfileContainer className="min-w-0 shrink-0 md:max-w-xs" />
-          <div className="min-w-0 flex-1">{quickActionsButton}</div>
+          <UserProfileContainer className="min-w-0 md:max-w-xs" />
+          <div className="ml-auto w-full min-w-50 max-w-sm shrink-0">
+            {quickActionsButton}
+          </div>
         </div>
       </div>
     );

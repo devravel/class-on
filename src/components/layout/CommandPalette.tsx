@@ -36,6 +36,7 @@ import {
   ListTodo,
   Loader2,
   Megaphone,
+  Plus,
   Search,
   UserCheck,
   UserRound,
@@ -79,12 +80,29 @@ const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
       keywords: ['alunos', 'matricula', 'cadastro', 'estudante', 'listar', 'buscar'],
     },
     {
+      id: 'nav-criar-turma',
+      label: 'Criar Turma',
+      description: 'Cadastrar nova turma no ano letivo',
+      href: '/secretaria/turmas/nova',
+      icon: Plus,
+      keywords: [
+        'criar turma',
+        'nova turma',
+        'cadastrar turma',
+        'adicionar turma',
+        'registrar turma',
+        'turma nova',
+        'criar classe',
+        'nova classe',
+      ],
+    },
+    {
       id: 'nav-secretaria-turmas',
       label: 'Gerenciar Turmas',
       description: 'Turmas, séries e matrículas',
       href: '/secretaria/turmas',
       icon: BookOpen,
-      keywords: ['turmas', 'series', 'classes', 'matricula'],
+      keywords: ['turmas', 'series', 'classes', 'matricula', 'gerenciar turmas', 'listar turmas'],
     },
     {
       id: 'nav-comunicados',
@@ -730,7 +748,9 @@ export function CommandPalette() {
   const inputPlaceholder =
     user?.role === 'PROFESSOR'
       ? 'Buscar ações ou digite um comando (ex: Realizar chamada)...'
-      : 'Buscar ações ou alunos...'
+      : user?.role === 'SECRETARIA'
+        ? 'Buscar ações, alunos ou digite um comando (ex: Criar turma)...'
+        : 'Buscar ações ou alunos...'
 
   if (!isAuthenticated) return null
 

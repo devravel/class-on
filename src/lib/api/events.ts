@@ -72,6 +72,7 @@ export interface CalendarEvent {
   extendedProps: {
     description: string
     creator: string
+    creator_id: string
     status: string
     scope_type: string
   }

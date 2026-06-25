@@ -66,6 +66,7 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
       extendedProps: {
         description: rawProps?.description ?? '',
         creator: rawProps?.creator ?? '',
+        creator_id: rawProps?.creator_id ?? '',
         status: rawProps?.status ?? 'ACTIVE',
         scope_type: rawProps?.scope_type ?? 'ALL_SCHOOL',
       },

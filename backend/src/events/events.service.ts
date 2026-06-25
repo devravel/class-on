@@ -449,6 +449,7 @@ export class EventsService {
             extendedProps: {
               description: event.description,
               creator: event.users.teachers?.[0]?.full_name || event.users.email,
+              creator_id: event.creator_id.toString(),
               status: event.status,
               scope_type: event.scope_type,
             },
@@ -463,6 +464,7 @@ export class EventsService {
           extendedProps: {
             description: event.description,
             creator: event.users.teachers?.[0]?.full_name || event.users.email,
+            creator_id: event.creator_id.toString(),
             status: event.status,
             scope_type: event.scope_type,
           },

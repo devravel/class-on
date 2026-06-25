@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   BookOpen,
@@ -8,206 +8,216 @@ import {
   GraduationCap,
   Plus,
   Users,
-} from 'lucide-react'
-import Link from 'next/link'
-import { useEffect, useMemo, useState } from 'react'
+} from "lucide-react";
+import Link from "next/link";
+import { useEffect, useMemo, useState } from "react";
 
-import { InlineError } from '@/components/dashboard/InlineError'
-import { DashboardPageHeader } from '@/components/dashboard/DashboardPageHeader'
-import { DASHBOARD_LIST_LIMIT, ListCard } from '@/components/dashboard/ListCard'
-import { KpiCard } from '@/components/dashboard/KpiCard'
-import { Section } from '@/components/dashboard/Section'
-import { UpcomingEventsCard } from '@/components/events/UpcomingEventsCard'
-import { PageContainer } from '@/components/layout/PageContainer'
-import { buttonVariants } from '@/components/ui/button'
+import { InlineError } from "@/components/dashboard/InlineError";
+import { DashboardPageHeader } from "@/components/dashboard/DashboardPageHeader";
+import {
+  DASHBOARD_LIST_LIMIT,
+  ListCard,
+} from "@/components/dashboard/ListCard";
+import { KpiCard } from "@/components/dashboard/KpiCard";
+import { Section } from "@/components/dashboard/Section";
+import { UpcomingEventsCard } from "@/components/events/UpcomingEventsCard";
+import { PageContainer } from "@/components/layout/PageContainer";
+import { buttonVariants } from "@/components/ui/button";
 import {
   academicYearsApi,
   classesApi,
   studentsApi,
   teachersApi,
-} from '@/lib/api'
-import { announcementsApi } from '@/lib/api/announcements'
-import { ApiError } from '@/lib/api-client'
-import { getClassLabel } from '@/lib/class-utils'
-import { cn } from '@/lib/utils'
-import { AcademicYear } from '@/types/academic-year'
-import { Announcement } from '@/types/announcement'
-import { Class, SHIFT_LABELS, Shift } from '@/types/class'
+} from "@/lib/api";
+import { announcementsApi } from "@/lib/api/announcements";
+import { ApiError } from "@/lib/api-client";
+import { getClassLabel } from "@/lib/class-utils";
+import { cn } from "@/lib/utils";
+import { AcademicYear } from "@/types/academic-year";
+import { Announcement } from "@/types/announcement";
+import { Class, SHIFT_LABELS, Shift } from "@/types/class";
 
 const shiftBadge: Record<string, string> = {
-  MORNING: 'bg-brand-100 text-brand-700',
-  AFTERNOON: 'bg-warning/10 text-warning',
-  NIGHT: 'bg-neutral-200 text-neutral-700',
-}
+  MORNING: "bg-brand-100 text-brand-700",
+  AFTERNOON: "bg-warning/10 text-warning",
+  NIGHT: "bg-neutral-200 text-neutral-700",
+};
 
 interface ClassWithStudents extends Class {
-  studentCount: number
+  studentCount: number;
 }
 
 export default function SecretariaPage() {
-  const [activeAcademicYear, setActiveAcademicYear] = useState<AcademicYear | null>(null)
-  const [isAcademicYearLoading, setIsAcademicYearLoading] = useState(true)
-  const [academicYearError, setAcademicYearError] = useState<string | null>(null)
-  const [announcements, setAnnouncements] = useState<Announcement[]>([])
-  const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true)
-  const [announcementsError, setAnnouncementsError] = useState<string | null>(null)
-  const [studentCount, setStudentCount] = useState<number | null>(null)
-  const [teacherCount, setTeacherCount] = useState<number | null>(null)
-  const [classCount, setClassCount] = useState<number | null>(null)
-  const [recentClasses, setRecentClasses] = useState<ClassWithStudents[]>([])
-  const [isKpisLoading, setIsKpisLoading] = useState(true)
-  const [kpisError, setKpisError] = useState<string | null>(null)
+  const [activeAcademicYear, setActiveAcademicYear] =
+    useState<AcademicYear | null>(null);
+  const [isAcademicYearLoading, setIsAcademicYearLoading] = useState(true);
+  const [academicYearError, setAcademicYearError] = useState<string | null>(
+    null,
+  );
+  const [announcements, setAnnouncements] = useState<Announcement[]>([]);
+  const [isAnnouncementsLoading, setIsAnnouncementsLoading] = useState(true);
+  const [announcementsError, setAnnouncementsError] = useState<string | null>(
+    null,
+  );
+  const [studentCount, setStudentCount] = useState<number | null>(null);
+  const [teacherCount, setTeacherCount] = useState<number | null>(null);
+  const [classCount, setClassCount] = useState<number | null>(null);
+  const [recentClasses, setRecentClasses] = useState<ClassWithStudents[]>([]);
+  const [isKpisLoading, setIsKpisLoading] = useState(true);
+  const [kpisError, setKpisError] = useState<string | null>(null);
 
   useEffect(() => {
-    let isMounted = true
+    let isMounted = true;
 
     const loadActiveAcademicYear = async () => {
       try {
-        setIsAcademicYearLoading(true)
-        setAcademicYearError(null)
+        setIsAcademicYearLoading(true);
+        setAcademicYearError(null);
 
-        const data = await academicYearsApi.getActive()
+        const data = await academicYearsApi.getActive();
 
         if (isMounted) {
-          setActiveAcademicYear(data)
+          setActiveAcademicYear(data);
         }
       } catch (error) {
         if (!isMounted) {
-          return
+          return;
         }
 
-        setActiveAcademicYear(null)
+        setActiveAcademicYear(null);
 
         if (error instanceof ApiError && error.status === 404) {
-          return
+          return;
         }
 
-        console.error('Erro ao carregar ano letivo ativo:', error)
-        setAcademicYearError('Não foi possível carregar o ano letivo.')
+        console.error("Erro ao carregar ano letivo ativo:", error);
+        setAcademicYearError("Não foi possível carregar o ano letivo.");
       } finally {
         if (isMounted) {
-          setIsAcademicYearLoading(false)
+          setIsAcademicYearLoading(false);
         }
       }
-    }
+    };
 
     const loadAnnouncements = async () => {
       try {
-        setIsAnnouncementsLoading(true)
-        setAnnouncementsError(null)
-        const data = await announcementsApi.findAll()
+        setIsAnnouncementsLoading(true);
+        setAnnouncementsError(null);
+        const data = await announcementsApi.findAll();
 
         if (isMounted) {
-          setAnnouncements(Array.isArray(data) ? data : [])
+          setAnnouncements(Array.isArray(data) ? data : []);
         }
       } catch (error) {
-        console.error('Failed to fetch announcements:', error)
+        console.error("Failed to fetch announcements:", error);
         if (isMounted) {
-          setAnnouncements([])
-          setAnnouncementsError('Não foi possível carregar os comunicados.')
+          setAnnouncements([]);
+          setAnnouncementsError("Não foi possível carregar os comunicados.");
         }
       } finally {
         if (isMounted) {
-          setIsAnnouncementsLoading(false)
+          setIsAnnouncementsLoading(false);
         }
       }
-    }
+    };
 
     const loadKpis = async () => {
       try {
-        setIsKpisLoading(true)
-        setKpisError(null)
+        setIsKpisLoading(true);
+        setKpisError(null);
 
         const [students, teachers, classes] = await Promise.all([
           studentsApi.list(),
           teachersApi.list(),
           classesApi.list(),
-        ])
+        ]);
 
-        if (!isMounted) return
+        if (!isMounted) return;
 
-        const enrollmentCounts = new Map<string, number>()
+        const enrollmentCounts = new Map<string, number>();
         for (const student of students) {
           for (const enrollment of student.enrollments ?? []) {
             enrollmentCounts.set(
               enrollment.class_id,
               (enrollmentCounts.get(enrollment.class_id) ?? 0) + 1,
-            )
+            );
           }
         }
 
-        setStudentCount(students.length)
-        setTeacherCount(teachers.length)
-        setClassCount(classes.length)
+        setStudentCount(students.length);
+        setTeacherCount(teachers.length);
+        setClassCount(classes.length);
 
-        const classesWithStudents: ClassWithStudents[] = classes.map((classRecord) => ({
-          ...classRecord,
-          studentCount: enrollmentCounts.get(classRecord.id) ?? 0,
-        }))
+        const classesWithStudents: ClassWithStudents[] = classes.map(
+          (classRecord) => ({
+            ...classRecord,
+            studentCount: enrollmentCounts.get(classRecord.id) ?? 0,
+          }),
+        );
 
-        setRecentClasses(classesWithStudents)
+        setRecentClasses(classesWithStudents);
       } catch (error) {
-        console.error('Erro ao carregar indicadores:', error)
+        console.error("Erro ao carregar indicadores:", error);
         if (isMounted) {
-          setKpisError('Não foi possível carregar os indicadores gerais.')
+          setKpisError("Não foi possível carregar os indicadores gerais.");
         }
       } finally {
         if (isMounted) {
-          setIsKpisLoading(false)
+          setIsKpisLoading(false);
         }
       }
-    }
+    };
 
-    loadActiveAcademicYear()
-    loadAnnouncements()
-    loadKpis()
+    loadActiveAcademicYear();
+    loadAnnouncements();
+    loadKpis();
 
     return () => {
-      isMounted = false
-    }
-  }, [])
+      isMounted = false;
+    };
+  }, []);
 
   const academicYearValue = isAcademicYearLoading
-    ? 'Carregando...'
+    ? "Carregando..."
     : activeAcademicYear
       ? activeAcademicYear.year
-      : 'Nenhum ano cadastrado no momento'
+      : "Nenhum ano cadastrado no momento";
 
   const academicYearTrend = isAcademicYearLoading
-    ? 'Buscando ano ativo'
+    ? "Buscando ano ativo"
     : activeAcademicYear
-      ? 'Em andamento'
-      : academicYearError
+      ? "Em andamento"
+      : academicYearError;
 
   const kpiCards = useMemo(
     () => [
       {
-        id: 'alunos',
-        label: 'Total de Alunos',
-        value: isKpisLoading ? '...' : String(studentCount ?? 0),
+        id: "alunos",
+        label: "Total de Alunos",
+        value: isKpisLoading ? "..." : String(studentCount ?? 0),
         icon: Users,
         trend: isKpisLoading ? undefined : `${studentCount ?? 0} matriculados`,
-        trendType: 'neutral' as const,
+        trendType: "neutral" as const,
       },
       {
-        id: 'professores',
-        label: 'Total de Professores',
-        value: isKpisLoading ? '...' : String(teacherCount ?? 0),
+        id: "professores",
+        label: "Total de Professores",
+        value: isKpisLoading ? "..." : String(teacherCount ?? 0),
         icon: GraduationCap,
         trend: isKpisLoading ? undefined : `${teacherCount ?? 0} cadastrados`,
-        trendType: 'neutral' as const,
+        trendType: "neutral" as const,
       },
       {
-        id: 'turmas',
-        label: 'Total de Turmas',
-        value: isKpisLoading ? '...' : String(classCount ?? 0),
+        id: "turmas",
+        label: "Total de Turmas",
+        value: isKpisLoading ? "..." : String(classCount ?? 0),
         icon: BookOpen,
         trend: isKpisLoading ? undefined : `${classCount ?? 0} turmas ativas`,
-        trendType: 'neutral' as const,
+        trendType: "neutral" as const,
       },
     ],
     [isKpisLoading, studentCount, teacherCount, classCount],
-  )
+  );
 
   return (
     <PageContainer>
@@ -224,13 +234,19 @@ export default function SecretariaPage() {
             value={academicYearValue}
             icon={School}
             trend={academicYearTrend ?? undefined}
-            trendType={academicYearError ? 'negative' : 'neutral'}
-            valueClassName={!isAcademicYearLoading && !activeAcademicYear ? 'text-base leading-snug' : undefined}
+            trendType={academicYearError ? "negative" : "neutral"}
+            valueClassName={
+              !isAcademicYearLoading && !activeAcademicYear
+                ? "text-base leading-snug"
+                : undefined
+            }
             action={
-              !isAcademicYearLoading && !activeAcademicYear && !academicYearError ? (
+              !isAcademicYearLoading &&
+              !activeAcademicYear &&
+              !academicYearError ? (
                 <Link
                   href="/secretaria/academic-years/novo"
-                  className={cn(buttonVariants({ size: 'sm' }), 'w-fit')}
+                  className={cn(buttonVariants({ size: "sm" }), "w-fit")}
                 >
                   <Plus size={14} />
                   Cadastrar novo ano
@@ -244,7 +260,7 @@ export default function SecretariaPage() {
       <div className="mb-8 grid grid-cols-1 gap-6 lg:grid-cols-3">
         <div className="lg:col-span-1">
           <Section
-            title="Turmas Recentes"
+            title="Turmas Ativas"
             action={
               <Link
                 href="/secretaria/turmas"
@@ -274,12 +290,13 @@ export default function SecretariaPage() {
                           {getClassLabel(item)}
                         </p>
                         <p className="truncate text-xs text-text-secondary">
-                          {item.studentCount} aluno{item.studentCount !== 1 ? 's' : ''}
+                          {item.studentCount} aluno
+                          {item.studentCount !== 1 ? "s" : ""}
                         </p>
                       </div>
                     </div>
                     <span
-                      className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${shiftBadge[item.shift] ?? 'bg-neutral-200 text-neutral-700'}`}
+                      className={`shrink-0 rounded-full px-2 py-1 text-xs font-medium ${shiftBadge[item.shift] ?? "bg-neutral-200 text-neutral-700"}`}
                     >
                       {SHIFT_LABELS[item.shift as Shift] ?? item.shift}
                     </span>
@@ -326,7 +343,7 @@ export default function SecretariaPage() {
                     </p>
                     <span className="flex items-center gap-1 text-xs text-text-secondary">
                       <Clock size={12} />
-                      {new Date(item.created_at).toLocaleDateString('pt-BR')} ·
+                      {new Date(item.created_at).toLocaleDateString("pt-BR")} ·
                       {item.users.teachers?.[0]?.full_name || item.users.email}
                     </span>
                   </div>
@@ -338,5 +355,5 @@ export default function SecretariaPage() {
         </div>
       </div>
     </PageContainer>
-  )
+  );
 }

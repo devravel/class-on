@@ -210,12 +210,13 @@ A carta deve:
     if (role === 'SECRETARIA') {
       return `Você interpreta comandos da secretaria escolar em um sistema brasileiro.
 Responda SOMENTE com JSON válido, sem markdown:
-{"status":"recognized"|"unknown","action":"dashboard"|"alunos"|"comunicados"|null,"detectedClass":null,"route":string|null}
+{"status":"recognized"|"unknown","action":"dashboard"|"alunos"|"comunicados"|"criar_turma"|null,"detectedClass":null,"route":string|null}
 
 Mapeamentos:
 - dashboard: painel, gráfico de risco, métricas de evasão
 - alunos: listar alunos, buscar estudante, filtro de busca
 - comunicados: gerar comunicado, enviar avisos para os pais
+- criar_turma: criar turma, nova turma, cadastrar turma, adicionar turma
 Se não reconhecer, use status "unknown" e action null.`
     }
 
@@ -335,7 +336,12 @@ Se não reconhecer, use status "unknown".`
   private normalizeSecretariaAction(
     value: unknown,
   ): SecretariaCommandAction | null {
-    if (value === 'dashboard' || value === 'alunos' || value === 'comunicados') {
+    if (
+      value === 'dashboard' ||
+      value === 'alunos' ||
+      value === 'comunicados' ||
+      value === 'criar_turma'
+    ) {
       return value
     }
     return null
@@ -354,6 +360,7 @@ Se não reconhecer, use status "unknown".`
         dashboard: '/secretaria',
         alunos: '/secretaria/alunos',
         comunicados: '/secretaria/comunicados',
+        criar_turma: '/secretaria/turmas/nova',
       }
       return routes[action as SecretariaCommandAction] ?? null
     }
@@ -409,6 +416,18 @@ Se não reconhecer, use status "unknown".`
           'enviar avisos',
           'comunicado',
           'avisos',
+        ],
+        criar_turma: [
+          'cadastrar nova turma',
+          'cadastrar turma',
+          'adicionar turma',
+          'registrar turma',
+          'criar uma turma',
+          'criar turma',
+          'nova turma',
+          'turma nova',
+          'criar classe',
+          'nova classe',
         ],
       }
 

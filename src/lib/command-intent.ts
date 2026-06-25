@@ -5,7 +5,11 @@ import type { UserRole } from '@/contexts/auth-context'
 export type CommandIntentStatus = 'recognized' | 'unknown'
 
 export type ProfessorCommandAction = 'chamada' | 'notas' | 'tarefa'
-export type SecretariaCommandAction = 'dashboard' | 'alunos' | 'comunicados'
+export type SecretariaCommandAction =
+  | 'dashboard'
+  | 'alunos'
+  | 'comunicados'
+  | 'criar_turma'
 export type AlunoCommandAction = 'boletim' | 'frequencia' | 'tarefas'
 
 export interface CommandIntentResponse {
@@ -50,6 +54,7 @@ const SECRETARIA_ROUTES: Record<SecretariaCommandAction, string> = {
   dashboard: '/secretaria',
   alunos: '/secretaria/alunos',
   comunicados: '/secretaria/comunicados',
+  criar_turma: '/secretaria/turmas/nova',
 }
 
 const ALUNO_ROUTES: Record<AlunoCommandAction, string> = {
@@ -132,6 +137,18 @@ const SECRETARIA_INTENT_PATTERNS: Record<SecretariaCommandAction, readonly strin
     'comunicados',
     'comunicado',
     'avisos',
+  ],
+  criar_turma: [
+    'cadastrar nova turma',
+    'cadastrar turma',
+    'adicionar turma',
+    'registrar turma',
+    'criar uma turma',
+    'criar turma',
+    'nova turma',
+    'turma nova',
+    'criar classe',
+    'nova classe',
   ],
 }
 
