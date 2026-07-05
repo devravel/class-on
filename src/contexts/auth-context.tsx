@@ -2,6 +2,13 @@
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react'
 
+import {
+  clearSession,
+  getAccessToken,
+  getStoredUser,
+  setSession,
+} from '@/lib/auth-storage'
+
 export type UserRole = 'SECRETARIA' | 'PROFESSOR' | 'ALUNO'
 
 export interface AuthUser {
@@ -19,21 +26,35 @@ interface AuthContextValue {
   signOut: () => void
 }
 
-const TOKEN_KEY = 'access_token'
-const USER_KEY = 'auth_user'
-const AUTH_COOKIE_MAX_AGE = 60 * 60 * 24 * 7
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
 
-function setAuthCookies(token: string, role: UserRole) {
-  const secure = process.env.NODE_ENV === 'production' ? '; Secure' : ''
-  document.cookie = `auth_token=${encodeURIComponent(token)}; path=/; max-age=${AUTH_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
-  document.cookie = `auth_role=${role}; path=/; max-age=${AUTH_COOKIE_MAX_AGE}; SameSite=Lax${secure}`
-}
+async function validateSession(
+  token: string,
+): Promise<
+  | { status: 'valid'; user: AuthUser }
+  | { status: 'invalid' }
+  | { status: 'unavailable' }
+> {
+  try {
+    const response = await fetch(`${API_BASE_URL}/auth/me`, {
+      headers: { Authorization: `Bearer ${token}` },
+    })
 
-function clearAuthCookies() {
-  document.cookie = 'auth_token=; path=/; max-age=0; SameSite=Lax'
-  document.cookie = 'auth_role=; path=/; max-age=0; SameSite=Lax'
+    if (response.status === 401 || response.status === 403) {
+      return { status: 'invalid' }
+    }
+
+    if (!response.ok) {
+      return { status: 'unavailable' }
+    }
+
+    const me = (await response.json()) as AuthUser
+    return { status: 'valid', user: me }
+  } catch {
+    return { status: 'unavailable' }
+  }
 }
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -42,37 +63,67 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true)
 
   useEffect(() => {
-    const storedToken = localStorage.getItem(TOKEN_KEY)
-    const storedUser = localStorage.getItem(USER_KEY)
+    let isMounted = true
 
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser) as AuthUser
-        setToken(storedToken)
-        setUser(parsedUser)
-        setAuthCookies(storedToken, parsedUser.role)
-      } catch {
-        localStorage.removeItem(TOKEN_KEY)
-        localStorage.removeItem(USER_KEY)
-        clearAuthCookies()
+    const restoreSession = async () => {
+      const storedToken = getAccessToken()
+      const storedUser = getStoredUser()
+
+      if (!storedToken) {
+        clearSession()
+        if (isMounted) setIsLoading(false)
+        return
       }
+
+      const validation = await validateSession(storedToken)
+
+      if (!isMounted) return
+
+      if (validation.status === 'valid') {
+        setSession(storedToken, validation.user)
+        setToken(storedToken)
+        setUser(validation.user)
+        setIsLoading(false)
+        return
+      }
+
+      if (validation.status === 'invalid') {
+        clearSession()
+        setToken(null)
+        setUser(null)
+        setIsLoading(false)
+        return
+      }
+
+      if (storedUser) {
+        setSession(storedToken, storedUser)
+        setToken(storedToken)
+        setUser(storedUser)
+        setIsLoading(false)
+        return
+      }
+
+      clearSession()
+      setToken(null)
+      setUser(null)
+      setIsLoading(false)
     }
 
-    setIsLoading(false)
+    void restoreSession()
+
+    return () => {
+      isMounted = false
+    }
   }, [])
 
   const signIn = useCallback((newToken: string, newUser: AuthUser) => {
-    localStorage.setItem(TOKEN_KEY, newToken)
-    localStorage.setItem(USER_KEY, JSON.stringify(newUser))
-    setAuthCookies(newToken, newUser.role)
+    setSession(newToken, newUser)
     setToken(newToken)
     setUser(newUser)
   }, [])
 
   const signOut = useCallback(() => {
-    localStorage.removeItem(TOKEN_KEY)
-    localStorage.removeItem(USER_KEY)
-    clearAuthCookies()
+    clearSession()
     setToken(null)
     setUser(null)
   }, [])

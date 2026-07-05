@@ -3,10 +3,12 @@
  * 
  * Features:
  * - Adiciona automaticamente header Authorization Bearer token
- * - Lê token do localStorage
+ * - Lê token do localStorage/cookie de sessão
  * - Tratamento de erros HTTP padronizado
  * - Suporte a TypeScript com tipos genéricos
  */
+
+import { clearSession, getAccessToken } from '@/lib/auth-storage'
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001/api'
 
@@ -55,7 +57,7 @@ export const apiClient = {
 
     // Adiciona token automaticamente se a requisição requer autenticação
     if (requiresAuth && typeof window !== 'undefined') {
-      const token = localStorage.getItem('access_token')
+      const token = getAccessToken()
       if (token) {
         requestHeaders['Authorization'] = `Bearer ${token}`
       }
@@ -71,11 +73,10 @@ export const apiClient = {
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}))
         
-        // Se for 401 e estiver autenticado, limpa o token inválido
+        // Se for 401 e estiver autenticado, limpa a sessão inválida
         if (response.status === 401 && requiresAuth) {
           if (typeof window !== 'undefined') {
-            localStorage.removeItem('access_token')
-            localStorage.removeItem('auth_user')
+            clearSession()
             window.location.href = '/login'
           }
         }
