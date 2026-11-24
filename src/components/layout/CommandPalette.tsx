@@ -36,6 +36,7 @@ import {
   ListTodo,
   Loader2,
   Megaphone,
+  MessagesSquare,
   Plus,
   Search,
   UserCheck,
@@ -149,6 +150,14 @@ const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
       icon: BookOpen,
       keywords: ['turmas', 'disciplinas', 'salas'],
     },
+    {
+      id: 'nav-professor-conversas',
+      label: 'Conversas com alunos',
+      description: 'Mensagens e alunos que pedem atenção',
+      href: '/professor/conversas',
+      icon: MessagesSquare,
+      keywords: ['conversa', 'conversas', 'chat', 'mensagem para aluno', 'falar com aluno'],
+    },
   ],
   ALUNO: [
     {
@@ -174,6 +183,14 @@ const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
       href: '/aluno/tarefas',
       icon: ClipboardList,
       keywords: ['tarefas', 'atividades', 'entregar', 'pendentes'],
+    },
+    {
+      id: 'nav-aluno-conversas',
+      label: 'Conversas com professores',
+      description: 'Fale com quem dá aula pra você, já com suas pendências',
+      href: '/aluno/conversas',
+      icon: MessagesSquare,
+      keywords: ['conversa', 'conversas', 'chat', 'falar com professor', 'duvida', 'dúvida'],
     },
     {
       id: 'nav-aluno-comunicados',

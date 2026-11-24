@@ -11,6 +11,7 @@ import {
   School,
   Calendar,
   Activity,
+  MessagesSquare,
   type LucideIcon,
 } from "lucide-react";
 
@@ -49,6 +50,7 @@ export const professorNav: NavItem[] = [
   { label: "Minhas Turmas", href: "/professor/turmas", icon: BookOpen, group: "Ensino" },
   { label: "Tarefas", href: "/professor/tarefas", icon: ListTodo, group: "Ensino" },
   // Notas, chamada e tarefas unificados em /professor/turmas/[id] (sprint demo)
+  { label: "Conversas", href: "/professor/conversas", icon: MessagesSquare, group: "Comunicação" },
   { label: "Comunicados", href: "/professor/comunicados", icon: Megaphone, group: "Comunicação" },
   { label: "Agendão", href: "/professor/calendario", icon: Calendar, group: "Comunicação" },
 ];
@@ -58,6 +60,7 @@ export const alunoNav: NavItem[] = [
   { label: "Notas", href: "/aluno/notas", icon: BarChart2, group: "Desempenho" },
   { label: "Frequência", href: "/aluno/frequencia", icon: UserCheck, group: "Desempenho" },
   { label: "Tarefas", href: "/aluno/tarefas", icon: ListTodo, group: "Desempenho" },
+  { label: "Conversas", href: "/aluno/conversas", icon: MessagesSquare, group: "Comunicação" },
   { label: "Comunicados", href: "/aluno/comunicados", icon: Megaphone, group: "Comunicação" },
   { label: "Agendão", href: "/aluno/calendario", icon: Calendar, group: "Comunicação" },
 ];

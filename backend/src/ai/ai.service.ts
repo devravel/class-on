@@ -167,12 +167,21 @@ Inclua objetivos mensuráveis, sequência didática de 50 minutos e estratégias
     return this.parseCommandIntentHeuristic(input, dto.role)
   }
 
+  /**
+   * Texto curto (mensagem de chat). Lança erro se nenhuma IA responder — quem
+   * chama decide o plano B, em vez de receber o template genérico de fallback.
+   */
+  async writeShortMessage(systemPrompt: string, userPrompt: string): Promise<string> {
+    // gpt-oss raciocina antes de responder e gasta tokens nisso: com 220 a mensagem vinha cortada.
+    return this.callLlm(systemPrompt, userPrompt, { temperature: 0.6, maxTokens: 900 })
+  }
+
   async generateParentReport(
     dto: GenerateParentReportDto,
   ): Promise<{ content: string }> {
     const gradeText =
       dto.grade_average != null
-        ? `Média de notas: ${dto.grade_average.toFixed(1)} (mínimo para aprovação: 6,0).`
+        ? `Média de notas: ${dto.grade_average.toFixed(1).replace(".", ",")} (mínimo para aprovação: 6,0).`
         : 'Média de notas abaixo do esperado.'
     const attendanceText =
       dto.attendance_rate != null

@@ -20,6 +20,7 @@ import { EventsModule } from './events/events.module'
 import { BimestersModule } from './bimesters/bimesters.module'
 import { DashboardModule } from './dashboard/dashboard.module'
 import { AiModule } from './ai/ai.module'
+import { ConversationsModule } from './conversations/conversations.module'
 
 @Module({
   imports: [
@@ -41,6 +42,7 @@ import { AiModule } from './ai/ai.module'
     EventsModule,
     DashboardModule,
     AiModule,
+    ConversationsModule,
   ],
   providers: [
     {
