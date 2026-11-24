@@ -10,6 +10,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { LessonsService } from './lessons.service'
 import { CreateLessonDto } from './dto/create-lesson.dto'
 
@@ -20,7 +21,7 @@ export class LessonsController {
 
   @Post()
   @Roles('PROFESSOR')
-  create(@Body() dto: CreateLessonDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateLessonDto, @CurrentUser() user: AuthenticatedUser) {
     const teacherId = user.teacher.id
     return this.lessonsService.create(dto, teacherId)
   }
@@ -29,7 +30,7 @@ export class LessonsController {
   @Roles('PROFESSOR')
   findByAssignment(
     @Param('assignmentId') assignmentId: string,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const teacherId = user.teacher.id
     return this.lessonsService.findByAssignment(BigInt(assignmentId), teacherId)
@@ -37,7 +38,7 @@ export class LessonsController {
 
   @Get(':id')
   @Roles('PROFESSOR')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const teacherId = user.teacher.id
     return this.lessonsService.findOne(BigInt(id), teacherId)
   }

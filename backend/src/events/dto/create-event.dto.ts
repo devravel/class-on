@@ -1,3 +1,4 @@
+import { EventScopeType } from '@prisma/client'
 import {
   IsString,
   IsArray,
@@ -36,7 +37,7 @@ export class CreateEventDto {
   @IsIn(['ALL_SCHOOL', 'TEACHERS', 'STUDENTS', 'SPECIFIC_CLASSES'], {
     message: 'scope_type deve ser ALL_SCHOOL, TEACHERS, STUDENTS ou SPECIFIC_CLASSES.',
   })
-  scope_type: string
+  scope_type: EventScopeType
 
   @IsOptional()
   @IsArray({ message: 'class_ids deve ser um array.' })

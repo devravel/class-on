@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { CreateEventDto } from './dto/create-event.dto'
@@ -50,7 +51,7 @@ const EVENT_INCLUDE = {
       },
     },
   },
-}
+} satisfies Prisma.eventsInclude
 
 @Injectable()
 export class EventsService {
@@ -159,7 +160,7 @@ export class EventsService {
           end_date: endDate,
           all_day: dto.all_day,
           status: 'ACTIVE',
-          scope_type: dto.scope_type as any,
+          scope_type: dto.scope_type,
           created_at: new Date(),
           updated_at: new Date(),
         },
@@ -183,7 +184,7 @@ export class EventsService {
 
   async findAll(userId: bigint, userRole: string) {
     try {
-      let whereCondition: any = {}
+      let whereCondition: Prisma.eventsWhereInput = {}
 
       // Buscar ano letivo ativo
       const activeYear = await this.prisma.academic_years.findFirst({
@@ -377,7 +378,7 @@ export class EventsService {
             ? { start_date: nextStart, end_date: nextEnd }
             : {}),
           ...(dto.all_day !== undefined && { all_day: dto.all_day }),
-          ...(dto.status && { status: dto.status as any }),
+          ...(dto.status && { status: dto.status }),
           updated_at: new Date(),
         },
         include: EVENT_INCLUDE,
@@ -475,7 +476,11 @@ export class EventsService {
     }
   }
 
-  private async checkUserAccess(event: any, userId: bigint, userRole: string): Promise<boolean> {
+  private async checkUserAccess(
+    event: Prisma.eventsGetPayload<{ include: typeof EVENT_INCLUDE }>,
+    userId: bigint,
+    userRole: string,
+  ): Promise<boolean> {
     if (userRole === 'SECRETARIA') {
       return true
     }

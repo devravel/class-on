@@ -15,6 +15,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { EventsService } from './events.service'
 import { CreateEventDto } from './dto/create-event.dto'
 import { UpdateEventDto } from './dto/update-event.dto'
@@ -26,25 +27,25 @@ export class EventsController {
 
   @Post()
   @Roles('SECRETARIA', 'PROFESSOR')
-  create(@Body() dto: CreateEventDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateEventDto, @CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.create(dto, BigInt(user.id), user.role)
   }
 
   @Get()
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.eventsService.findAll(BigInt(user.id), user.role)
   }
 
   @Get('calendar')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  getCalendar(@CurrentUser() user: any, @Query('classId') classId?: string) {
+  getCalendar(@CurrentUser() user: AuthenticatedUser, @Query('classId') classId?: string) {
     return this.eventsService.getCalendar(BigInt(user.id), user.role, classId)
   }
 
   @Get(':id')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const eventId = BigInt(id)
     return this.eventsService.findOne(eventId, BigInt(user.id), user.role)
   }
@@ -54,7 +55,7 @@ export class EventsController {
   update(
     @Param('id') id: string,
     @Body() dto: UpdateEventDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const eventId = BigInt(id)
     return this.eventsService.update(eventId, dto, BigInt(user.id), user.role)
@@ -63,7 +64,7 @@ export class EventsController {
   @Delete(':id')
   @Roles('SECRETARIA', 'PROFESSOR')
   @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string, @CurrentUser() user: any) {
+  remove(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const eventId = BigInt(id)
     return this.eventsService.remove(eventId, BigInt(user.id), user.role)
   }

@@ -194,45 +194,6 @@ const NAV_BY_ROLE: Record<UserRole, PaletteItem[]> = {
   ],
 }
 
-/** Alunos previstos no seed de demonstração (PROMPT 04) para busca offline na paleta. */
-const SEED_DEMO_STUDENTS: Array<{
-  full_name: string
-  rm: string
-  email: string
-  className: string
-}> = [
-  {
-    full_name: 'Ana Beatriz Souza',
-    rm: '26101',
-    email: 'aluno1@classon.com',
-    className: '9º Ano A',
-  },
-  {
-    full_name: 'Bruno Henrique Lima',
-    rm: '26102',
-    email: 'aluno2@classon.com',
-    className: '9º Ano A',
-  },
-  {
-    full_name: 'Carlos Eduardo Mendes',
-    rm: '26103',
-    email: 'aluno3@classon.com',
-    className: '9º Ano A',
-  },
-  {
-    full_name: 'Diana Oliveira Costa',
-    rm: '26104',
-    email: 'aluno4@classon.com',
-    className: '9º Ano A',
-  },
-  {
-    full_name: 'Eduardo Santos Pereira',
-    rm: '26105',
-    email: 'aluno5@classon.com',
-    className: '9º Ano A',
-  },
-]
-
 function normalizeText(value: string): string {
   return normalizeCommandText(value)
 }
@@ -263,19 +224,6 @@ function studentToPaletteItem(student: Student): PaletteItem {
     href: `/secretaria/alunos/${student.id}/editar`,
     icon: UserRound,
     keywords: [student.users.email, student.rm],
-  }
-}
-
-function seedStudentToPaletteItem(
-  seed: (typeof SEED_DEMO_STUDENTS)[number],
-): PaletteItem {
-  return {
-    id: `seed-${seed.rm}`,
-    label: seed.full_name,
-    description: `${seed.rm} · ${seed.className}`,
-    href: `/secretaria/alunos?q=${encodeURIComponent(seed.full_name)}`,
-    icon: UserRound,
-    keywords: [seed.email, seed.rm, seed.className],
   }
 }
 
@@ -454,7 +402,7 @@ export function CommandPalette() {
     const normalizedQuery = normalizeText(query)
     if (!normalizedQuery) return []
 
-    const apiItems = students
+    return students
       .filter((student) => {
         const haystack = [
           student.full_name,
@@ -465,19 +413,6 @@ export function CommandPalette() {
         return normalizeText(haystack).includes(normalizedQuery)
       })
       .map(studentToPaletteItem)
-
-    if (apiItems.length > 0) return apiItems
-
-    if (process.env.NODE_ENV !== 'development') {
-      return []
-    }
-
-    return SEED_DEMO_STUDENTS.filter((seed) => {
-      const haystack = [seed.full_name, seed.rm, seed.email, seed.className].join(
-        ' ',
-      )
-      return normalizeText(haystack).includes(normalizedQuery)
-    }).map(seedStudentToPaletteItem)
   }, [query, students])
 
   const staticNavItems = useMemo(() => {

@@ -1,3 +1,4 @@
+import { EventStatus } from '@prisma/client'
 import {
   IsString,
   IsArray,
@@ -42,5 +43,5 @@ export class UpdateEventDto {
   @IsIn(['ACTIVE', 'CANCELLED'], {
     message: 'status deve ser ACTIVE ou CANCELLED.',
   })
-  status?: string
+  status?: EventStatus
 }

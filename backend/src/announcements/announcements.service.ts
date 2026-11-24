@@ -4,6 +4,7 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common'
+import { Prisma } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { CreateAnnouncementDto } from './dto/create-announcement.dto'
@@ -49,7 +50,7 @@ const ANNOUNCEMENT_INCLUDE = {
       announcement_reads: true,
     },
   },
-}
+} satisfies Prisma.announcementsInclude
 
 @Injectable()
 export class AnnouncementsService {
@@ -185,7 +186,7 @@ export class AnnouncementsService {
 
   async findAll(userId: bigint, userRole: string) {
     try {
-      let whereCondition: any = {}
+      let whereCondition: Prisma.announcementsWhereInput = {}
 
       if (userRole === 'SECRETARIA') {
         // Secretaria vê todos os comunicados
@@ -425,7 +426,11 @@ export class AnnouncementsService {
     }
   }
 
-  private async checkUserAccess(announcement: any, userId: bigint, userRole: string): Promise<boolean> {
+  private async checkUserAccess(
+    announcement: Prisma.announcementsGetPayload<{ include: typeof ANNOUNCEMENT_INCLUDE }>,
+    userId: bigint,
+    userRole: string,
+  ): Promise<boolean> {
     if (userRole === 'SECRETARIA') {
       return true
     }

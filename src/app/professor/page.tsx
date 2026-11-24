@@ -163,7 +163,7 @@ export default function ProfessorPage() {
 
   return (
     <PageContainer className="flex h-full flex-col overflow-hidden pt-6! pb-6! lg:pt-8! lg:pb-8! [--spacing-dashboard-header:40px] [&_.mb-dashboard-header]:gap-2 lg:[&_.mb-dashboard-header]:gap-4">
-      <DashboardPageHeader title="Olá," />
+      <DashboardPageHeader title="Início" />
 
       {isLoading && (
         <div className="flex items-center justify-center py-12">

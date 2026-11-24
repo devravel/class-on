@@ -13,6 +13,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
+import { AuthenticatedUser } from '../auth/strategies/jwt.strategy'
 import { AnnouncementsService } from './announcements.service'
 import { CreateAnnouncementDto } from './dto/create-announcement.dto'
 import { ArchiveAnnouncementDto } from './dto/archive-announcement.dto'
@@ -24,19 +25,19 @@ export class AnnouncementsController {
 
   @Post()
   @Roles('SECRETARIA', 'PROFESSOR')
-  create(@Body() dto: CreateAnnouncementDto, @CurrentUser() user: any) {
+  create(@Body() dto: CreateAnnouncementDto, @CurrentUser() user: AuthenticatedUser) {
     return this.announcementsService.create(dto, BigInt(user.id), user.role)
   }
 
   @Get()
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  findAll(@CurrentUser() user: any) {
+  findAll(@CurrentUser() user: AuthenticatedUser) {
     return this.announcementsService.findAll(BigInt(user.id), user.role)
   }
 
   @Get(':id')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
-  findOne(@Param('id') id: string, @CurrentUser() user: any) {
+  findOne(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const announcementId = BigInt(id)
     return this.announcementsService.findOne(announcementId, BigInt(user.id), user.role)
   }
@@ -44,7 +45,7 @@ export class AnnouncementsController {
   @Post(':id/read')
   @Roles('SECRETARIA', 'PROFESSOR', 'ALUNO')
   @HttpCode(HttpStatus.OK)
-  markAsRead(@Param('id') id: string, @CurrentUser() user: any) {
+  markAsRead(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const announcementId = BigInt(id)
     return this.announcementsService.markAsRead(announcementId, BigInt(user.id))
   }
@@ -54,7 +55,7 @@ export class AnnouncementsController {
   archive(
     @Param('id') id: string,
     @Body() dto: ArchiveAnnouncementDto,
-    @CurrentUser() user: any,
+    @CurrentUser() user: AuthenticatedUser,
   ) {
     const announcementId = BigInt(id)
     return this.announcementsService.archive(
@@ -67,7 +68,7 @@ export class AnnouncementsController {
 
   @Get(':id/stats')
   @Roles('SECRETARIA', 'PROFESSOR')
-  getStats(@Param('id') id: string, @CurrentUser() user: any) {
+  getStats(@Param('id') id: string, @CurrentUser() user: AuthenticatedUser) {
     const announcementId = BigInt(id)
     return this.announcementsService.getStats(announcementId, BigInt(user.id), user.role)
   }
