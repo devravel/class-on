@@ -5,6 +5,7 @@ import {
   ClassWizardResponse,
   CreateClassRequest,
   CreateClassWizardRequest,
+  ImportPreviewResponse,
   UpdateClassRequest,
 } from '@/types/class'
 
@@ -35,6 +36,13 @@ export const classesApi = {
 
   async createWizard(data: CreateClassWizardRequest): Promise<ClassWizardResponse> {
     return apiClient.post<ClassWizardResponse>('/classes/wizard', data)
+  },
+
+  /** Lê a lista de alunos do arquivo e devolve a prévia (não grava nada). */
+  async previewImport(file: File): Promise<ImportPreviewResponse> {
+    const form = new FormData()
+    form.append('file', file)
+    return apiClient.postForm<ImportPreviewResponse>('/classes/wizard/import-preview', form)
   },
 
   async update(id: string, data: UpdateClassRequest): Promise<Class> {

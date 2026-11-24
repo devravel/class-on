@@ -4,12 +4,16 @@ import { useState } from 'react'
 import { ArrowLeft, CheckCircle2, Save } from 'lucide-react'
 
 import { ClassForm, ClassFormValues } from '@/components/classes/ClassForm'
-import { ClassWizardStudentsSection } from '@/components/classes/ClassWizardStudentsSection'
+import {
+  ClassWizardStudentsSection,
+  type StudentMode,
+} from '@/components/classes/ClassWizardStudentsSection'
 import { ClassWizardTeachersSection } from '@/components/classes/ClassWizardTeachersSection'
 import { Button } from '@/components/ui/button'
 import { classesApi } from '@/lib/api'
 import {
   ClassWizardResponse,
+  WizardImportedStudent,
   WizardManualStudent,
   formatClassShortLabel,
   EDUCATION_LEVEL_LABELS,
@@ -29,7 +33,8 @@ export function ClassCreationWizard({
   const [step, setStep] = useState<1 | 2>(1)
   const [classData, setClassData] = useState<ClassFormValues | null>(null)
   const [selectedTeacherIds, setSelectedTeacherIds] = useState<string[]>([])
-  const [studentMode, setStudentMode] = useState<'manual' | 'bulk' | null>(null)
+  const [studentMode, setStudentMode] = useState<StudentMode | null>(null)
+  const [importedStudents, setImportedStudents] = useState<WizardImportedStudent[]>([])
   const [manualStudents, setManualStudents] = useState<WizardManualStudent[]>([])
   const [bulkCount, setBulkCount] = useState(0)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -48,6 +53,11 @@ export function ClassCreationWizard({
 
     if (studentMode === 'manual' && manualStudents.length === 0) {
       setError('Adicione ao menos um aluno no cadastro manual ou escolha outra opção.')
+      return
+    }
+
+    if (studentMode === 'import' && importedStudents.length === 0) {
+      setError('Importe a lista de alunos e aprove a prévia, ou escolha outra opção.')
       return
     }
 
@@ -71,6 +81,7 @@ export function ClassCreationWizard({
         }),
         ...(studentMode === 'manual' && { manual_students: manualStudents }),
         ...(studentMode === 'bulk' && { bulk_student_count: bulkCount }),
+        ...(studentMode === 'import' && { imported_students: importedStudents }),
       }
 
       const result = await classesApi.createWizard(payload)
@@ -171,6 +182,8 @@ export function ClassCreationWizard({
             onManualStudentsChange={setManualStudents}
             bulkCount={bulkCount}
             onBulkCountChange={setBulkCount}
+            importedStudents={importedStudents}
+            onImportedStudentsChange={setImportedStudents}
           />
 
           <div className="flex items-center justify-between gap-3 border-t border-border pt-4">

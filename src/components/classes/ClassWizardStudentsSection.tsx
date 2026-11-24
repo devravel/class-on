@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Plus, Trash2, Users } from 'lucide-react'
+import { FileUp, Plus, Trash2, Users } from 'lucide-react'
 
 import { Button } from '@/components/ui/button'
 import {
@@ -16,7 +16,8 @@ import {
   FormMessage,
 } from '@/components/ui/form'
 import { Input } from '@/components/ui/input'
-import { WizardManualStudent } from '@/types/class'
+import { StudentImportPanel } from '@/components/classes/StudentImportPanel'
+import { WizardImportedStudent, WizardManualStudent } from '@/types/class'
 
 const manualStudentSchema = z.object({
   full_name: z
@@ -35,9 +36,13 @@ const manualStudentSchema = z.object({
 
 type ManualStudentFormValues = z.infer<typeof manualStudentSchema>
 
+export type StudentMode = 'manual' | 'bulk' | 'import'
+
 interface ClassWizardStudentsSectionProps {
-  studentMode: 'manual' | 'bulk' | null
-  onStudentModeChange: (mode: 'manual' | 'bulk' | null) => void
+  studentMode: StudentMode | null
+  onStudentModeChange: (mode: StudentMode | null) => void
+  importedStudents: WizardImportedStudent[]
+  onImportedStudentsChange: (students: WizardImportedStudent[]) => void
   manualStudents: WizardManualStudent[]
   onManualStudentsChange: (students: WizardManualStudent[]) => void
   bulkCount: number
@@ -51,6 +56,8 @@ export function ClassWizardStudentsSection({
   onManualStudentsChange,
   bulkCount,
   onBulkCountChange,
+  importedStudents,
+  onImportedStudentsChange,
 }: ClassWizardStudentsSectionProps) {
   const [formError, setFormError] = useState<string | null>(null)
 
@@ -125,6 +132,15 @@ export function ClassWizardStudentsSection({
         >
           Cadastro em Lote
         </Button>
+        <Button
+          type="button"
+          variant={studentMode === 'import' ? 'default' : 'outline'}
+          size="sm"
+          onClick={() => onStudentModeChange('import')}
+        >
+          <FileUp size={15} aria-hidden="true" />
+          Importar de arquivo
+        </Button>
         {studentMode && (
           <Button
             type="button"
@@ -136,6 +152,13 @@ export function ClassWizardStudentsSection({
           </Button>
         )}
       </div>
+
+      {studentMode === 'import' && (
+        <StudentImportPanel
+          students={importedStudents}
+          onStudentsChange={onImportedStudentsChange}
+        />
+      )}
 
       {studentMode === 'manual' && (
         <div className="space-y-4 rounded-component border border-border p-4">

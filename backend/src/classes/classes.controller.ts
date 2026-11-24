@@ -9,8 +9,11 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFile,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common'
+import { FileInterceptor } from '@nestjs/platform-express'
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { RolesGuard } from '../auth/guards/roles.guard'
@@ -38,6 +41,15 @@ export class ClassesController {
   @Roles('SECRETARIA')
   createWizard(@Body() dto: CreateClassWizardDto) {
     return this.classWizardService.createWizard(dto)
+  }
+
+  /** Lê a lista de alunos do arquivo e devolve a prévia. Não grava nada. */
+  @Post('wizard/import-preview')
+  @Roles('SECRETARIA')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FileInterceptor('file', { limits: { fileSize: 5 * 1024 * 1024 } }))
+  previewImport(@UploadedFile() file?: Express.Multer.File) {
+    return this.classWizardService.previewImport(file)
   }
 
   @Get()

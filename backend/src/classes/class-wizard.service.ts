@@ -11,6 +11,16 @@ import { handlePrismaError } from '../common/errors/handle-prisma-error'
 import { validateSeriesForEducationLevel } from './class-series.validation'
 import { CreateClassWizardDto } from './dto/create-class-wizard.dto'
 import { WizardManualStudentDto } from './dto/wizard-manual-student.dto'
+import { WizardImportedStudentDto } from './dto/wizard-imported-student.dto'
+import {
+  findRowIssues,
+  formatSchoolDocument,
+  isValidSchoolDocument,
+  normalizeStudentName,
+  parseStudentList,
+} from './student-import'
+import mammoth = require('mammoth')
+import pdfParse = require('pdf-parse')
 
 const USER_SELECT = {
   id: true,
@@ -36,6 +46,7 @@ type TransactionClient = Omit<
 
 type PreparedStudent = {
   full_name: string
+  document: string | null
   email: string
   rm: string
   provisional_password: string
@@ -82,8 +93,14 @@ export class ClassWizardService {
         await this.validateManualStudents(manualStudents)
       }
 
+      const importedStudents = dto.imported_students ?? []
+      if (importedStudents.length > 0) {
+        await this.validateImportedStudents(importedStudents)
+      }
+
       const bulkCount = dto.bulk_student_count ?? 0
-      const totalNewStudents = manualStudents.length + bulkCount
+      const totalNewStudents =
+        manualStudents.length + bulkCount + importedStudents.length
 
       const existingNames = await this.loadExistingStudentNames()
       const bulkStudents = this.generateBulkStudents(
@@ -95,8 +112,9 @@ export class ClassWizardService {
       const assignmentPlans = await this.planTeacherAssignments(teacherIds)
       const preparedManualStudents =
         await this.prepareManualStudents(manualStudents)
+      // Importados seguem o mesmo caminho do lote: RM e e-mail sequenciais.
       const preparedBulkStudents = await this.prepareBulkStudents(
-        bulkStudents,
+        [...bulkStudents, ...importedStudents],
         academicYear.year,
       )
       const preparedStudents = [
@@ -130,6 +148,7 @@ export class ClassWizardService {
         for (const student of preparedStudents) {
           const created = await this.insertStudentWithEnrollment(tx, {
             full_name: student.full_name,
+            document: student.document,
             email: student.email,
             rm: student.rm,
             hashed_password: student.hashed_password,
@@ -162,12 +181,15 @@ export class ClassWizardService {
   }
 
   private validateStudentInput(dto: CreateClassWizardDto) {
-    const hasManual = (dto.manual_students?.length ?? 0) > 0
-    const hasBulk = (dto.bulk_student_count ?? 0) > 0
+    const modes = [
+      (dto.manual_students?.length ?? 0) > 0,
+      (dto.bulk_student_count ?? 0) > 0,
+      (dto.imported_students?.length ?? 0) > 0,
+    ].filter(Boolean).length
 
-    if (hasManual && hasBulk) {
+    if (modes > 1) {
       throw new BadRequestException(
-        'Informe apenas cadastro manual ou cadastro em lote, não ambos.',
+        'Escolha um só jeito de cadastrar os alunos: manual, em lote ou por arquivo.',
       )
     }
   }
@@ -264,6 +286,93 @@ export class ClassWizardService {
     }
   }
 
+  /** Lê o arquivo enviado e devolve a prévia (sem gravar nada) pra revisão na tela. */
+  async previewImport(file: Express.Multer.File | undefined) {
+    if (!file?.buffer?.length) {
+      throw new BadRequestException('Envie um arquivo com a lista de alunos.')
+    }
+
+    const name = file.originalname ?? 'arquivo'
+    const extension = name.toLowerCase().split('.').pop() ?? ''
+    let text: string
+    let fileType: string
+
+    try {
+      if (extension === 'pdf') {
+        text = (await pdfParse(file.buffer)).text ?? ''
+        fileType = 'PDF'
+      } else if (extension === 'docx') {
+        text = (await mammoth.extractRawText({ buffer: file.buffer })).value
+        fileType = 'Word'
+      } else if (['md', 'txt', 'csv'].includes(extension)) {
+        text = file.buffer.toString('utf8')
+        fileType = extension === 'md' ? 'Markdown' : 'Texto'
+      } else {
+        throw new BadRequestException(
+          'Formato não suportado. Use .pdf, .docx, .md ou .txt.',
+        )
+      }
+    } catch (error) {
+      if (error instanceof BadRequestException) throw error
+      throw new BadRequestException(
+        'Não foi possível ler o arquivo. Ele pode estar corrompido ou protegido.',
+      )
+    }
+
+    const { rows, ignored } = parseStudentList(text)
+    if (rows.length === 0) {
+      throw new BadRequestException(
+        'Nenhum aluno encontrado. Cada aluno precisa estar no padrão "Nome: Nome Completo, Documento: 000.000.000-0".',
+      )
+    }
+
+    const registered = await this.prisma.students.findMany({
+      where: { document: { in: rows.map((row) => row.document) } },
+      select: { document: true },
+    })
+    const issues = findRowIssues(
+      rows,
+      new Set(registered.map((student) => student.document as string)),
+    )
+
+    return {
+      file_name: name,
+      file_type: fileType,
+      ignored_entries: ignored,
+      rows: rows.map((row, index) => ({ ...row, issues: issues[index] })),
+    }
+  }
+
+  /** A prévia já mostra os problemas, mas o que chega aqui é revalidado: a tela é editável. */
+  private async validateImportedStudents(students: WizardImportedStudentDto[]) {
+    for (const student of students) {
+      student.full_name = normalizeStudentName(student.full_name)
+      student.document = formatSchoolDocument(student.document) ?? student.document
+    }
+
+    const invalid = students.filter((s) => !isValidSchoolDocument(s.document))
+    if (invalid.length > 0) {
+      throw new BadRequestException(
+        `Documento inválido: ${invalid.map((s) => `${s.full_name} (${s.document})`).join(', ')}.`,
+      )
+    }
+
+    const documents = students.map((s) => s.document)
+    if (new Set(documents).size !== documents.length) {
+      throw new BadRequestException('A lista tem documentos repetidos.')
+    }
+
+    const registered = await this.prisma.students.findMany({
+      where: { document: { in: documents } },
+      select: { full_name: true, document: true },
+    })
+    if (registered.length > 0) {
+      throw new BadRequestException(
+        `Documento já cadastrado: ${registered.map((s) => `${s.document} (${s.full_name})`).join(', ')}.`,
+      )
+    }
+  }
+
   private async loadExistingStudentNames(): Promise<Set<string>> {
     const students = await this.prisma.students.findMany({
       select: { full_name: true },
@@ -324,6 +433,7 @@ export class ClassWizardService {
 
       prepared.push({
         full_name: student.full_name,
+        document: null,
         email: student.email.toLowerCase(),
         rm: student.rm.toUpperCase(),
         provisional_password,
@@ -335,7 +445,7 @@ export class ClassWizardService {
   }
 
   private async prepareBulkStudents(
-    students: Array<{ full_name: string }>,
+    students: Array<{ full_name: string; document?: string }>,
     academicYear: number,
   ): Promise<PreparedStudent[]> {
     if (students.length === 0) {
@@ -357,6 +467,7 @@ export class ClassWizardService {
 
       prepared.push({
         full_name: student.full_name,
+        document: student.document ?? null,
         email,
         rm,
         provisional_password,
@@ -501,6 +612,7 @@ export class ClassWizardService {
     tx: TransactionClient,
     params: {
       full_name: string
+      document: string | null
       email: string
       rm: string
       hashed_password: string
@@ -522,6 +634,7 @@ export class ClassWizardService {
       data: {
         user_id: user.id,
         full_name: params.full_name,
+        document: params.document,
         rm: params.rm,
         status: 'ACTIVE',
       },

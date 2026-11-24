@@ -90,9 +90,26 @@ export interface WizardManualStudent {
   rm: string
 }
 
+export interface WizardImportedStudent {
+  full_name: string
+  document: string
+}
+
+export interface ImportPreviewRow extends WizardImportedStudent {
+  issues: import('@/lib/school-document').ImportIssue[]
+}
+
+export interface ImportPreviewResponse {
+  file_name: string
+  file_type: string
+  ignored_entries: number
+  rows: ImportPreviewRow[]
+}
+
 export interface CreateClassWizardRequest extends CreateClassRequest {
   teacher_ids?: number[]
   manual_students?: WizardManualStudent[]
+  imported_students?: WizardImportedStudent[]
   bulk_student_count?: number
 }
 

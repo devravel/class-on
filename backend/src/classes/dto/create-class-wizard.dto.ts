@@ -1,5 +1,6 @@
 import { Type } from 'class-transformer'
 import {
+  ArrayMaxSize,
   ArrayMinSize,
   IsArray,
   IsInt,
@@ -10,6 +11,7 @@ import {
 } from 'class-validator'
 import { CreateClassDto } from './create-class.dto'
 import { WizardManualStudentDto } from './wizard-manual-student.dto'
+import { WizardImportedStudentDto } from './wizard-imported-student.dto'
 import { IsBigIntIdArray } from '../../common/dto/is-bigint-id.decorator'
 
 export class CreateClassWizardDto extends CreateClassDto {
@@ -24,6 +26,14 @@ export class CreateClassWizardDto extends CreateClassDto {
   @ValidateNested({ each: true })
   @Type(() => WizardManualStudentDto)
   manual_students?: WizardManualStudentDto[]
+
+  @IsOptional()
+  @IsArray({ message: 'imported_students deve ser um array.' })
+  @ArrayMinSize(1, { message: 'A lista importada precisa de ao menos um aluno.' })
+  @ArrayMaxSize(200, { message: 'A lista importada aceita no máximo 200 alunos.' })
+  @ValidateNested({ each: true })
+  @Type(() => WizardImportedStudentDto)
+  imported_students?: WizardImportedStudentDto[]
 
   @IsOptional()
   @IsInt({ message: 'bulk_student_count deve ser um número inteiro.' })
