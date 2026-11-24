@@ -71,7 +71,7 @@ export default function NovoProfessorPage() {
             title="Dados do professor"
             description="Informações cadastradas"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <dl className="divide-y divide-border">
                 {[
                   { label: 'Nome', value: result.teacher.full_name },
@@ -96,7 +96,7 @@ export default function NovoProfessorPage() {
             title="Senha provisória"
             description="Entregue esta senha ao professor — ela não será exibida novamente"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="p-6">
                 <div className="mb-4 flex items-center gap-3 rounded-component border border-amber-200 bg-amber-50 px-4 py-3">
                   <span className="text-sm font-medium text-amber-800">
@@ -105,7 +105,7 @@ export default function NovoProfessorPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-component border border-border bg-muted px-4 py-3">
+                <div className="flex items-center gap-3 rounded-component bg-surface-muted px-4 py-3">
                   <code className="flex-1 text-base font-mono font-semibold tracking-wider text-text-primary">
                     {result.provisional_password}
                   </code>
@@ -176,7 +176,7 @@ export default function NovoProfessorPage() {
         title="Informações do Professor"
         description="Preencha os dados de identificação do professor"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <TeacherForm
               isSubmitting={isSubmitting}

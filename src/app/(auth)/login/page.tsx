@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -27,6 +26,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
+import { Logo } from "@/components/brand/Logo";
+import { ThemeToggle } from "@/components/layout/ThemeToggle";
 import { useAuth, UserRole } from "@/contexts/auth-context";
 
 type Profile = "ALUNO" | "PROFESSOR" | "SECRETARIA";
@@ -148,10 +149,10 @@ export default function LoginPage() {
           <button
             type="button"
             onClick={() => fillDemoCredentials(account)}
-            className="w-full rounded-lg bg-neutral-50 px-3 py-2 text-left transition-colors hover:bg-primary/10 hover:ring-1 hover:ring-primary/20"
+            className="w-full rounded-component bg-surface-muted px-3 py-2.5 text-left transition-[background-color,box-shadow] hover:bg-accent hover:shadow-card"
           >
-            <p className="text-xs font-medium text-neutral-500">{account.role}</p>
-            <p className="text-sm font-semibold text-neutral-900">{account.email}</p>
+            <p className="text-xs font-medium text-text-tertiary">{account.role}</p>
+            <p className="text-sm font-semibold text-text-primary">{account.email}</p>
           </button>
         </li>
       ))}
@@ -160,14 +161,17 @@ export default function LoginPage() {
 
   return (
     <div className="app-shell-gradient min-h-screen font-sans">
+      <div className="absolute right-4 top-4 z-10">
+        <ThemeToggle tone="rail" />
+      </div>
       <div className="flex min-h-screen items-center justify-center p-6">
         <div className="flex flex-col items-center gap-6 lg:flex-row lg:items-center">
-          <Card className="content-panel w-full max-w-[400px] shrink-0 rounded-[32px] border-0 p-8 shadow-medium ring-1 ring-white/10">
+          <Card className="w-full max-w-[400px] shrink-0 rounded-rail bg-surface p-8 shadow-overlay">
           {step === 2 && (
             <button
               type="button"
               onClick={() => setStep(1)}
-              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 transition-colors hover:text-brand-700"
+              className="mb-8 inline-flex cursor-pointer items-center gap-1 text-sm font-semibold text-primary underline underline-offset-2 transition-colors hover:text-accent-foreground"
             >
               <ChevronLeft className="h-4 w-4" />
               Voltar
@@ -175,17 +179,11 @@ export default function LoginPage() {
           )}
 
           <div className="text-center">
-            <Image
-              src="/assets/logo/no_name_logo.svg"
-              alt="Logo ClassOn"
-              width={35}
-              height={32}
-              className="mx-auto mb-10"
-            />
-            <h1 className="text-2xl font-bold text-neutral-900">
+            <Logo size={38} tagline className="mb-10 justify-center" />
+            <h1 className="text-2xl font-bold text-text-primary">
               Bem-vindo(a) ao ClassOn!
             </h1>
-            <p className="mt-2 text-sm text-neutral-600">
+            <p className="mt-2 text-sm text-text-secondary">
               {step === 1
                 ? "Selecione seu perfil para acessar:"
                 : "Para acessar sua conta, preencha os campos abaixo:"}
@@ -195,14 +193,14 @@ export default function LoginPage() {
           {step === 1 ? (
             <div className="mt-8 space-y-6">
               <div className="space-y-2">
-                <Label className="text-sm font-semibold text-neutral-900">
+                <Label className="text-sm font-semibold text-text-primary">
                   Entrar como:
                 </Label>
                 <Select
                   value={profile}
                   onValueChange={(value: Profile) => setProfile(value)}
                 >
-                  <SelectTrigger className="h-11 cursor-pointer rounded-[8px] border-neutral-300 bg-white">
+                  <SelectTrigger className="h-11 cursor-pointer">
                     <SelectValue placeholder="Selecione o perfil" />
                   </SelectTrigger>
                   <SelectContent>
@@ -216,7 +214,7 @@ export default function LoginPage() {
               <Button
                 type="button"
                 onClick={() => setStep(2)}
-                className="h-11 w-full cursor-pointer rounded-[8px] bg-[var(--color-brand-700)] text-white hover:bg-[var(--color-brand-600)]"
+                className="h-11 w-full cursor-pointer"
               >
                 Continuar
               </Button>
@@ -232,7 +230,7 @@ export default function LoginPage() {
                   name="email"
                   render={({ field, fieldState }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-semibold text-neutral-900">
+                      <FormLabel className="text-sm font-semibold text-text-primary">
                         E-mail:
                       </FormLabel>
                       <FormControl>
@@ -241,9 +239,9 @@ export default function LoginPage() {
                           placeholder="Digite seu e-mail"
                           disabled={isLoading}
                           className={cn(
-                            "h-11 rounded-[8px] border-neutral-300 bg-white placeholder:text-center",
+                            "h-11",
                             fieldState.error &&
-                              "border-error focus-visible:ring-error/30",
+                              "border-danger focus-visible:ring-danger/25",
                           )}
                           {...field}
                         />
@@ -258,7 +256,7 @@ export default function LoginPage() {
                   name="password"
                   render={({ field, fieldState }) => (
                     <FormItem className="space-y-2">
-                      <FormLabel className="text-sm font-semibold text-neutral-900">
+                      <FormLabel className="text-sm font-semibold text-text-primary">
                         Senha:
                       </FormLabel>
                       <FormControl>
@@ -267,9 +265,9 @@ export default function LoginPage() {
                           placeholder="••••••••"
                           disabled={isLoading}
                           className={cn(
-                            "h-11 rounded-[8px] border-neutral-300 bg-white placeholder:text-center",
+                            "h-11",
                             fieldState.error &&
-                              "border-error focus-visible:ring-error/30",
+                              "border-danger focus-visible:ring-danger/25",
                           )}
                           {...field}
                         />
@@ -285,7 +283,7 @@ export default function LoginPage() {
 
                 <Button
                   type="submit"
-                  className="h-11 w-full cursor-pointer rounded-lg bg-[var(--color-brand-700)] text-white hover:bg-[var(--color-brand-600)]"
+                  className="h-11 w-full cursor-pointer"
                   disabled={isLoading}
                 >
                   {isLoading ? "Entrando..." : "Entrar"}
@@ -296,14 +294,14 @@ export default function LoginPage() {
           </Card>
 
           {showDemoPanel && (
-            <Card className="w-full max-w-[280px] shrink-0 rounded-[20px] border border-white/10 bg-white/95 p-5 shadow-medium backdrop-blur-sm">
-              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-neutral-500">
+            <Card className="w-full max-w-[280px] shrink-0 rounded-modal bg-surface p-5 shadow-overlay">
+              <p className="mb-3 text-xs font-semibold uppercase tracking-wide text-text-tertiary">
                 Contas de demonstração
               </p>
               <ul className="space-y-2.5">{demoAccountsList}</ul>
-              <p className="mt-3 text-xs text-neutral-500">
+              <p className="mt-3 text-xs text-text-secondary">
                 Clique em um perfil para preencher e-mail e senha. Senha:{" "}
-                <span className="font-mono font-semibold text-neutral-700">{DEMO_PASSWORD}</span>
+                <span className="font-mono font-semibold text-text-primary">{DEMO_PASSWORD}</span>
               </p>
             </Card>
           )}

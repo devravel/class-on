@@ -78,7 +78,7 @@ export function DeleteAssignmentDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-component border border-border bg-muted p-4 space-y-2">
+        <div className="rounded-component bg-surface-muted p-4 space-y-2">
           <div>
             <p className="text-xs text-text-secondary">Professor:</p>
             <p className="text-sm font-semibold text-text-primary">

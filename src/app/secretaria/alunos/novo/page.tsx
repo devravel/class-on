@@ -68,7 +68,7 @@ export default function NovoAlunoPage() {
 
         <div className="space-y-4">
           <Section title="Dados do aluno" description="Informações cadastradas">
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <dl className="divide-y divide-border">
                 {[
                   { label: 'Nome', value: result.student.full_name },
@@ -90,7 +90,7 @@ export default function NovoAlunoPage() {
             title="Senha provisória"
             description="Entregue esta senha ao aluno — ela não será exibida novamente"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="p-6">
                 <div className="mb-4 flex items-center gap-3 rounded-component border border-amber-200 bg-amber-50 px-4 py-3">
                   <span className="text-sm font-medium text-amber-800">
@@ -99,7 +99,7 @@ export default function NovoAlunoPage() {
                   </span>
                 </div>
 
-                <div className="flex items-center gap-3 rounded-component border border-border bg-muted px-4 py-3">
+                <div className="flex items-center gap-3 rounded-component bg-surface-muted px-4 py-3">
                   <code className="flex-1 text-base font-mono font-semibold tracking-wider text-text-primary">
                     {result.provisional_password}
                   </code>
@@ -166,7 +166,7 @@ export default function NovoAlunoPage() {
         title="Informações do Aluno"
         description="Preencha os dados de identificação do aluno"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <StudentForm
               isSubmitting={isSubmitting}

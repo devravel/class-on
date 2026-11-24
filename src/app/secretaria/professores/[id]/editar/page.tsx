@@ -104,7 +104,7 @@ export default function EditarProfessorPage() {
             title="Informações do Professor"
             description="Atualize os dados de identificação do professor"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="p-6">
                 <TeacherForm
                   defaultValues={defaultValues}
@@ -123,7 +123,7 @@ export default function EditarProfessorPage() {
             description="Gerencie a senha de login do professor"
             className="mt-8"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="p-6">
                 <TeacherPasswordSection teacherId={id} />
               </div>

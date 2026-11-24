@@ -122,7 +122,7 @@ export function ToggleTeacherDialog({
         aria-modal="true"
         aria-labelledby="toggle-teacher-title"
         className={cn(
-          'flex w-full max-w-md flex-col overflow-hidden rounded-modal bg-surface shadow-medium ring-1 ring-border',
+          'flex w-full max-w-md flex-col overflow-hidden rounded-modal bg-surface shadow-card',
           'animate-in fade-in zoom-in-95 duration-200',
         )}
       >

@@ -306,7 +306,7 @@ export default function AlunoPage() {
           {attendanceError ? (
             <InlineError message={attendanceError} />
           ) : attendance ? (
-            <div className="rounded-card bg-surface p-4 shadow-light ring-1 ring-border">
+            <div className="rounded-card bg-surface p-4 shadow-card">
               <div className="mb-3 flex items-center justify-between">
                 <span className="text-sm font-medium text-text-primary">
                   Frequência geral
@@ -335,7 +335,7 @@ export default function AlunoPage() {
               </p>
             </div>
           ) : (
-            <div className="rounded-card bg-surface p-6 text-center shadow-light ring-1 ring-border">
+            <div className="rounded-card bg-surface p-6 text-center shadow-card">
               <p className="text-sm text-text-secondary">
                 Nenhuma aula registrada ainda.
               </p>

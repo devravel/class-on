@@ -87,7 +87,7 @@ export default function CadastroLoteAlunosPage() {
             title="Senhas provisórias"
             description="Guarde essas senhas — elas não serão exibidas novamente"
           >
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="p-6">
                 <div className="mb-4 flex items-center gap-3 rounded-component border border-amber-200 bg-amber-50 px-4 py-3">
                   <span className="text-sm font-medium text-amber-800">
@@ -106,17 +106,17 @@ export default function CadastroLoteAlunosPage() {
                   Baixar senhas (CSV)
                 </Button>
 
-                <div className="max-h-96 overflow-y-auto rounded-component border border-border">
+                <div className="max-h-96 overflow-y-auto rounded-component bg-surface-muted">
                   <table className="w-full text-sm">
                     <thead className="sticky top-0 bg-muted">
                       <tr>
-                        <th className="px-4 py-3 text-left font-semibold text-text-primary">
+                        <th scope="col" className="px-4 py-3 text-left font-semibold text-text-primary">
                           Nome
                         </th>
-                        <th className="px-4 py-3 text-left font-semibold text-text-primary">
+                        <th scope="col" className="px-4 py-3 text-left font-semibold text-text-primary">
                           RM
                         </th>
-                        <th className="px-4 py-3 text-left font-semibold text-text-primary">
+                        <th scope="col" className="px-4 py-3 text-left font-semibold text-text-primary">
                           Senha
                         </th>
                       </tr>
@@ -183,7 +183,7 @@ export default function CadastroLoteAlunosPage() {
         title="Adicionar Alunos"
         description="Preencha os dados de cada aluno"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <BulkStudentForm
               isSubmitting={isSubmitting}

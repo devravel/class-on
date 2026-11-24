@@ -241,7 +241,7 @@ export default function TurmasPage() {
                 placeholder="Buscar por série, letra, turno ou ano..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full max-w-sm rounded-component border border-border bg-background px-3 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 transition-all"
+                className="w-full max-w-sm rounded-component border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 transition-all"
               />
               <Link
                 href="/secretaria/turmas/nova"

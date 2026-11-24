@@ -87,7 +87,7 @@ export default function ProfessorTarefasPage() {
       ) : error ? (
         <InlineError message={error} />
       ) : filteredTasks.length === 0 ? (
-        <div className="rounded-card bg-surface py-16 text-center shadow-light ring-1 ring-border">
+        <div className="rounded-card bg-surface py-16 text-center shadow-card">
           <ListTodo size={32} className="mx-auto mb-3 text-text-secondary" />
           <p className="text-sm text-text-secondary">Nenhuma tarefa encontrada.</p>
         </div>
@@ -105,8 +105,10 @@ export default function ProfessorTarefasPage() {
                 type="button"
                 onClick={() => setSelectedTaskId(task.id)}
                 className={cn(
-                  'flex flex-col gap-3 rounded-card bg-surface p-5 text-left shadow-light ring-1 ring-border transition-colors hover:bg-neutral-50',
-                  isOverdue && 'ring-danger/30',
+                  'surface-card-interactive flex flex-col gap-3 p-5 text-left',
+                  // Atrasada: anel vermelho — precisa de largura própria, a
+                  // sombra do card não carrega cor de estado.
+                  isOverdue && 'ring-2 ring-danger/30',
                 )}
               >
                 <div className="flex items-start gap-3">

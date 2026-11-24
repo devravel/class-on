@@ -15,7 +15,7 @@ interface ClassInfoCardProps {
 
 export function ClassInfoCard({ classRecord }: ClassInfoCardProps) {
   return (
-    <div className="rounded-card border border-border bg-background p-6 shadow-sm">
+    <div className="surface-card p-6">
       <div className="mb-4 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-component bg-primary/10">
           <BookOpen size={18} className="text-primary" />

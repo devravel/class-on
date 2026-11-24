@@ -89,7 +89,7 @@ export default function NovoAnoLetivoPage() {
         title="Informações do Ano Letivo"
         description="Defina o ano e status do ciclo acadêmico institucional"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <form onSubmit={handleSubmit} className="p-6 space-y-6">
             {/* Error message */}
             {error && (
@@ -115,7 +115,7 @@ export default function NovoAnoLetivoPage() {
                 placeholder="Ex: 2026"
                 value={formData.yearInput}
                 onChange={(e) => handleYearChange(e.target.value)}
-                className="w-full px-3 py-2 border border-border rounded-component bg-background text-text-primary placeholder-text-secondary focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-none transition-all"
+                className="w-full px-3 py-2 border border-border rounded-component bg-surface text-text-primary placeholder-text-secondary focus:border-ring focus:ring-3 focus:ring-ring/20 focus:outline-none transition-all"
               />
               <p className="mt-1 text-xs text-text-secondary">
                 Representa o contexto acadêmico institucional (controle manual)

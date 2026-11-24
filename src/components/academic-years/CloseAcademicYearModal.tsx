@@ -132,7 +132,7 @@ export function CloseAcademicYearModal({
         aria-labelledby="close-academic-year-title"
         aria-describedby="close-academic-year-description close-academic-year-warning-text"
         className={cn(
-          "flex min-h-0 w-full max-w-4xl flex-col overflow-hidden rounded-modal bg-surface shadow-medium ring-1 ring-border",
+          "flex min-h-0 w-full max-w-4xl flex-col overflow-hidden rounded-modal bg-surface shadow-card",
           // Altura máxima alinhada ao padding vertical do overlay (p-4 → sm:p-6 → md:p-8)
           "max-h-[calc(100dvh-2rem)] sm:max-h-[calc(100dvh-3rem)] md:max-h-[calc(100dvh-4rem)]",
           "animate-in fade-in zoom-in-95 duration-200",

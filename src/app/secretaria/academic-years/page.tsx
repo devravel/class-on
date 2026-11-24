@@ -25,7 +25,7 @@ const statusConfig = {
   },
   CLOSED: {
     label: ACADEMIC_YEAR_STATUS_LABELS.CLOSED,
-    className: "border border-border bg-muted text-text-secondary",
+    className: "bg-neutral-200 text-text-secondary",
     icon: XCircle,
   },
 };

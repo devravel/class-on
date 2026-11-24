@@ -104,7 +104,7 @@ export default function EditarTurmaPage() {
           title="Informações da Turma"
           description="Atualize a série, letra, turno e ano letivo da turma"
         >
-          <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+          <div className="overflow-hidden rounded-card bg-surface shadow-card">
             <div className="p-6">
               <ClassForm
                 defaultValues={defaultValues}

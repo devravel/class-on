@@ -287,7 +287,7 @@ export default function ProfessorPage() {
           </div>
 
           <Section title="Buscar Alunos" className="shrink-0">
-            <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+            <div className="overflow-hidden rounded-card bg-surface shadow-card">
               <div className="border-b border-border px-4 py-3">
                 <div className="relative max-w-md">
                   <Search

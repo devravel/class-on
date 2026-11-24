@@ -17,7 +17,7 @@ export default function GlobalError({ error, reset }: GlobalErrorProps) {
 
   return (
     <div className="flex min-h-[50vh] items-center justify-center p-6">
-      <div className="w-full max-w-md rounded-card border border-destructive/20 bg-surface p-6 text-center shadow-light">
+      <div className="w-full max-w-md rounded-card bg-surface p-6 text-center shadow-card">
         <AlertCircle className="mx-auto mb-3 h-10 w-10 text-destructive" />
         <h1 className="text-lg font-semibold text-text-primary">
           Algo deu errado

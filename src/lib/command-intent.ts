@@ -444,17 +444,30 @@ export function filterProfessorClasses(
   action?: ProfessorCommandAction | null,
 ): ProfessorClassOption[] {
   const filterQuery = action ? getClassFilterQuery(query, action) : query
-  const normalized = normalizeCommandText(filterQuery)
-  if (!normalized) return classes
+  const words = (value: string) =>
+    normalizeCommandText(value).split(/[^\p{L}\p{N}º°]+/u).filter(Boolean)
 
-  return classes.filter((classOption) => {
-    const haystack = [
-      classOption.label,
-      classOption.shortLabel,
-      classOption.subjectName,
-    ].join(' ')
-    return normalizeCommandText(haystack).includes(normalized)
-  })
+  const classWords = classes.map((classOption) =>
+    words([classOption.label, classOption.shortLabel, classOption.subjectName].join(' ')),
+  )
+  const queryWords = words(filterQuery)
+  const lastWord = queryWords[queryWords.length - 1]
+  const isWholeWord = (token: string) => classWords.some((list) => list.includes(token))
+  // A última palavra pode estar pela metade ("mat"), então casa por prefixo —
+  // a não ser que já seja palavra inteira ("a" de "8º ano a" não pode casar com "ano").
+  const matches = (token: string, prefix: boolean, list: string[]) =>
+    list.some((word) => (prefix ? word.startsWith(token) : word === token))
+
+  // Só filtra pelas palavras que batem com alguma turma; o resto da frase
+  // ("quero", "as", "do bimestre") é linguagem natural e não pode zerar a lista.
+  const tokens = queryWords
+    .map((token) => ({ token, prefix: token === lastWord && !isWholeWord(token) }))
+    .filter(({ token, prefix }) => classWords.some((list) => matches(token, prefix, list)))
+  if (tokens.length === 0) return classes
+
+  return classes.filter((_, index) =>
+    tokens.every(({ token, prefix }) => matches(token, prefix, classWords[index])),
+  )
 }
 
 export function getClassFilterQuery(

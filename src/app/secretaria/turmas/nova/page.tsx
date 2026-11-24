@@ -31,7 +31,7 @@ export default function NovaTurmaPage() {
           title="Resumo da criação"
           description="Detalhes do que foi gerado nesta operação"
         >
-          <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+          <div className="overflow-hidden rounded-card bg-surface shadow-card">
             <div className="space-y-4 p-6 text-sm">
               <div className="grid gap-3 sm:grid-cols-3">
                 <div className="rounded-component border border-border p-3">
@@ -118,7 +118,7 @@ export default function NovaTurmaPage() {
         title="Assistente de criação"
         description="Preencha os dados da turma e configure professores e alunos"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <ClassCreationWizard
               onCancel={() => router.push('/secretaria/turmas')}

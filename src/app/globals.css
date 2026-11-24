@@ -42,93 +42,127 @@
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
   --radius-xl: calc(var(--radius) + 4px);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-display);
   --radius-2xl: calc(var(--radius) * 1.8);
   --radius-3xl: calc(var(--radius) * 2.2);
   --radius-4xl: calc(var(--radius) * 2.6);
-  --spacing-dashboard-header: 56px;
+  --spacing-dashboard-header: 40px;
   --spacing-page-header: 24px;
 }
 
+/* ═══════════════════════════════════════════════════════════════════
+   Tokens que não mudam com o tema — a marca é a mesma nos dois.
+   Paleta royal + ciano vinda da referência da logo.
+   ═══════════════════════════════════════════════════════════════════ */
 :root {
-  --color-brand-100: #e3f2fc;
-  --color-brand-200: #b0daf5;
-  --color-brand-300: #7fc0ee;
-  --color-brand-400: #52a8e8;
-  --color-brand-500: #2b85d9;
-  --color-brand-600: #2270be;
-  --color-brand-700: #1b5c9e;
+  --color-brand-50: #eff5ff;
+  --color-brand-100: #dbe8fe;
+  --color-brand-200: #bdd6fd;
+  --color-brand-300: #90bbfb;
+  --color-brand-400: #5b97f7;
+  --color-brand-500: #2f77ec;
+  --color-brand-600: #1f63dc;
+  --color-brand-700: #1a4fb4;
+  --color-brand-800: #1a428f;
+  --color-brand-900: #1a3a73;
 
-  --color-neutral-100: #f7fafc;
-  --color-neutral-200: #edf2f7;
-  --color-neutral-300: #e2e8f0;
-  --color-neutral-400: #cbd5e0;
-  --color-neutral-500: #a0aec0;
-  --color-neutral-600: #718096;
-  --color-neutral-700: #4a5568;
-  --color-neutral-800: #2d3748;
-  --color-neutral-900: #1a202c;
-  --color-neutral-950: #020617;
+  /* Ciano do topo do gradiente da logo — acento secundário */
+  --color-cyan-400: #35b4f0;
+  --color-cyan-500: #1a9ddb;
+  --color-cyan-600: #1580b6;
 
-  --color-success: #48bb78;
-  --color-warning: #ed8936;
-  --color-danger: #f56565;
-  --color-info: #7f9cf5;
+  /* Tinta: navy-indigo profundo da referência. Rail, banner, dark mode. */
+  --color-ink-400: #46567d;
+  --color-ink-500: #34426a;
+  --color-ink-600: #252f52;
+  --color-ink-700: #1a2242;
+  --color-ink-800: #131935;
+  --color-ink-900: #0c1026;
 
-  --color-bg: #f7fafc;
-  --color-surface: #ffffff;
-  --color-border: #e2e8f0;
-  --color-text-primary: #1a202c;
-  --color-text-secondary: #718096;
-  --color-disabled-bg: #edf2f7;
-  --color-disabled-text: #cbd5e0;
+  --radius: 0.75rem;
 
-  --color-app-gradient-start: #000000;
-  --color-app-gradient-end: #263670;
-  --color-content-panel: #cddfed;
-
-  --radius: 0.625rem;  --background: var(--color-bg);
-  --foreground: var(--color-text-primary);
-  --card: var(--color-surface);
-  --card-foreground: var(--color-text-primary);
-  --popover: var(--color-surface);
-  --popover-foreground: var(--color-text-primary);
-  --primary: var(--color-brand-500);
-  --primary-foreground: #ffffff;
-  --secondary: var(--color-neutral-200);
-  --secondary-foreground: var(--color-text-primary);
-  --muted: var(--color-neutral-200);
-  --muted-foreground: var(--color-text-secondary);
-  --accent: var(--color-neutral-200);
-  --accent-foreground: var(--color-text-primary);
-  --destructive: var(--color-danger);
-  --border: var(--color-border);
-  --input: var(--color-border);
-  --ring: var(--color-brand-500);
-  --chart-1: var(--color-brand-300);
-  --chart-2: var(--color-brand-500);
-  --chart-3: var(--color-brand-700);
-  --chart-4: var(--color-neutral-600);
-  --chart-5: var(--color-neutral-800);
-  --sidebar: var(--color-surface);
-  --sidebar-foreground: var(--color-text-primary);
-  --sidebar-primary: var(--color-brand-700);
-  --sidebar-primary-foreground: #ffffff;
-  --sidebar-accent: var(--color-neutral-200);
-  --sidebar-accent-foreground: var(--color-text-primary);
-  --sidebar-border: var(--color-border);
-  --sidebar-ring: var(--color-brand-500);
+  --gradient-ink: linear-gradient(
+    160deg,
+    var(--color-ink-700) 0%,
+    var(--color-ink-900) 100%
+  );
+  --gradient-brand: linear-gradient(
+    135deg,
+    var(--color-cyan-400) 0%,
+    var(--color-brand-600) 100%
+  );
 }
 
-.dark {
-  /* Preparado para dark mode futuro */
-  --color-bg: var(--color-neutral-950);
-  --color-surface: var(--color-neutral-900);
-  --color-border: var(--color-neutral-700);
-  --color-text-primary: var(--color-neutral-100);
-  --color-text-secondary: var(--color-neutral-400);
-  --color-disabled-bg: var(--color-neutral-800);
-  --color-disabled-text: var(--color-neutral-600);
+/* ═══════════════════════════════════════════════════════════════════
+   TEMA CLARO
+   ═══════════════════════════════════════════════════════════════════ */
+:root {
+  color-scheme: light;
+
+  --color-neutral-50: #fbfcfe;
+  --color-neutral-100: #f6f8fb;
+  --color-neutral-200: #edf1f7;
+  --color-neutral-300: #e0e7f0;
+  --color-neutral-400: #c3cede;
+  --color-neutral-500: #8b9ab2;
+  --color-neutral-600: #5a6b87;
+  --color-neutral-700: #40506c;
+  --color-neutral-800: #27344f;
+  --color-neutral-900: #101a33;
+  --color-neutral-950: #0c1026;
+
+  /* Estado: cor sólida passa 4.5:1 no fundo claro; a soft é só fundo de pill */
+  --color-success: #0f7a52;
+  --color-success-soft: #e3f6ee;
+  --color-warning: #9a5a04;
+  --color-warning-soft: #fdf0da;
+  --color-danger: #c22a35;
+  --color-danger-soft: #fdeaec;
+  --color-info: #1a4fb4;
+  --color-info-soft: #e5eefd;
+
+  --color-bg: #f6f8fb;
+  --color-surface: #ffffff;
+  --color-surface-muted: #f6f8fb;
+  --color-surface-sunken: #edf1f7;
+  /* Hairline: só separador (linha de tabela, divisor). Card não usa borda. */
+  --color-border: #e8edf4;
+  --color-border-strong: #d5dee9;
+  --color-text-primary: #101a33;
+  --color-text-secondary: #5a6b87;
+  /* 4.8:1 no branco. O cinza mais claro de antes dava 3.4:1 e reprovava AA
+     no texto de 12px do KPI e do chip de perfil. */
+  --color-text-tertiary: #64738e;
+
+  /* Chips pastel do KPI */
+  --tint-sky-bg: #e5eefd;
+  --tint-sky-fg: #1a4fb4;
+  --tint-mint-bg: #e3f6ee;
+  --tint-mint-fg: #0f7a52;
+  --tint-amber-bg: #fdf0da;
+  --tint-amber-fg: #9a5a04;
+  --tint-rose-bg: #fdeaec;
+  --tint-rose-fg: #c22a35;
+  --tint-violet-bg: #eeeafc;
+  --tint-violet-fg: #5b3fc4;
+  --tint-slate-bg: #e9edf5;
+  --tint-slate-fg: #40506c;
+
+  /* Sombras tingidas de tinta, nunca preto puro. Mais discretas que antes —
+     o pedido é claro e minimalista, então a sombra separa sem pesar. */
+  --shadow-xs: 0 1px 2px 0 rgb(12 16 38 / 0.04);
+  --shadow-sm: 0 1px 2px 0 rgb(12 16 38 / 0.04), 0 1px 3px 0 rgb(12 16 38 / 0.04);
+  --shadow-card: 0 1px 2px 0 rgb(12 16 38 / 0.03),
+    0 4px 12px -3px rgb(12 16 38 / 0.06);
+  --shadow-card-hover: 0 2px 4px 0 rgb(12 16 38 / 0.04),
+    0 12px 24px -6px rgb(12 16 38 / 0.10);
+  --shadow-pop: 0 8px 16px -6px rgb(12 16 38 / 0.08),
+    0 20px 40px -12px rgb(12 16 38 / 0.14);
+  --shadow-overlay: 0 24px 64px -16px rgb(12 16 38 / 0.24);
+  --shadow-rail: 0 8px 32px -10px rgb(12 16 38 / 0.28);
+  --shadow-brand: 0 1px 2px 0 rgb(26 79 180 / 0.18),
+    0 6px 16px -6px rgb(47 119 236 / 0.40);
+  --shadow-inset: inset 0 1px 2px 0 rgb(12 16 38 / 0.05);
 
   --background: var(--color-bg);
   --foreground: var(--color-text-primary);
@@ -136,31 +170,158 @@
   --card-foreground: var(--color-text-primary);
   --popover: var(--color-surface);
   --popover-foreground: var(--color-text-primary);
-  --primary: var(--color-brand-400);
-  --primary-foreground: var(--color-neutral-950);
-  --secondary: var(--color-neutral-800);
+  /* brand-600, não 500: branco sobre 500 dá 4.2:1 e reprova AA em rótulo
+     de botão (14px semibold não conta como texto grande). */
+  --primary: var(--color-brand-600);
+  /* No claro o hover escurece. Sem esse token o botão primário usava
+     hover:bg-brand-600 — a mesma cor do repouso, ou seja, hover nenhum. */
+  --primary-hover: var(--color-brand-700);
+  --primary-foreground: #ffffff;
+  --danger-soft-hover: #fbdadd;
+  --secondary: var(--color-neutral-200);
   --secondary-foreground: var(--color-text-primary);
-  --muted: var(--color-neutral-800);
+  --muted: var(--color-neutral-200);
   --muted-foreground: var(--color-text-secondary);
-  --accent: var(--color-neutral-800);
-  --accent-foreground: var(--color-text-primary);
+  --accent: var(--color-brand-50);
+  --accent-foreground: var(--color-brand-700);
   --destructive: var(--color-danger);
   --border: var(--color-border);
-  --input: var(--color-border);
+  --input: var(--color-border-strong);
+  --ring: var(--color-brand-500);
+  --chart-1: var(--color-brand-500);
+  --chart-2: var(--color-success);
+  --chart-3: var(--color-warning);
+  --chart-4: var(--color-danger);
+  --chart-5: var(--color-ink-500);
+  --sidebar: var(--color-ink-800);
+  --sidebar-foreground: #ffffff;
+  /* brand-600: o trilho é escuro nos dois temas, então o pill ativo não
+     pode seguir o --primary da página (no escuro ele clareia e o texto
+     branco cai pra 2.9:1). Branco sobre 600 = 5.4:1. */
+  --sidebar-primary: var(--color-brand-600);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-accent-foreground: #ffffff;
+  --sidebar-border: rgb(255 255 255 / 0.08);
+  --sidebar-ring: var(--color-brand-400);
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   TEMA ESCURO
+   ═══════════════════════════════════════════════════════════════════ */
+.dark {
+  color-scheme: dark;
+
+  /* Escala invertida: o código existente usa neutral-100 como "claro" e
+     neutral-900 como "escuro", então inverter aqui faz tudo virar junto. */
+  --color-neutral-50: #0c1026;
+  --color-neutral-100: #141b36;
+  --color-neutral-200: #232c4f;
+  --color-neutral-300: #2c3660;
+  --color-neutral-400: #5d6b90;
+  --color-neutral-500: #7d8cae;
+  --color-neutral-600: #a6b2cf;
+  --color-neutral-700: #c3cbe0;
+  --color-neutral-800: #dde3f0;
+  --color-neutral-900: #eef2fb;
+  --color-neutral-950: #ffffff;
+
+  /* Estado no escuro: a cor sólida clareia pra manter contraste no card */
+  --color-success: #4ed4a1;
+  --color-success-soft: #123a2c;
+  --color-warning: #f2b45c;
+  --color-warning-soft: #3d2c10;
+  --color-danger: #ff8b93;
+  --color-danger-soft: #401a20;
+  --color-info: #7fb0fa;
+  --color-info-soft: #16264d;
+
+  --color-bg: #0c1026;
+  --color-surface: #151c3a;
+  --color-surface-muted: #1b2347;
+  --color-surface-sunken: #0c1026;
+  --color-border: rgb(255 255 255 / 0.09);
+  --color-border-strong: rgb(255 255 255 / 0.17);
+  --color-text-primary: #eef2fb;
+  --color-text-secondary: #a6b2cf;
+  --color-text-tertiary: #7d8cae;
+
+  --tint-sky-bg: #16264d;
+  --tint-sky-fg: #7fb0fa;
+  --tint-mint-bg: #123a2c;
+  --tint-mint-fg: #4ed4a1;
+  --tint-amber-bg: #3d2c10;
+  --tint-amber-fg: #f2b45c;
+  --tint-rose-bg: #401a20;
+  --tint-rose-fg: #ff8b93;
+  --tint-violet-bg: #272054;
+  --tint-violet-fg: #b3a2f5;
+  --tint-slate-bg: #232c4f;
+  --tint-slate-fg: #a6b2cf;
+
+  /* No escuro a sombra sozinha não separa superfície — ganha um halo claro
+     de 1px por dentro, que faz o papel da borda sem virar moldura. */
+  --shadow-xs: 0 1px 2px 0 rgb(0 0 0 / 0.30);
+  --shadow-sm: 0 1px 3px 0 rgb(0 0 0 / 0.35);
+  --shadow-card: inset 0 0 0 1px rgb(255 255 255 / 0.05),
+    0 1px 2px 0 rgb(0 0 0 / 0.30), 0 4px 12px -3px rgb(0 0 0 / 0.40);
+  --shadow-card-hover: inset 0 0 0 1px rgb(255 255 255 / 0.10),
+    0 2px 4px 0 rgb(0 0 0 / 0.35), 0 12px 24px -6px rgb(0 0 0 / 0.50);
+  --shadow-pop: inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 20px 40px -12px rgb(0 0 0 / 0.60);
+  --shadow-overlay: inset 0 0 0 1px rgb(255 255 255 / 0.07),
+    0 24px 64px -16px rgb(0 0 0 / 0.70);
+  --shadow-rail: 0 8px 32px -10px rgb(0 0 0 / 0.55);
+  --shadow-brand: 0 1px 2px 0 rgb(0 0 0 / 0.30),
+    0 6px 16px -6px rgb(47 119 236 / 0.45);
+  --shadow-inset: inset 0 1px 2px 0 rgb(0 0 0 / 0.35);
+
+  /* No escuro o rail se funde com o fundo; um degradê mais alto separa */
+  --gradient-ink: linear-gradient(160deg, #1a2242 0%, #10142e 100%);
+
+  --background: var(--color-bg);
+  --foreground: var(--color-text-primary);
+  --card: var(--color-surface);
+  --card-foreground: var(--color-text-primary);
+  --popover: var(--color-surface);
+  --popover-foreground: var(--color-text-primary);
+  /* brand-400 no escuro: 5.7:1 sobre a superfície do card */
+  --primary: var(--color-brand-400);
+  /* No escuro o hover CLAREIA — escurecer sumiria contra o fundo. */
+  --primary-hover: var(--color-brand-300);
+  --primary-foreground: #0c1026;
+  --danger-soft-hover: #55222a;
+  --secondary: var(--color-neutral-200);
+  --secondary-foreground: var(--color-text-primary);
+  --muted: var(--color-neutral-200);
+  --muted-foreground: var(--color-text-secondary);
+  --accent: rgb(91 151 247 / 0.16);
+  --accent-foreground: var(--color-brand-300);
+  --destructive: var(--color-danger);
+  --border: var(--color-border);
+  --input: var(--color-border-strong);
   --ring: var(--color-brand-400);
-  --sidebar: var(--color-surface);
-  --sidebar-foreground: var(--color-text-primary);
-  --sidebar-primary: var(--color-brand-400);
-  --sidebar-primary-foreground: var(--color-neutral-950);
-  --sidebar-accent: var(--color-neutral-800);
-  --sidebar-accent-foreground: var(--color-text-primary);
+  --chart-1: var(--color-brand-400);
+  --chart-2: var(--color-success);
+  --chart-3: var(--color-warning);
+  --chart-4: var(--color-danger);
+  --chart-5: var(--color-neutral-500);
+  --sidebar: var(--color-ink-800);
+  --sidebar-foreground: #ffffff;
+  /* brand-600: o trilho é escuro nos dois temas, então o pill ativo não
+     pode seguir o --primary da página (no escuro ele clareia e o texto
+     branco cai pra 2.9:1). Branco sobre 600 = 5.4:1. */
+  --sidebar-primary: var(--color-brand-600);
+  --sidebar-primary-foreground: #ffffff;
+  --sidebar-accent: rgb(255 255 255 / 0.08);
+  --sidebar-accent-foreground: #ffffff;
   --sidebar-border: var(--color-border);
   --sidebar-ring: var(--color-brand-400);
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    border-color: var(--color-border);
     scrollbar-width: thin;
     scrollbar-color: var(--color-neutral-400) transparent;
   }
@@ -185,29 +346,138 @@
     background-color: var(--color-neutral-500);
   }
 
-  *::-webkit-scrollbar-corner {
-    background: transparent;
-  }
-
   body {
     @apply text-foreground;
+    font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+    background-color: var(--color-bg);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
   }
   html {
     @apply font-sans;
   }
 }
 
+/* ─────────── Acessibilidade ───────────
+   Um anel de foco só, igual em tudo que recebe teclado. `:focus-visible`
+   (e não `:focus`) pra não piscar anel em clique de mouse. */
+/* O outline já segue o border-radius do elemento — não mexer no raio aqui,
+   senão o botão muda de forma ao receber foco. */
+:where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+  outline: 2px solid var(--color-brand-500);
+  outline-offset: 2px;
+}
+
+/* Sobre o trilho escuro o azul da marca some; lá o anel é branco. */
+.rail-dark :where(a, button, [tabindex]):focus-visible {
+  outline-color: #ffffff;
+}
+
+/* Nunca remover o foco sem repor outra indicação */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* Pula pro conteúdo — primeiro tab da página */
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 200;
+  transform: translateY(-200%);
+  transition: transform 150ms ease;
+  background-color: var(--color-surface);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-pop);
+  padding: 0.625rem 1rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+.skip-link:focus {
+  transform: translateY(0);
+}
+
+/* Alvo de toque mínimo: 24px é o piso da WCAG 2.2 (2.5.8) */
+:where(button, a[href], [role="button"]) {
+  min-height: 24px;
+}
+
+/* Respeita quem pediu menos movimento no sistema */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .surface-card-interactive:hover {
+    transform: none !important;
+  }
+}
+
+/* Alto contraste do sistema: repõe a borda que a sombra substituiu */
+@media (forced-colors: active) {
+  .surface-card,
+  .surface-card-interactive,
+  .banner-ink,
+  .rail-dark {
+    border: 1px solid CanvasText;
+  }
+}
+
+/* ─────────── Tipografia ───────────
+   Fora de @layer de propósito: regra sem camada vence as camadas do Tailwind,
+   então todo h1–h3 pega a display sem precisar de classe em 38 lugares.
+   `font-sans` no próprio heading é a escotilha de saída. */
+h1:not(.font-sans),
+h2:not(.font-sans),
+h3:not(.font-sans) {
+  font-family: var(--font-display), var(--font-sans), sans-serif;
+  letter-spacing: -0.015em;
+}
+
+/* Número de métrica não dança de linha pra linha — nem na tabela de notas,
+   nem no KPI. Dado é legibilidade, não personalidade: fica sempre na Plex. */
+.tabular,
+th,
+td {
+  font-variant-numeric: tabular-nums;
+}
+
+/* ─────────── Shell ─────────── */
+
+.app-shell {
+  background-color: var(--color-bg);
+}
+
+/* Fundo do login e brilho decorativo da landing */
 .app-shell-gradient {
-  background: linear-gradient(
-    135deg,
-    var(--color-app-gradient-start) 0%,
-    var(--color-app-gradient-end) 100%
-  );
+  background: var(--gradient-ink);
 }
 
 .content-panel {
-  background-color: var(--color-content-panel);
+  background-color: var(--color-bg);
 }
+
+.rail-dark {
+  background: var(--gradient-ink);
+  box-shadow: var(--shadow-rail);
+}
+
+/* Scroll dentro do trilho escuro — a barra padrão é clara e destoa. */
+.rail-scroll {
+  scrollbar-color: rgb(255 255 255 / 0.18) transparent;
+}
+.rail-scroll::-webkit-scrollbar-thumb {
+  background-color: rgb(255 255 255 / 0.18);
+}
+.rail-scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgb(255 255 255 / 0.3);
+}
+
 .mb-dashboard-header {
   margin-bottom: var(--spacing-dashboard-header);
 }
@@ -216,9 +486,74 @@
 }
 
 @layer components {
-  /* Sidebar e superfícies escuras / glass */
+  /* ─────────── Superfícies: sombra no lugar de borda ─────────── */
+
+  .surface-card {
+    @apply rounded-card bg-surface;
+    box-shadow: var(--shadow-card);
+  }
+
+  .surface-card-interactive {
+    @apply rounded-card bg-surface transition-[box-shadow,transform] duration-200;
+    box-shadow: var(--shadow-card);
+  }
+  .surface-card-interactive:hover {
+    box-shadow: var(--shadow-card-hover);
+    transform: translateY(-2px);
+  }
+
+  .surface-sunken {
+    @apply rounded-card;
+    background-color: var(--color-surface-sunken);
+  }
+
+  /* ─────────── Banner escuro de topo ─────────── */
+  .banner-ink {
+    background: var(--gradient-ink);
+    @apply rounded-card text-white;
+    box-shadow: var(--shadow-card);
+  }
+
+  /* ─────────── Tabela de dados ─────────── */
+  .data-table-head {
+    @apply text-[11px] font-semibold uppercase tracking-wider text-text-tertiary;
+  }
+
+  .data-table-row {
+    @apply border-b border-border transition-colors last:border-b-0;
+  }
+  .data-table-row:hover {
+    background-color: var(--color-surface-muted);
+  }
+
+  /* ─────────── Pills de estado ─────────── */
+  .status-pill {
+    @apply inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-semibold;
+  }
+  .status-pill-success {
+    background-color: var(--color-success-soft);
+    color: var(--color-success);
+  }
+  .status-pill-warning {
+    background-color: var(--color-warning-soft);
+    color: var(--color-warning);
+  }
+  .status-pill-danger {
+    background-color: var(--color-danger-soft);
+    color: var(--color-danger);
+  }
+  .status-pill-info {
+    background-color: var(--color-info-soft);
+    color: var(--color-info);
+  }
+  .status-pill-neutral {
+    background-color: var(--color-neutral-200);
+    color: var(--color-text-secondary);
+  }
+
+  /* ─────────── Sidebar e superfícies escuras / glass ─────────── */
   .nav-item-dark {
-    @apply text-white/80 transition-colors hover:bg-white/15 hover:text-white;
+    @apply text-white/75 transition-colors hover:bg-white/10 hover:text-white;
   }
 
   .nav-item-dark-icon {
@@ -230,15 +565,15 @@
   }
 
   .nav-item-signout-panel {
-    @apply rounded-[28px] bg-red-950/45 shadow-medium ring-1 ring-red-500/20 backdrop-blur-sm;
+    @apply rounded-card;
   }
 
   .nav-item-signout {
-    @apply text-red-200/80 transition-colors hover:bg-red-500/15 hover:text-red-100;
+    @apply text-white/65 transition-colors hover:bg-red-500/20 hover:text-red-200;
   }
 
   .nav-item-signout-icon {
-    @apply text-red-300/60 transition-colors group-hover:text-red-100;
+    @apply text-white/50 transition-colors group-hover:text-red-200;
   }
 
   /* Itens de navegação em painéis claros */
@@ -252,15 +587,25 @@
 
   /* Links de ação inline (ex.: "Ver todos") */
   .link-action {
-    @apply text-primary transition-colors hover:text-brand-700 hover:underline;
+    @apply font-medium text-primary underline-offset-4 transition-colors hover:underline;
   }
 
-  /* Botão de busca / ações rápidas no header */
+  /* Botão de busca / ações rápidas no header — pill com sombra */
   .nav-search-trigger {
-    @apply text-text-primary transition-colors hover:bg-white hover:text-text-primary;
+    @apply bg-surface text-text-secondary transition-shadow;
+    box-shadow: var(--shadow-sm);
+  }
+  .nav-search-trigger:hover {
+    box-shadow: var(--shadow-card);
   }
 
   .nav-search-trigger-icon {
-    @apply text-text-secondary transition-colors group-hover:text-text-primary;
+    @apply text-text-tertiary transition-colors group-hover:text-primary;
+  }
+
+  /* Botão de ícone circular do header */
+  .icon-button {
+    @apply inline-flex size-9 shrink-0 items-center justify-center rounded-full bg-surface text-text-secondary transition-colors hover:text-primary;
+    box-shadow: var(--shadow-sm);
   }
 }

@@ -441,7 +441,7 @@ function DiarioTab({
       {showCreateForm && (
         <form
           onSubmit={handleCreateLesson}
-          className="rounded-xl border border-border bg-card p-5 shadow-sm"
+          className="surface-card p-5"
         >
           <h3 className="mb-4 font-medium text-text-primary">Registrar Nova Aula</h3>
           <div className="grid gap-4 sm:grid-cols-3">
@@ -500,7 +500,7 @@ function DiarioTab({
       )}
 
       <div className="grid gap-6 lg:grid-cols-3">
-        <div className="rounded-xl border border-border bg-card lg:col-span-1">
+        <div className="surface-card lg:col-span-1">
           <div className="border-b border-border px-4 py-3">
             <h3 className="text-sm font-semibold text-text-primary">Aulas Registradas</h3>
           </div>
@@ -537,7 +537,7 @@ function DiarioTab({
           )}
         </div>
 
-        <div className="rounded-xl border border-border bg-card lg:col-span-2">
+        <div className="surface-card lg:col-span-2">
           <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <h3 className="text-sm font-semibold text-text-primary">Chamada</h3>
             {students.length > 0 && (
@@ -743,7 +743,7 @@ function NotasTab({
             id="bimester-select"
             value={selectedBimesterId}
             onChange={(e) => setSelectedBimesterId(e.target.value)}
-            className="mt-1 block rounded-lg border border-input bg-background px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20"
+            className="mt-1 block rounded-lg border border-input bg-surface px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20"
           >
             {bimesters.map((b) => (
               <option key={b.id} value={b.id}>
@@ -769,19 +769,19 @@ function NotasTab({
           Nenhum aluno matriculado nesta turma.
         </p>
       ) : (
-        <div className="overflow-x-auto rounded-xl border border-border bg-card shadow-sm">
+        <div className="surface-card overflow-x-auto">
           <table className="w-full min-w-[800px] text-sm">
             <thead>
               <tr className="border-b border-border bg-neutral-50 text-left text-xs font-semibold uppercase tracking-wide text-text-secondary">
-                <th className="px-4 py-3">Aluno</th>
-                <th className="px-3 py-3 text-center">N1</th>
-                <th className="px-3 py-3 text-center">N2</th>
-                <th className="px-3 py-3 text-center">N3</th>
-                <th className="px-3 py-3 text-center">N4</th>
-                <th className="px-3 py-3 text-center">Média</th>
-                <th className="px-3 py-3 text-center">Recuperação</th>
-                <th className="px-3 py-3 text-center">Status</th>
-                <th className="px-4 py-3 text-center">Ação</th>
+                <th scope="col" className="px-4 py-3">Aluno</th>
+                <th scope="col" className="px-3 py-3 text-center">N1</th>
+                <th scope="col" className="px-3 py-3 text-center">N2</th>
+                <th scope="col" className="px-3 py-3 text-center">N3</th>
+                <th scope="col" className="px-3 py-3 text-center">N4</th>
+                <th scope="col" className="px-3 py-3 text-center">Média</th>
+                <th scope="col" className="px-3 py-3 text-center">Recuperação</th>
+                <th scope="col" className="px-3 py-3 text-center">Status</th>
+                <th scope="col" className="px-4 py-3 text-center">Ação</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -972,7 +972,7 @@ function TarefasTab({
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-xl border border-border bg-card p-5 shadow-sm"
+        className="surface-card p-5"
       >
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
           <h3 className="font-medium text-text-primary">Nova Tarefa</h3>
@@ -1031,7 +1031,7 @@ function TarefasTab({
         </Button>
       </form>
 
-      <div className="rounded-xl border border-border bg-card shadow-sm">
+      <div className="surface-card">
         <div className="border-b border-border px-4 py-3">
           <h3 className="text-sm font-semibold text-text-primary">Tarefas Criadas</h3>
         </div>
@@ -1168,7 +1168,7 @@ function AlunosTab({
           Nenhum aluno matriculado nesta turma.
         </p>
       ) : (
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <ul className="divide-y divide-border">
             {sortedRows.map((row) => (
               <li

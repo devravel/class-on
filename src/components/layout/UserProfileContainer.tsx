@@ -13,11 +13,19 @@ const ROLE_LABEL: Record<string, string> = {
   ALUNO: "Aluno",
 };
 
-interface UserProfileContainerProps {
-  className?: string;
+interface UserProfile {
+  displayName: string;
+  firstName: string;
+  initials: string;
+  roleLabel: string;
 }
 
-export function UserProfileContainer({ className }: UserProfileContainerProps) {
+/**
+ * Nome de exibição do usuário logado. Aluno e professor vêm do /me (nome
+ * completo); secretaria cai no e-mail. Usado pelo chip do topo e pela saudação
+ * do banner — daí ser hook, pra não duplicar o fetch.
+ */
+export function useUserProfile(): UserProfile | null {
   const { user } = useAuth();
   const [profileDisplayName, setProfileDisplayName] = useState<string | null>(
     null,
@@ -27,19 +35,7 @@ export function UserProfileContainer({ className }: UserProfileContainerProps) {
   );
 
   const isStudentAccess = user?.role === "ALUNO";
-  const usesProfileName =
-    user?.role === "ALUNO" || user?.role === "PROFESSOR";
-  const profileName =
-    usesProfileName && profileDisplayName ? profileDisplayName : user?.email;
-  const initials =
-    profileName?.[0]?.toUpperCase() ?? user?.email?.[0]?.toUpperCase() ?? "U";
-  const roleLabel = (() => {
-    if (!user?.role) return "";
-    if (isStudentAccess && studentClassLabel) {
-      return `Aluno - ${studentClassLabel}`;
-    }
-    return ROLE_LABEL[user.role] ?? "";
-  })();
+  const usesProfileName = user?.role === "ALUNO" || user?.role === "PROFESSOR";
 
   useEffect(() => {
     if (!usesProfileName) {
@@ -92,19 +88,54 @@ export function UserProfileContainer({ className }: UserProfileContainerProps) {
 
   if (!user) return null;
 
+  const displayName =
+    (usesProfileName && profileDisplayName ? profileDisplayName : user.email) ??
+    "";
+
+  const roleLabel = (() => {
+    if (!user.role) return "";
+    if (isStudentAccess && studentClassLabel) {
+      return `Aluno - ${studentClassLabel}`;
+    }
+    return ROLE_LABEL[user.role] ?? "";
+  })();
+
+  return {
+    displayName,
+    // E-mail não tem "primeiro nome" — usa o trecho antes do @
+    firstName: displayName.includes("@")
+      ? displayName.split("@")[0]
+      : displayName.split(" ")[0],
+    initials: displayName[0]?.toUpperCase() ?? "U",
+    roleLabel,
+  };
+}
+
+interface UserProfileContainerProps {
+  className?: string;
+  /** Chip compacto do topo: só avatar + nome, sem o cargo em segunda linha. */
+  compact?: boolean;
+}
+
+export function UserProfileContainer({
+  className,
+  compact = false,
+}: UserProfileContainerProps) {
+  const profile = useUserProfile();
+
+  if (!profile) return null;
+
   return (
-    <div
-      className={cn("flex min-w-0 items-center gap-3", className)}
-    >
-      <div className="flex h-8 w-8 shrink-0 select-none items-center justify-center rounded-full bg-primary text-xs font-semibold text-white">
-        {initials}
+    <div className={cn("flex min-w-0 items-center gap-2.5", className)}>
+      <div className="flex size-9 shrink-0 select-none items-center justify-center rounded-full bg-primary text-xs font-semibold text-white shadow-brand">
+        {profile.initials}
       </div>
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium leading-none text-text-primary">
-          {profileName}
+      <div className={cn("min-w-0 flex-1", compact && "hidden sm:block")}>
+        <p className="truncate text-sm font-semibold leading-tight text-text-primary">
+          {profile.displayName}
         </p>
-        <p className="mt-0.5 truncate text-xs text-text-secondary">
-          {roleLabel}
+        <p className="mt-0.5 truncate text-xs text-text-tertiary">
+          {profile.roleLabel}
         </p>
       </div>
     </div>

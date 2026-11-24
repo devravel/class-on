@@ -121,7 +121,7 @@ export function AssignmentForm({
         )}
 
         {lockedTeacherId ? (
-          <div className="rounded-component border border-border bg-neutral-50 p-4">
+          <div className="rounded-component bg-surface-muted p-4">
             <p className="text-xs font-medium uppercase tracking-wide text-text-secondary">
               Professor
             </p>

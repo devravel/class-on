@@ -86,7 +86,7 @@ export function SubjectForm({
               <FormControl>
                 <textarea
                   placeholder="Ex: Disciplina de matemática básica e avançada"
-                  className="w-full min-h-[100px] rounded-component border border-border bg-background px-3 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 transition-all resize-y"
+                  className="w-full min-h-[100px] rounded-component border border-border bg-surface px-3 py-2 text-sm text-text-primary placeholder-text-secondary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 transition-all resize-y"
                   {...field}
                 />
               </FormControl>

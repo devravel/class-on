@@ -761,7 +761,7 @@ export function CommandPalette() {
           <button
             type="button"
             aria-label="Fechar paleta de comandos"
-            className="absolute inset-0 bg-neutral-900/40 backdrop-blur-sm animate-in fade-in-0 duration-200"
+            className="absolute inset-0 bg-ink-900/55 backdrop-blur-[2px] animate-in fade-in-0 duration-200"
             onClick={closePalette}
           />
 
@@ -770,11 +770,11 @@ export function CommandPalette() {
             aria-modal="true"
             aria-label="Paleta de comandos"
             className={cn(
-              'relative z-10 w-full max-w-xl overflow-hidden rounded-modal border border-border bg-surface shadow-medium',
+              'relative z-10 w-full max-w-xl overflow-hidden rounded-modal bg-surface shadow-overlay',
               'animate-in fade-in-0 zoom-in-95 slide-in-from-top-2 duration-200',
             )}
           >
-            <div className="flex items-center gap-3 border-b border-border px-4 py-3">
+            <div className="flex items-center gap-3 border-b border-border px-4 py-3.5">
               <Search className="h-5 w-5 shrink-0 text-text-secondary" />
               <input
                 ref={inputRef}
@@ -788,7 +788,7 @@ export function CommandPalette() {
               {isResolvingIntent && (
                 <Loader2 className="h-4 w-4 shrink-0 animate-spin text-text-secondary" />
               )}
-              <kbd className="hidden rounded border border-border bg-neutral-100 px-1.5 py-0.5 text-[10px] font-medium text-text-secondary sm:inline">
+              <kbd className="hidden rounded-md bg-neutral-200 px-1.5 py-0.5 text-[10px] font-semibold text-text-tertiary sm:inline">
                 ESC
               </kbd>
             </div>
@@ -796,7 +796,7 @@ export function CommandPalette() {
             <div ref={listRef} className="max-h-[min(50vh,360px)] overflow-y-auto p-2">
               {isClassPickerMode && activePickerAction ? (
                 <>
-                  <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                  <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                     {getProfessorActionLabel(activePickerAction)} — escolha a turma
                   </p>
 
@@ -860,7 +860,7 @@ export function CommandPalette() {
                   <p className="px-3 py-4 text-center text-sm text-text-secondary">
                     {getUnrecognizedFallbackMessage(user.role)}
                   </p>
-                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                  <p className="px-3 pb-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                     Atalhos disponíveis
                   </p>
                   {displayNavItems.map((item, index) => {
@@ -917,7 +917,7 @@ export function CommandPalette() {
               ) : (
                 <>
                   {displayNavItems.length > 0 && (
-                    <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                    <p className="px-3 pb-1 pt-1 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                       Navegação rápida
                     </p>
                   )}
@@ -971,7 +971,7 @@ export function CommandPalette() {
 
                   {studentItems.length > 0 && !isUnrecognized && (
                     <>
-                      <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wide text-text-secondary">
+                      <p className="px-3 pb-1 pt-3 text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
                         Alunos
                       </p>
 

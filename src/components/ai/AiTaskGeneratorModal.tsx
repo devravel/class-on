@@ -295,7 +295,7 @@ export function AiTaskGeneratorModal({
                 value={schoolYear}
                 onChange={(e) => setSchoolYear(e.target.value)}
                 disabled={isLoadingClasses}
-                className="mt-1 block w-full rounded-lg border border-input bg-background px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 disabled:opacity-60"
+                className="mt-1 block w-full rounded-lg border border-input bg-surface px-3 py-2 text-sm text-text-primary focus:border-ring focus:outline-none focus:ring-[3px] focus:ring-ring/20 disabled:opacity-60"
               >
                 <option value="">
                   {isLoadingClasses

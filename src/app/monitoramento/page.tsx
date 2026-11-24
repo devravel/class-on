@@ -134,7 +134,7 @@ export default function MonitoramentoPage() {
 
       <div className="mb-8">
         {isLoading ? (
-          <div className="flex h-48 items-center justify-center rounded-card bg-surface shadow-light ring-1 ring-border">
+          <div className="flex h-48 items-center justify-center rounded-card bg-surface shadow-card">
             <div className="text-center">
               <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
               <p className="mt-2 text-sm text-text-secondary">Calculando índice de risco...</p>
@@ -174,7 +174,7 @@ export default function MonitoramentoPage() {
             <Loader2 className="h-6 w-6 animate-spin text-primary" />
           </div>
         ) : (
-          <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+          <div className="overflow-hidden rounded-card bg-surface shadow-card">
             <ul className="max-h-[420px] divide-y divide-border overflow-y-auto">
               {filteredRows.length === 0 ? (
                 <li className="px-4 py-10 text-center text-sm text-text-secondary">

@@ -169,7 +169,7 @@ export default function AlunoNotasPage() {
 
       {/* Boletim por disciplina */}
       {subjects.length === 0 && !error ? (
-        <div className="rounded-card border border-border bg-neutral-50 p-12 text-center">
+        <div className="surface-card p-12 text-center">
           <p className="text-sm font-medium text-text-primary">
             Nenhuma nota lançada
           </p>
@@ -185,7 +185,7 @@ export default function AlunoNotasPage() {
             return (
             <div
               key={subject.subjectName}
-              className="overflow-hidden rounded-card border border-border bg-background shadow-sm"
+              className="surface-card overflow-hidden"
             >
               <div className="border-b border-border bg-neutral-50 px-4 py-3 sm:px-6">
                 <h3 className="flex items-center gap-2 text-base font-semibold text-text-primary">
@@ -197,21 +197,21 @@ export default function AlunoNotasPage() {
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[720px] text-sm">
                   <thead>
-                    <tr className="border-b border-border bg-neutral-50/50 text-left text-xs uppercase tracking-wide text-text-secondary">
-                      <th className="px-4 py-3 font-medium sm:px-6">
+                    <tr className="border-b border-border text-left text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+                      <th scope="col" className="px-4 py-3 font-medium sm:px-6">
                         Bimestre
                       </th>
-                      <th className="px-3 py-3 text-center font-medium">N1</th>
-                      <th className="px-3 py-3 text-center font-medium">N2</th>
-                      <th className="px-3 py-3 text-center font-medium">N3</th>
-                      <th className="px-3 py-3 text-center font-medium">N4</th>
-                      <th className="px-3 py-3 text-center font-medium">
+                      <th scope="col" className="px-3 py-3 text-center font-medium">N1</th>
+                      <th scope="col" className="px-3 py-3 text-center font-medium">N2</th>
+                      <th scope="col" className="px-3 py-3 text-center font-medium">N3</th>
+                      <th scope="col" className="px-3 py-3 text-center font-medium">N4</th>
+                      <th scope="col" className="px-3 py-3 text-center font-medium">
                         Média
                       </th>
-                      <th className="px-3 py-3 text-center font-medium">
+                      <th scope="col" className="px-3 py-3 text-center font-medium">
                         Rec.
                       </th>
-                      <th className="px-4 py-3 font-medium sm:px-6">Status</th>
+                      <th scope="col" className="px-4 py-3 font-medium sm:px-6">Status</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -222,7 +222,7 @@ export default function AlunoNotasPage() {
                         return (
                           <tr
                             key={bimesterNumber}
-                            className="border-b border-border/60 text-text-secondary"
+                            className="border-b border-border text-text-secondary"
                           >
                             <td className="px-4 py-3 font-medium sm:px-6">
                               {bimesterNumber}º Bimestre
@@ -261,7 +261,7 @@ export default function AlunoNotasPage() {
                       return (
                         <tr
                           key={bimesterNumber}
-                          className="border-b border-border/60 transition-colors hover:bg-neutral-50/50"
+                          className="border-b border-border transition-colors hover:bg-surface-muted"
                         >
                           <td className="px-4 py-3 font-medium text-text-primary sm:px-6">
                             {bimesterNumber}º Bimestre

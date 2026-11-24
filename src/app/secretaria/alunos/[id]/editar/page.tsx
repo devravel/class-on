@@ -152,7 +152,7 @@ export default function EditarAlunoPage() {
         title="Informações do Aluno"
         description="Edite os dados de identificação do aluno"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <Form {...form}>
               <form

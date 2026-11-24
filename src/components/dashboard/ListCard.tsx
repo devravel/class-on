@@ -6,7 +6,12 @@ interface ListItem {
 
 export const DASHBOARD_LIST_LIMIT = 4
 
-/** Approximate row height for dashboard list items (px). */
+/**
+ * Piso de altura por linha (px), só pra alinhar cards vizinhos na grade.
+ * **Não** é a altura real de uma linha — ela varia com o conteúdo (61–66px
+ * nos dashboards). Nunca usar isso pra recortar a lista: era o que cortava a
+ * última linha ao meio.
+ */
 export const DASHBOARD_LIST_ROW_HEIGHT = 56
 
 export const DASHBOARD_LIST_AREA_HEIGHT =
@@ -17,9 +22,9 @@ interface ListCardProps<T extends ListItem> {
   renderItem: (item: T) => React.ReactNode
   emptyMessage?: string
   className?: string
-  /** When set, shows at most this many rows statically; extra items scroll inside the card. */
+  /** Mostra no máximo esta quantidade de itens. O resto fica pro "Ver todos". */
   limit?: number
-  /** Locks list body to `limit` row heights; scrolls when item count reaches `limit`. */
+  /** Garante altura mínima de `limit` linhas, pra alinhar cards lado a lado. */
   fixedRowArea?: boolean
 }
 
@@ -31,32 +36,28 @@ export function ListCard<T extends ListItem>({
   limit,
   fixedRowArea = false,
 }: ListCardProps<T>) {
-  const rowAreaHeight =
-    limit != null ? limit * DASHBOARD_LIST_ROW_HEIGHT : undefined
-  const hasInternalScroll = fixedRowArea
-    ? limit != null && items.length >= limit
-    : limit != null && items.length > limit
+  // Corta pela contagem, não por pixel. Antes a lista era travada em
+  // `limit × 56px` e as linhas reais tinham 61–66px, então a última aparecia
+  // partida no meio e o card ganhava um scroll que não deveria existir —
+  // esses cards têm "Ver todos" justamente pra não precisar rolar por dentro.
+  const visibleItems = limit != null ? items.slice(0, limit) : items
+
+  const minHeight =
+    fixedRowArea && limit != null
+      ? limit * DASHBOARD_LIST_ROW_HEIGHT
+      : undefined
 
   return (
-    <div
-      className={cn(
-        'overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border',
-        className,
-      )}
-    >
-      {items.length === 0 ? (
+    <div className={cn('surface-card overflow-hidden', className)}>
+      {visibleItems.length === 0 ? (
         <div
           className="flex items-center justify-center"
-          style={
-            fixedRowArea && rowAreaHeight != null
-              ? { height: rowAreaHeight }
-              : undefined
-          }
+          style={minHeight != null ? { minHeight } : undefined}
         >
           <p
             className={cn(
               'text-sm text-text-secondary',
-              !(fixedRowArea && rowAreaHeight != null) && 'py-10',
+              minHeight == null && 'py-10',
             )}
           >
             {emptyMessage}
@@ -64,19 +65,10 @@ export function ListCard<T extends ListItem>({
         </div>
       ) : (
         <ul
-          className={cn(
-            'divide-y divide-border',
-            (hasInternalScroll || fixedRowArea) && 'overflow-y-auto',
-          )}
-          style={
-            fixedRowArea && rowAreaHeight != null
-              ? { height: rowAreaHeight }
-              : hasInternalScroll && rowAreaHeight != null
-                ? { maxHeight: rowAreaHeight }
-                : undefined
-          }
+          className="divide-y divide-border"
+          style={minHeight != null ? { minHeight } : undefined}
         >
-          {items.map((item) => (
+          {visibleItems.map((item) => (
             <li key={item.id}>{renderItem(item)}</li>
           ))}
         </ul>

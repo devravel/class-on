@@ -62,7 +62,7 @@ export function StudentPerformanceView({
 
   return (
     <div className="space-y-8">
-      <div className="rounded-card border border-border bg-background p-6 shadow-sm">
+      <div className="surface-card p-6">
         <div className="mb-4 flex items-center gap-3">
           <div className="flex h-10 w-10 items-center justify-center rounded-component bg-primary/10">
             <GraduationCap size={18} className="text-primary" />
@@ -75,7 +75,7 @@ export function StudentPerformanceView({
           </div>
         </div>
 
-        <div className="rounded-component border border-border bg-neutral-50 p-4">
+        <div className="rounded-component bg-surface-muted p-4">
           <div className="mb-3 flex items-start justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="flex h-9 w-9 items-center justify-center rounded-component bg-primary/10">
@@ -120,7 +120,7 @@ export function StudentPerformanceView({
         </div>
 
         {disciplineEntries.length === 0 ? (
-          <div className="rounded-card border border-border bg-neutral-50 p-12 text-center">
+          <div className="surface-card p-12 text-center">
             <p className="text-sm font-medium text-text-primary">
               Nenhuma disciplina atribuída
             </p>
@@ -143,7 +143,7 @@ export function StudentPerformanceView({
             return (
               <div
                 key={discipline.assignment_id}
-                className="overflow-hidden rounded-card border border-border bg-background shadow-sm"
+                className="surface-card overflow-hidden"
               >
                 <div className="border-b border-border bg-neutral-50 px-4 py-4 sm:px-6">
                   <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
@@ -200,7 +200,7 @@ export function StudentPerformanceView({
                         {(['n1', 'n2', 'n3', 'n4'] as const).map((field) => (
                           <div
                             key={field}
-                            className="rounded-component border border-border bg-neutral-50 px-3 py-2 text-center"
+                            className="rounded-component bg-surface-muted px-3 py-2 text-center"
                           >
                             <p className="text-xs uppercase text-text-secondary">
                               {field.toUpperCase()}
@@ -210,13 +210,13 @@ export function StudentPerformanceView({
                             </p>
                           </div>
                         ))}
-                        <div className="rounded-component border border-border bg-neutral-50 px-3 py-2 text-center">
+                        <div className="rounded-component bg-surface-muted px-3 py-2 text-center">
                           <p className="text-xs uppercase text-text-secondary">Rec.</p>
                           <p className="text-sm font-semibold text-text-primary">
                             {formatGradeCell(latestGrade.recovery_grade)}
                           </p>
                         </div>
-                        <div className="rounded-component border border-border bg-neutral-50 px-3 py-2 text-center">
+                        <div className="rounded-component bg-surface-muted px-3 py-2 text-center">
                           <p className="text-xs uppercase text-text-secondary">Média</p>
                           <p
                             className={cn(

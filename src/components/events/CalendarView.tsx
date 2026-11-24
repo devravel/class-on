@@ -81,7 +81,7 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
 
   if (error) {
     return (
-      <div className="flex h-96 flex-col items-center justify-center gap-4 rounded-card border border-border bg-surface px-4">
+      <div className="flex h-96 flex-col items-center justify-center gap-4 surface-card px-4">
         <InlineError message={error} className="max-w-md" />
         <Button
           variant="outline"
@@ -100,7 +100,7 @@ export function CalendarView({ classId, onEventClick, onDateClick }: CalendarVie
 
   if (isLoading) {
     return (
-      <div className="flex h-96 items-center justify-center rounded-card border border-border bg-neutral-100">
+      <div className="flex h-96 items-center justify-center surface-card">
         <PageLoader label="Carregando calendário..." />
       </div>
     )

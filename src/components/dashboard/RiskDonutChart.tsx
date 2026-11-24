@@ -30,10 +30,11 @@ import {
 } from '@/types/analytics'
 import { cn } from '@/lib/utils'
 
+// Lê os tokens de estado — a mesma cor do pill de status e do mockup da landing.
 const CATEGORY_COLORS: Record<RiskCategory, string> = {
-  RISCO_CRITICO: '#ef4444',
-  ALERTA: '#f59e0b',
-  ESTAVEL: '#22c55e',
+  RISCO_CRITICO: 'var(--color-danger)',
+  ALERTA: 'var(--color-warning)',
+  ESTAVEL: 'var(--color-success)',
 }
 
 const CATEGORY_ICONS: Record<RiskCategory, typeof ShieldCheck> = {
@@ -143,7 +144,7 @@ export function RiskDonutChart({ data, className }: RiskDonutChartProps) {
   return (
     <div
       className={cn(
-        'rounded-card bg-surface p-5 shadow-light ring-1 ring-border',
+        'rounded-card bg-surface p-5 shadow-card',
         className,
       )}
     >

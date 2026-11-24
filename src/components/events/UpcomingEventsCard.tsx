@@ -146,8 +146,8 @@ export function UpcomingEventsCard({
     return (
       <Section title="Próximos Eventos">
         <div
-          className="flex items-center justify-center rounded-lg border border-border bg-neutral-100"
-          style={{ height: DASHBOARD_LIST_AREA_HEIGHT }}
+          className="flex items-center justify-center rounded-card bg-surface shadow-card"
+          style={{ minHeight: DASHBOARD_LIST_AREA_HEIGHT }}
         >
           <PageLoader label="Carregando eventos..." size="sm" inline />
         </div>
@@ -169,8 +169,8 @@ export function UpcomingEventsCard({
         ) : undefined}
       >
         <div
-          className="flex items-center justify-center rounded-card bg-surface shadow-light ring-1 ring-border"
-          style={{ height: DASHBOARD_LIST_AREA_HEIGHT }}
+          className="flex items-center justify-center rounded-card bg-surface shadow-card"
+          style={{ minHeight: DASHBOARD_LIST_AREA_HEIGHT }}
         >
           <div className="text-center">
             <Calendar size={24} className="text-neutral-400 mx-auto mb-2" />

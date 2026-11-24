@@ -1,13 +1,16 @@
 'use client'
 
 import { AuthProvider } from '@/contexts/auth-context'
+import { ThemeProvider } from '@/contexts/theme-context'
 import { Toaster } from '@/components/ui/sonner'
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
-    <AuthProvider>
-      {children}
-      <Toaster />
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        {children}
+        <Toaster />
+      </AuthProvider>
+    </ThemeProvider>
   )
 }

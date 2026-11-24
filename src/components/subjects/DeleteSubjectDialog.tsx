@@ -76,7 +76,7 @@ export function DeleteSubjectDialog({
           </DialogDescription>
         </DialogHeader>
 
-        <div className="rounded-component border border-border bg-muted p-4">
+        <div className="rounded-component bg-surface-muted p-4">
           <p className="text-sm font-semibold text-text-primary">
             {subject.name}
           </p>

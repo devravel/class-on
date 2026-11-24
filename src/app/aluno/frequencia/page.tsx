@@ -40,7 +40,7 @@ function DisciplineAttendanceCard({ discipline }: { discipline: DisciplineAttend
   const SubjectIcon = getSubjectIcon(discipline.subject_name)
 
   return (
-    <div className="overflow-hidden rounded-card border border-border bg-background shadow-sm">
+    <div className="surface-card overflow-hidden">
       <div className="border-b border-border bg-neutral-50 px-4 py-4 sm:px-6">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
           <div>
@@ -66,15 +66,15 @@ function DisciplineAttendanceCard({ discipline }: { discipline: DisciplineAttend
       <div className="space-y-4 px-4 py-4 sm:px-6">
         <AttendanceProgressBar rate={discipline.attendance_rate} className="h-2" />
         <div className="grid grid-cols-3 gap-3 text-center">
-          <div className="rounded-component border border-border bg-neutral-50 px-3 py-2">
+          <div className="rounded-component bg-surface-muted px-3 py-2">
             <p className="text-xs uppercase text-text-secondary">Presenças</p>
             <p className="text-sm font-semibold text-success">{discipline.present}</p>
           </div>
-          <div className="rounded-component border border-border bg-neutral-50 px-3 py-2">
+          <div className="rounded-component bg-surface-muted px-3 py-2">
             <p className="text-xs uppercase text-text-secondary">Faltas</p>
             <p className="text-sm font-semibold text-danger">{discipline.absent}</p>
           </div>
-          <div className="rounded-component border border-border bg-neutral-50 px-3 py-2">
+          <div className="rounded-component bg-surface-muted px-3 py-2">
             <p className="text-xs uppercase text-text-secondary">Aulas</p>
             <p className="text-sm font-semibold text-text-primary">
               {discipline.total_lessons}
@@ -189,7 +189,7 @@ export default function AlunoFrequenciaPage() {
       )}
 
       {/* Frequência geral */}
-      <div className="mb-8 rounded-card border border-border bg-background p-6 shadow-sm">
+      <div className="mb-8 surface-card p-6">
         <div className="mb-4 flex items-start justify-between gap-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-component bg-primary/10">
@@ -223,7 +223,7 @@ export default function AlunoFrequenciaPage() {
 
       {/* Frequência por disciplina */}
       {disciplines.length === 0 && !error ? (
-        <div className="rounded-card border border-border bg-neutral-50 p-12 text-center">
+        <div className="surface-card p-12 text-center">
           <UserCheck className="mx-auto mb-3 h-10 w-10 text-text-secondary/50" />
           <p className="text-sm font-medium text-text-primary">
             Nenhuma aula registrada

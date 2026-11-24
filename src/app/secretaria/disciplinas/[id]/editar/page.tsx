@@ -110,7 +110,7 @@ export default function EditarDisciplinaPage() {
         title="Informações da Disciplina"
         description="Edite os dados da disciplina"
       >
-        <div className="overflow-hidden rounded-card bg-surface shadow-light ring-1 ring-border">
+        <div className="overflow-hidden rounded-card bg-surface shadow-card">
           <div className="p-6">
             <SubjectForm
               defaultValues={{

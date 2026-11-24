@@ -206,7 +206,7 @@ export default function AlunoTarefasPage() {
 
       {/* Lista de tarefas */}
       {filteredTasks.length === 0 ? (
-        <div className="rounded-card border border-border bg-neutral-50 p-12 text-center">
+        <div className="surface-card p-12 text-center">
           <ListTodo className="mx-auto mb-3 h-10 w-10 text-text-secondary/50" />
           <p className="text-sm font-medium text-text-primary">
             {filter === 'all' ? 'Nenhuma tarefa atribuída' : 'Nenhuma tarefa neste filtro'}
@@ -227,7 +227,7 @@ export default function AlunoTarefasPage() {
                 key={task.id}
                 type="button"
                 onClick={() => openSubmitModal(task)}
-                className="w-full rounded-card border border-border bg-background p-4 text-left shadow-sm transition-all hover:border-primary/30 hover:shadow-md sm:p-5"
+                className="surface-card-interactive w-full p-4 text-left sm:p-5"
               >
                 <div className="flex items-start justify-between gap-4">
                   <div className="min-w-0 flex-1">
