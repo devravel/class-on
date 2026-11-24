@@ -147,3 +147,10 @@ backend/generated/
 /backend/node_modules
 /backend/dist
 /backend/.env
+
+# Material do TCC fora do repo público (dados pessoais, binários grandes, config local)
+/classonid*.docx
+/banner/
+/prints/
+/.cursor/
+/public/referencias-reestilizacao-classon/
