@@ -1,0 +1,138 @@
+{
+  "geradoEm": "2026-09-18T14:35:42.740Z",
+  "risco": {
+    "total": 220,
+    "anoLetivo": 2026,
+    "acuracia": 100,
+    "distribuicao": {
+      "estavel": 70,
+      "alerta": 20,
+      "risco_critico": 10
+    },
+    "matrizConfusao": {
+      "ESTAVEL": {
+        "ESTAVEL": 154,
+        "ALERTA": 0,
+        "RISCO_CRITICO": 0
+      },
+      "ALERTA": {
+        "ESTAVEL": 0,
+        "ALERTA": 44,
+        "RISCO_CRITICO": 0
+      },
+      "RISCO_CRITICO": {
+        "ESTAVEL": 0,
+        "ALERTA": 0,
+        "RISCO_CRITICO": 22
+      }
+    },
+    "perCategory": [
+      {
+        "category": "ESTAVEL",
+        "suporte": 154,
+        "classificados": 154,
+        "precisao": 100,
+        "revocacao": 100
+      },
+      {
+        "category": "ALERTA",
+        "suporte": 44,
+        "classificados": 44,
+        "precisao": 100,
+        "revocacao": 100
+      },
+      {
+        "category": "RISCO_CRITICO",
+        "suporte": 22,
+        "classificados": 22,
+        "precisao": 100,
+        "revocacao": 100
+      }
+    ]
+  },
+  "api": [
+    {
+      "label": "GET /auth/me",
+      "amostras": 30,
+      "media": 7,
+      "p50": 6,
+      "p95": 10.1,
+      "min": 5.1,
+      "max": 27.6
+    },
+    {
+      "label": "GET /classes",
+      "amostras": 30,
+      "media": 8.1,
+      "p50": 8,
+      "p95": 9.2,
+      "min": 7,
+      "max": 11.8
+    },
+    {
+      "label": "GET /students",
+      "amostras": 30,
+      "media": 18,
+      "p50": 16.8,
+      "p95": 21.8,
+      "min": 14.7,
+      "max": 38.3
+    },
+    {
+      "label": "GET /teachers",
+      "amostras": 30,
+      "media": 7.2,
+      "p50": 7.1,
+      "p95": 8.8,
+      "min": 6.5,
+      "max": 8.9
+    },
+    {
+      "label": "GET /dashboard/analytics/risk",
+      "amostras": 30,
+      "media": 47.9,
+      "p50": 44.2,
+      "p95": 71.3,
+      "min": 38.2,
+      "max": 75.9
+    },
+    {
+      "label": "GET /classes/:id/details",
+      "amostras": 30,
+      "media": 10.6,
+      "p50": 9.9,
+      "p95": 16.8,
+      "min": 8.9,
+      "max": 19
+    }
+  ],
+  "ia": [
+    {
+      "label": "POST /ai/command-intent",
+      "amostras": 5,
+      "media": 853.4,
+      "p50": 625.6,
+      "p95": 1929.8,
+      "min": 433.2,
+      "max": 1929.8
+    },
+    {
+      "label": "POST /ai/generate-lesson-plan",
+      "amostras": 5,
+      "media": 2236.3,
+      "p50": 2200.3,
+      "p95": 3118.2,
+      "min": 1510.6,
+      "max": 3118.2
+    },
+    {
+      "label": "POST /ai/generate-parent-report",
+      "amostras": 5,
+      "media": 1321.3,
+      "p50": 1402.3,
+      "p95": 1484.5,
+      "min": 976.2,
+      "max": 1484.5
+    }
+  ]
+}
