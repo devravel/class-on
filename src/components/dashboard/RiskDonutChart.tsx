@@ -9,10 +9,11 @@ import {
   ResponsiveContainer,
   Tooltip,
 } from 'recharts'
-import { AlertTriangle, Copy, Loader2, ShieldCheck, ShieldAlert, Sparkles } from 'lucide-react'
+import { AlertTriangle, Copy, FileDown, Loader2, ShieldCheck, ShieldAlert, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 
 import { MarkdownContent } from '@/components/ai/MarkdownContent'
+import { printParentLetter } from '@/lib/print-parent-letter'
 import { Button } from '@/components/ui/button'
 import {
   Dialog,
@@ -332,7 +333,7 @@ export function RiskDonutChart({ data, className }: RiskDonutChartProps) {
             </DialogTitle>
             <DialogDescription>
               {reportStudent
-                ? `Carta gerada para os responsáveis de ${reportStudent.full_name} — pronta para cópia e envio.`
+                ? `Carta gerada para os responsáveis de ${reportStudent.full_name} — pronta para baixar em PDF ou copiar.`
                 : 'Gerando comunicado...'}
             </DialogDescription>
           </DialogHeader>
@@ -355,9 +356,16 @@ export function RiskDonutChart({ data, className }: RiskDonutChartProps) {
               <Button type="button" variant="outline" onClick={handleCloseReportDialog}>
                 Fechar
               </Button>
-              <Button type="button" onClick={handleCopyReport}>
+              <Button type="button" variant="outline" onClick={handleCopyReport}>
                 <Copy size={16} />
-                Copiar Texto
+                Copiar texto
+              </Button>
+              <Button
+                type="button"
+                onClick={() => reportStudent && printParentLetter(reportStudent, parentReport)}
+              >
+                <FileDown size={16} />
+                Baixar PDF
               </Button>
             </DialogFooter>
           )}

@@ -209,7 +209,12 @@ A carta deve:
 2. Apresentar os indicadores de forma clara, sem culpar o aluno
 3. Convocar para uma conversa ou reunião com a coordenação
 4. Oferecer apoio e plano de acompanhamento conjunto
-5. Encerrar com disponibilidade para contato`
+5. Encerrar com disponibilidade para contato
+
+Regras (a carta vira PDF com cabeçalho e assinatura próprios):
+- Não invente datas, prazos, horários, nomes de pessoas, nome da escola, telefones nem e-mails.
+- Para a reunião, peça que os responsáveis entrem em contato com a coordenação para agendar.
+- Termine em "Atenciosamente," e pare: sem assinatura, cargo ou campos para preencher como [Seu Nome].`
 
     const content = await this.callLlm(systemPrompt, userPrompt)
     return { content }
