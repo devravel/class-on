@@ -1,4 +1,5 @@
 "use client";
+import { announcementAuthor } from '@/lib/format'
 
 import {
   BookOpen,
@@ -31,7 +32,7 @@ import {
 } from "@/lib/api";
 import { announcementsApi } from "@/lib/api/announcements";
 import { ApiError } from "@/lib/api-client";
-import { getClassLabel } from "@/lib/class-utils";
+import { getClassShortLabel } from "@/lib/class-utils";
 import { cn } from "@/lib/utils";
 import { AcademicYear } from "@/types/academic-year";
 import { Announcement } from "@/types/announcement";
@@ -287,7 +288,7 @@ export default function SecretariaPage() {
                       </div>
                       <div className="min-w-0">
                         <p className="truncate text-sm font-medium text-text-primary">
-                          {getClassLabel(item)}
+                          {getClassShortLabel(item)}
                         </p>
                         <p className="truncate text-xs text-text-secondary">
                           {item.studentCount} aluno
@@ -343,8 +344,8 @@ export default function SecretariaPage() {
                     </p>
                     <span className="flex items-center gap-1 text-xs text-text-secondary">
                       <Clock size={12} />
-                      {new Date(item.created_at).toLocaleDateString("pt-BR")} ·
-                      {item.users.teachers?.[0]?.full_name || item.users.email}
+                      {new Date(item.created_at).toLocaleDateString("pt-BR")} ·{" "}
+                      {announcementAuthor(item.users)}
                     </span>
                   </div>
                 )}

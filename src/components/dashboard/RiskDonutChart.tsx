@@ -1,4 +1,5 @@
 'use client'
+import { formatGrade } from '@/lib/format'
 
 import { useMemo, useState } from 'react'
 import {
@@ -283,7 +284,7 @@ export function RiskDonutChart({ data, className }: RiskDonutChartProps) {
                   <p className="text-xs text-text-secondary">
                     RM {student.rm}
                     {student.grade_average !== null &&
-                      ` · Média ${student.grade_average.toFixed(1)}`}
+                      ` · Média ${formatGrade(student.grade_average)}`}
                     {student.attendance_rate !== null &&
                       ` · Frequência ${student.attendance_rate.toFixed(0)}%`}
                   </p>

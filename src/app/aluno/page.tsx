@@ -1,4 +1,5 @@
 "use client";
+import { formatGrade, formatPercent, announcementAuthor } from '@/lib/format'
 
 import {
   AlertCircle,
@@ -283,7 +284,7 @@ export default function AlunoPage() {
                     <span
                       className={`text-lg font-bold ${gradeColor[item.status] ?? "text-text-primary"}`}
                     >
-                      {item.grade.toFixed(1)}
+                      {formatGrade(item.grade)}
                     </span>
                   </div>
                 );
@@ -317,7 +318,7 @@ export default function AlunoPage() {
                     isAttendanceHealthy ? "text-success" : "text-danger",
                   )}
                 >
-                  {attendanceRate.toFixed(1)}%
+                  {formatPercent(attendanceRate)}
                 </span>
               </div>
               <div className="h-2 overflow-hidden rounded-full bg-neutral-200">
@@ -378,8 +379,8 @@ export default function AlunoPage() {
                     </p>
                     <span className="flex items-center gap-1 text-xs text-text-secondary">
                       <Clock size={10} />
-                      {new Date(item.created_at).toLocaleDateString("pt-BR")} ·
-                      {item.users.teachers?.[0]?.full_name || item.users.email}
+                      {new Date(item.created_at).toLocaleDateString("pt-BR")} ·{" "}
+                      {announcementAuthor(item.users)}
                     </span>
                   </div>
                 </div>

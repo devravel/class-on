@@ -1,4 +1,5 @@
 'use client'
+import { formatPercent } from '@/lib/format'
 
 import { Loader2, RefreshCw, UserCheck } from 'lucide-react'
 import { useCallback, useEffect, useState } from 'react'
@@ -58,7 +59,7 @@ function DisciplineAttendanceCard({ discipline }: { discipline: DisciplineAttend
               isHealthy ? 'text-success' : 'text-danger',
             )}
           >
-            {discipline.attendance_rate.toFixed(1)}%
+            {formatPercent(discipline.attendance_rate)}
           </span>
         </div>
       </div>
@@ -212,7 +213,7 @@ export default function AlunoFrequenciaPage() {
               isGeneralHealthy ? 'text-success' : 'text-danger',
             )}
           >
-            {generalRate.toFixed(1)}%
+            {formatPercent(generalRate)}
           </span>
         </div>
         <AttendanceProgressBar rate={generalRate} />

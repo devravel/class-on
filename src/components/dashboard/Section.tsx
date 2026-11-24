@@ -19,7 +19,7 @@ export function Section({
     <section className={cn('flex flex-col gap-4', className)}>
       <div className="flex items-center justify-between gap-4">
         <div className="min-w-0">
-          <h2 className="text-base font-semibold tracking-[-0.01em] text-text-primary">
+          <h2 className="whitespace-nowrap text-base font-semibold tracking-[-0.01em] text-text-primary">
             {title}
           </h2>
           {description && (

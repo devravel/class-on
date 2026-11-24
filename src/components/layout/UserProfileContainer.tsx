@@ -88,24 +88,29 @@ export function useUserProfile(): UserProfile | null {
 
   if (!user) return null;
 
-  const displayName =
-    (usesProfileName && profileDisplayName ? profileDisplayName : user.email) ??
-    "";
+  // Secretaria não tem perfil com nome: sem isso aparecia "admin@classon.com"
+  // no topo e "Boa noite, admin" no banner.
+  const isSecretaria = user.role === "SECRETARIA";
+  const displayName = isSecretaria
+    ? "Secretaria Escolar"
+    : ((usesProfileName && profileDisplayName ? profileDisplayName : user.email) ?? "");
 
   const roleLabel = (() => {
     if (!user.role) return "";
     if (isStudentAccess && studentClassLabel) {
-      return `Aluno - ${studentClassLabel}`;
+      return `Aluno · ${studentClassLabel}`;
     }
     return ROLE_LABEL[user.role] ?? "";
   })();
 
   return {
     displayName,
-    // E-mail não tem "primeiro nome" — usa o trecho antes do @
-    firstName: displayName.includes("@")
-      ? displayName.split("@")[0]
-      : displayName.split(" ")[0],
+    // Saudação sem nome pra secretaria; e-mail não tem "primeiro nome", usa o trecho antes do @
+    firstName: isSecretaria
+      ? ""
+      : displayName.includes("@")
+        ? displayName.split("@")[0]
+        : displayName.split(" ")[0],
     initials: displayName[0]?.toUpperCase() ?? "U",
     roleLabel,
   };

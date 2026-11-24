@@ -41,6 +41,8 @@ export function Sidebar({ navItems }: SidebarProps) {
   const railButtonBase = cn(
     "group flex items-center rounded-component text-sm font-medium transition-all duration-200",
     showExpanded ? "w-full gap-3 px-3 py-2" : "w-full justify-center px-0 py-2",
+    // Notebook com pouca altura (768–860px): aperta o respiro pra nav caber sem rolar.
+    "[@media(max-height:860px)]:py-1.5",
   );
 
   const railButtonClass = (active = false) =>
@@ -95,7 +97,7 @@ export function Sidebar({ navItems }: SidebarProps) {
         )}
       >
         {/* Logo */}
-        <div className="flex shrink-0 items-center justify-center px-4 pb-4 pt-5">
+        <div className="flex shrink-0 items-center justify-center px-4 pb-4 pt-5 [@media(max-height:860px)]:pb-3 [@media(max-height:860px)]:pt-4">
           {showExpanded ? (
             <Logo size={30} tone="mono" className="text-white" />
           ) : (
@@ -119,7 +121,7 @@ export function Sidebar({ navItems }: SidebarProps) {
           className={cn(
             // rail-scroll: em tela baixa a nav rola, mas com barra na cor do
             // trilho — a barra clara do sistema denuncia na hora.
-            "rail-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-3",
+            "rail-scroll flex min-h-0 flex-1 flex-col gap-3 overflow-y-auto pb-3 [@media(max-height:860px)]:gap-2",
             showExpanded ? "px-3" : "px-4",
           )}
         >

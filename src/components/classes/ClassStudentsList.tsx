@@ -1,3 +1,4 @@
+import { formatPercent } from '@/lib/format'
 import { GraduationCap } from 'lucide-react'
 import Link from 'next/link'
 
@@ -56,7 +57,7 @@ export function ClassStudentsList({
                         isHealthy ? 'text-success' : 'text-danger',
                       )}
                     >
-                      {generalRate.toFixed(1)}%
+                      {formatPercent(generalRate)}
                     </span>
                   </p>
                 </div>

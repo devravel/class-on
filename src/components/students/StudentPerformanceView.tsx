@@ -1,4 +1,5 @@
 'use client'
+import { formatGrade, formatPercent } from '@/lib/format'
 
 import { GraduationCap, Loader2, UserCheck } from 'lucide-react'
 
@@ -96,7 +97,7 @@ export function StudentPerformanceView({
                 isAttendanceHealthy ? 'text-success' : 'text-danger',
               )}
             >
-              {generalAttendanceRate.toFixed(1)}%
+              {formatPercent(generalAttendanceRate)}
             </span>
           </div>
           <div className="h-2 overflow-hidden rounded-full bg-neutral-200">
@@ -165,7 +166,7 @@ export function StudentPerformanceView({
                             disciplineHealthy ? 'text-success' : 'text-danger',
                           )}
                         >
-                          {discipline.attendance_rate.toFixed(1)}%
+                          {formatPercent(discipline.attendance_rate)}
                         </p>
                       </div>
                       <div className="text-right">
@@ -178,7 +179,7 @@ export function StudentPerformanceView({
                               : 'text-danger',
                           )}
                         >
-                          {overallAverage != null ? overallAverage.toFixed(1) : '—'}
+                          {overallAverage != null ? formatGrade(overallAverage) : '—'}
                         </p>
                       </div>
                       {overallStatus ? (
@@ -224,14 +225,14 @@ export function StudentPerformanceView({
                               (overallAverage ?? 0) >= 6 ? 'text-success' : 'text-danger',
                             )}
                           >
-                            {overallAverage != null ? overallAverage.toFixed(1) : '—'}
+                            {overallAverage != null ? formatGrade(overallAverage) : '—'}
                           </p>
                         </div>
                       </div>
                       {latestGrade.recovery_grade != null && (
                         <p className="text-xs text-text-secondary">
                           Média do bimestre:{' '}
-                          {parseGradeValue(latestGrade.average).toFixed(1)}
+                          {formatGrade(parseGradeValue(latestGrade.average))}
                         </p>
                       )}
                     </div>

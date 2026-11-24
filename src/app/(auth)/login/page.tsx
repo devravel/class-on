@@ -50,7 +50,7 @@ const DEMO_PASSWORD = "123456";
 const DEMO_CREDENTIALS = [
   { role: "Secretaria", email: "admin@classon.com", password: DEMO_PASSWORD },
   { role: "Professor", email: "prof1@classon.com", password: DEMO_PASSWORD },
-  { role: "Aluno", email: "aluno0001@classon.com", password: DEMO_PASSWORD },
+  { role: "Aluno", email: "aluno0183@classon.com", password: DEMO_PASSWORD },
 ] as const;
 
 const DEMO_PROFILE_BY_ROLE: Record<(typeof DEMO_CREDENTIALS)[number]["role"], Profile> = {

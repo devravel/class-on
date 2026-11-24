@@ -1,4 +1,5 @@
 'use client'
+import { announcementAuthor } from '@/lib/format'
 
 import {
   Archive,
@@ -199,7 +200,7 @@ export function AnnouncementCard({
 
         <div className="flex items-center justify-between mt-4 pt-3 border-t border-neutral-200">
           <div className="flex items-center gap-2 text-sm text-text-secondary">
-            <span>Por: {announcement.users.teachers?.[0]?.full_name || announcement.users.email}</span>
+            <span>Por: {announcementAuthor(announcement.users)}</span>
           </div>
 
           <div className="flex items-center gap-2">

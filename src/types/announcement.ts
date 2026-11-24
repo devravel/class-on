@@ -11,10 +11,11 @@ export interface Announcement {
     id: string
     email: string
     role: string
+    // Relação 1:1 no Prisma (users.teachers?): vem objeto ou null, nunca lista.
     teachers?: {
       id: string
       full_name: string
-    }[]
+    } | null
   }
   announcements_targets: AnnouncementTarget[]
   _count: {

@@ -1,4 +1,5 @@
 "use client";
+import { formatGrade } from '@/lib/format'
 
 import { Loader2, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -286,7 +287,7 @@ export default function AlunoNotasPage() {
                                 : "text-danger",
                             )}
                           >
-                            {displayAverage.toFixed(1)}
+                            {formatGrade(displayAverage)}
                           </td>
                           <td className="px-3 py-3 text-center">
                             {formatGradeCell(grade.recovery_grade)}

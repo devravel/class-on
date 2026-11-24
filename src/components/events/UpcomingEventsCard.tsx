@@ -206,7 +206,7 @@ export function UpcomingEventsCard({
                 <Calendar size={14} className="text-primary" />
               </div>
               <div className="min-w-0">
-                <p className="truncate text-sm font-medium text-text-primary">
+                <p className="line-clamp-2 text-sm font-medium leading-snug text-text-primary">
                   {event.title}
                 </p>
                 <p className="flex items-center gap-1 truncate text-xs text-text-secondary">

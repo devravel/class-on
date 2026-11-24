@@ -1,4 +1,5 @@
 'use client'
+import { formatGrade } from '@/lib/format'
 
 import {
   BookOpen,
@@ -820,7 +821,7 @@ function NotasTab({
                               : 'text-text-secondary',
                         )}
                       >
-                        {average > 0 ? average.toFixed(1) : '—'}
+                        {average > 0 ? formatGrade(average) : '—'}
                       </span>
                     </td>
                     <td className="px-2 py-2 text-center">

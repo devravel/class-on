@@ -1,3 +1,4 @@
+import { formatGrade } from '@/lib/format'
 import { AssignmentClass } from '@/types/assignment'
 import {
   EducationLevel,
@@ -104,5 +105,5 @@ export function getGradeDisplayStatus(
 export function formatGradeCell(value: string | number | null | undefined): string {
   if (value === null || value === undefined || value === '') return '—'
   const num = parseGradeValue(value)
-  return num.toFixed(1)
+  return formatGrade(num)
 }

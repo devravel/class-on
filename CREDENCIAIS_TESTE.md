@@ -19,6 +19,10 @@ Contas criadas pelo seed (`backend/prisma/seed.ts`). Todas usam a senha **`12345
 | Língua Inglesa | Sandra Oliveira | `prof.ingles@classon.com` |
 
 ## Alunos
+- **Aluna da demonstração:** `aluno0183@classon.com` (Júlia Duarte Rodrigues, 2º Ano EM A).
+  Está em alerta (frequência 80%), vai mal em Matemática e tem tarefas pendentes
+  de 3 professores. É o atalho "Aluno" da tela de login. Esses dados foram
+  montados no banco local em 23/11 (não vêm do seed).
 - **Email:** `aluno0001@classon.com` até `aluno0220@classon.com`
 - 220 alunos em 11 turmas (1º ao 8º ano do fundamental, 1º ao 3º do médio), 20 por turma
 
