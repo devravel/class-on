@@ -1,6 +1,6 @@
-# Lista de matrícula — 1º Ano EM B (Tarde) — 2027
+# Lista de matrícula — 1º Ano EM B (Tarde) — 2026
 
-_Escola Estadual Dr. Geraldo José Rodrigues Alckmin · Secretaria escolar · Documento interno_
+_Secretaria escolar · Lista fictícia para demonstração do ClassOn_
 
 - **Nome:** Alice Fernandes Prado, **Documento:** 148.275.620-0
 - **Nome:** Arthur Lopes Cunha, **Documento:** 190.487.580-7
