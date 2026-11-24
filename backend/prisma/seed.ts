@@ -1029,7 +1029,8 @@ async function seedTasks(
 
       for (let i = 0; i < submitCount; i += 1) {
         const student = allStudents[i]
-        const submittedAt = new Date(deadline)
+        // Tarefa com prazo futuro: entrega antecipada, nunca datada depois de "agora".
+        const submittedAt = new Date(Math.min(deadline.getTime(), now.getTime()))
         submittedAt.setDate(submittedAt.getDate() - (i % 3))
 
         const isLate = submittedAt > deadline
