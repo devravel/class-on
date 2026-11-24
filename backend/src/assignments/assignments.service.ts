@@ -121,7 +121,7 @@ export class AssignmentsService {
       await this.ensureTeacherExists(teacherId)
 
       return await this.prisma.assignments.findMany({
-        where: { teacher_id: teacherId },
+        where: { teacher_id: teacherId, classes: { is_active: true } },
         orderBy: [
           { classes: { year_id: 'desc' } },
           { classes: { series: 'asc' } },

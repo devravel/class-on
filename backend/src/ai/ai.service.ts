@@ -546,8 +546,9 @@ Se não reconhecer, use status "unknown".`
     if (groqKey) {
       try {
         return await this.callGroq(groqKey, systemPrompt, userPrompt, options)
-      } catch {
+      } catch (error) {
         if (options) throw new Error('Groq indisponível para command-intent')
+        this.warnFallback('Groq', error)
         return this.generateFallback(systemPrompt, userPrompt)
       }
     }
@@ -555,8 +556,9 @@ Se não reconhecer, use status "unknown".`
     if (openaiKey) {
       try {
         return await this.callOpenAi(openaiKey, systemPrompt, userPrompt, options)
-      } catch {
+      } catch (error) {
         if (options) throw new Error('OpenAI indisponível para command-intent')
+        this.warnFallback('OpenAI', error)
         return this.generateFallback(systemPrompt, userPrompt)
       }
     }
@@ -575,7 +577,7 @@ Se não reconhecer, use status "unknown".`
     options?: { temperature?: number; maxTokens?: number },
   ): Promise<string> {
     const model =
-      this.config.get<string>('GROQ_MODEL') ?? 'llama-3.1-8b-instant'
+      this.config.get<string>('GROQ_MODEL') ?? 'openai/gpt-oss-20b'
 
     return this.callChatCompletions(
       'https://api.groq.com/openai/v1/chat/completions',
@@ -654,6 +656,18 @@ Se não reconhecer, use status "unknown".`
     }
 
     return content
+  }
+
+  /**
+   * O fallback é silencioso por design (a demo não pode quebrar), mas sem log
+   * ninguém percebe que o texto exibido é o template local e não a LLM.
+   */
+  private warnFallback(provider: string, error: unknown): void {
+    this.logger.warn(
+      `${provider} indisponível — servindo conteúdo de fallback local: ${
+        error instanceof Error ? error.message : 'erro desconhecido'
+      }`,
+    )
   }
 
   private generateFallback(
