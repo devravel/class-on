@@ -11,6 +11,7 @@ import {
 import { CommandIntentDto } from './dto/command-intent.dto'
 import { GenerateLessonPlanDto } from './dto/generate-lesson-plan.dto'
 import { GenerateParentReportDto } from './dto/generate-parent-report.dto'
+import { latexToText } from './latex-to-text'
 import {
   GenerateTaskInput,
   GeneratedTaskResult,
@@ -78,7 +79,7 @@ export class AiService {
     const sources = webContext?.sources ?? []
 
     try {
-      const content = await this.callTaskLlm(systemPrompt, userPrompt)
+      const content = latexToText(await this.callTaskLlm(systemPrompt, userPrompt))
       const finalContent =
         input.searchWeb && sources.length > 0
           ? this.ensureSourcesSection(content, sources)
@@ -128,7 +129,7 @@ Use seções: Objetivos, Conteúdos, Metodologia, Recursos, Avaliação e Tarefa
     const userPrompt = `Crie um plano de aula completo para a disciplina "${dto.subject}", turma "${dto.class_name}"${topicHint}.
 Inclua objetivos mensuráveis, sequência didática de 50 minutos e estratégias de engajamento.`
 
-    const content = await this.callLlm(systemPrompt, userPrompt)
+    const content = latexToText(await this.callLlm(systemPrompt, userPrompt))
     return { content }
   }
 
@@ -758,6 +759,8 @@ Coordenação Pedagógica — ClassOn
       'Sua função é criar tarefas escolares completas, claras e prontas para serem aplicadas em sala.',
       'Responda SOMENTE em Markdown bem estruturado, em português do Brasil.',
       'Estruture a tarefa com: um título (#), um breve enunciado/contextualização, objetivos de aprendizagem, instruções para o aluno e uma lista numerada de questões variadas (objetivas e dissertativas).',
+      // A tela do aluno mostra Markdown, não LaTeX: "\\log_5 25" aparecia cru.
+      'Nunca use LaTeX nem delimitadores como \\( \\) ou \\[ \\]. Escreva fórmulas em texto simples com Unicode: log₅ 25, x², √2, 3ˣ⁺¹ = 27, a/b.',
     ]
 
     if (hasPdf) {

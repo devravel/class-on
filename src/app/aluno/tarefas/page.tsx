@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useState } from 'react'
 import { toast } from 'sonner'
 
+import { MarkdownContent } from '@/components/ai/MarkdownContent'
 import { PageContainer } from '@/components/layout/PageContainer'
 import { PageHeaderTitle } from '@/contexts/page-header-context'
 import { Button } from '@/components/ui/button'
@@ -26,6 +27,7 @@ import {
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { tasksApi } from '@/lib/api'
+import { markdownPreview } from '@/lib/format'
 import { cn } from '@/lib/utils'
 import { StudentTask } from '@/types/task'
 
@@ -241,7 +243,7 @@ export default function AlunoTarefasPage() {
                       )}
                     </div>
                     <p className="mb-2 line-clamp-2 text-xs text-text-secondary">
-                      {task.description}
+                      {markdownPreview(task.description)}
                     </p>
                     <div className="flex flex-wrap items-center gap-3 text-xs text-text-secondary">
                       <span className="font-medium text-primary">
@@ -294,7 +296,7 @@ export default function AlunoTarefasPage() {
               </DialogHeader>
 
               <div className="rounded-lg bg-neutral-50 p-3 text-sm text-text-secondary">
-                {selectedTask.description}
+                <MarkdownContent content={selectedTask.description} />
               </div>
 
               <div className="space-y-2">

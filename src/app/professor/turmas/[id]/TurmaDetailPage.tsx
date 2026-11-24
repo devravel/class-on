@@ -1,5 +1,5 @@
 'use client'
-import { formatGrade } from '@/lib/format'
+import { formatGrade, markdownPreview } from '@/lib/format'
 
 import {
   BookOpen,
@@ -1056,7 +1056,7 @@ function TarefasTab({
                   <div className="min-w-0 flex-1">
                     <p className="font-medium text-text-primary">{task.title}</p>
                     <p className="mt-1 line-clamp-2 text-sm text-text-secondary">
-                      {task.description}
+                      {markdownPreview(task.description)}
                     </p>
                   </div>
                   <div className="flex shrink-0 items-center gap-3">
