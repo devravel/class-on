@@ -183,7 +183,7 @@ Tipo:
 - Soft delete  
 
 Regras:
-- status: ATIVO → INATIVO  
+- status: ACTIVE → INACTIVE  
 
 ---
 
@@ -447,38 +447,64 @@ Regras:
 
 # 🧾 BLOCO 13 — ENUMS
 
-Perfis:
+Valores como estão gravados no banco. Perfis e bimestre ficaram em português;
+o resto do código usa inglês. É uma inconsistência conhecida, mantida de
+propósito: renomear exige migration de dados e não muda nada pro usuário.
+
+Perfis (`users.role`):
 - SECRETARIA  
 - PROFESSOR  
 - ALUNO  
 
-Bimestre:
+Ano letivo (`academic_years.status`):
+- ACTIVE  
+- CLOSED  
+
+Bimestre (`bimesters.status`):
 - ABERTO  
 - FECHADO  
 
-Tarefa:
-- ABERTA  
-- FECHADA  
+Tarefa (`tasks.status`):
+- OPEN  
+- CLOSED  
 
-Entrega:
-- PENDENTE  
-- ENTREGUE  
+Entrega (`task_submissions.status`):
+- SUBMITTED  
+- LATE (entregue depois do prazo)  
+- PENDING não é gravado: a API devolve quando o aluno ainda não entregou  
 
-Presença:
-- PRESENTE  
-- AUSENTE  
+Presença (`attendances.status`):
+- PRESENT  
+- ABSENT  
 
-Comunicado:
-- RASCUNHO  
-- PUBLICADO  
+Comunicado (`announcements.status`):
+- ACTIVE  
+- ARCHIVED  
 
 Leitura:
-- LIDA  
-- NAO_LIDA  
+- não há status; a leitura é uma linha em `announcement_reads` com `read_at`  
 
-Aluno:
-- ATIVO  
-- INATIVO  
+Evento (`events.status`, enum `EventStatus` no Prisma):
+- ACTIVE  
+- CANCELLED  
+
+Público de evento (`events.scope_type`, enum `EventScopeType`):
+- ALL_SCHOOL  
+- TEACHERS  
+- STUDENTS  
+- SPECIFIC_CLASSES  
+
+Aluno (`students.status`):
+- ACTIVE  
+- INACTIVE  
+- TRANSFERRED  
+- GRADUATED  
+
+Resultado final (calculado, não gravado):
+- APROVADO (média final ≥ 6,0)  
+- REPROVADO  
+
+Turma e usuário não têm status: usam `is_active` (boolean).  
 
 ---
 

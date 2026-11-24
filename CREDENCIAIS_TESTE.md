@@ -1,46 +1,45 @@
 # Credenciais de Teste - ClassOn
 
-## Usuários de Teste
+Contas criadas pelo seed (`backend/prisma/seed.ts`). Todas usam a senha **`123456`**.
 
-Todos os usuários usam a senha padrão: **`123456`**
-
-### Secretaria (Admin)
+## Secretaria
 - **Email:** `admin@classon.com`
-- **Senha:** `123456`
-- **Perfil:** SECRETARIA
-- **Acesso:** Dashboard administrativo com gestão de anos letivos
 
-### Professor
-- **Email:** `prof1@classon.com`
-- **Senha:** `123456`
-- **Perfil:** PROFESSOR
-- **Acesso:** Dashboard do professor
+## Professores
 
-### Aluno
-- **Email:** `26101@aluno.classon.com`
-- **Senha:** `123456`
-- **Perfil:** ALUNO
-- **Acesso:** Dashboard do aluno
+| Disciplina | Nome | Email |
+|---|---|---|
+| Matemática | João Silva | `prof1@classon.com` |
+| Português | Helena Alves | `prof.portugues@classon.com` |
+| Ciências | Patricia Gomes | `prof.ciencias@classon.com` |
+| História | Ricardo Mendes | `prof.historia@classon.com` |
+| Geografia | Fernando Rocha | `prof.geografia@classon.com` |
+| Arte | Camila Nascimento | `prof.arte@classon.com` |
+| Educação Física | Marcelo Vieira | `prof.ef@classon.com` |
+| Língua Inglesa | Sandra Oliveira | `prof.ingles@classon.com` |
 
-## URLs dos Serviços
+## Alunos
+- **Email:** `aluno0001@classon.com` até `aluno0220@classon.com`
+- 220 alunos em 11 turmas (1º ao 8º ano do fundamental, 1º ao 3º do médio), 20 por turma
 
-- **Frontend:** http://localhost:3000
-- **Backend API:** http://localhost:3001/api
+## URLs
+
+- **Site:** http://localhost:3000 (landing pública)
 - **Login:** http://localhost:3000/login
+- **API:** http://localhost:3001/api
 
-## Como Testar
+## Como entrar
 
-1. Acesse http://localhost:3000
-2. Você será redirecionado para `/login`
-3. Selecione o perfil desejado
-4. Clique em "Continuar"
-5. Insira as credenciais acima
-6. Clique em "Entrar"
+1. Abra http://localhost:3000/login
+2. Clique em um dos perfis de demonstração (Secretaria, Professor ou Aluno) para preencher e-mail e senha, ou selecione o perfil e digite as credenciais acima
+3. Clique em "Entrar"
 
-## Status dos Serviços
+## Subir o ambiente
 
-✅ Backend rodando na porta 3001
-✅ Frontend rodando na porta 3000
-✅ Prisma Client gerado e configurado
-✅ Banco de dados com seed executado
-✅ CORS configurado corretamente
+```bash
+docker compose up -d             # Postgres, na raiz do projeto
+cd backend && npm run start:dev  # API na :3001 — leva ~40s depois do "Found 0 errors"
+npm run dev                      # front na :3000, na raiz
+```
+
+Sem a API na :3001, o login falha com `TypeError: Failed to fetch`.

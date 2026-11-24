@@ -1,5 +1,11 @@
 # 🎨 DESIGN SYSTEM — ClassOn
 
+> **Paleta e tipografia deste documento estão defasadas.** Desde a reestilização
+> de setembro/2026, a fonte da verdade visual é `src/app/globals.css` (tokens,
+> tema claro/escuro) + `tailwind.config.mjs`: royal `#1f63dc` / `#2f77ec` +
+> ciano `#35b4f0`, tinta `#0c1026`, Bricolage Grotesque (títulos) + IBM Plex
+> Sans (interface e dados). A filosofia e os princípios abaixo continuam valendo.
+
 ---
 
 ## 🎯 Filosofia do Design

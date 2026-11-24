@@ -4,7 +4,7 @@
 
 ## 🎯 Visão do Projeto
 
-O ClassOn é um sistema de gestão escolar voltado para o ensino médio, estruturado para atender turmas organizadas por série (1º, 2º e 3º ano), identificadas por letras (A, B, C, D) e turno.
+O ClassOn é um sistema de gestão escolar para o ensino fundamental e o ensino médio, estruturado para atender turmas organizadas por nível (`classes.education_level`: `FUNDAMENTAL` ou `MEDIO`), série, letra (A a E) e turno.
 
 O sistema tem como principal objetivo centralizar e organizar os processos acadêmicos essenciais da escola, proporcionando uma experiência mais eficiente, organizada e intuitiva para secretaria, professores e alunos.
 
@@ -16,7 +16,7 @@ O projeto possui dois pilares estratégicos:
 
 O ClassOn será desenvolvido como um projeto de TCC, com foco em demonstrar uma arquitetura bem estruturada, boas práticas de desenvolvimento e um sistema funcional e coerente, sem complexidade desnecessária.
 
-Neste momento, o escopo está restrito ao ensino médio, não contemplando outros níveis de ensino ou estruturas educacionais mais complexas.
+O escopo começou restrito ao ensino médio e foi ampliado ao ensino fundamental (migration `20260617120000`). A base de demonstração tem 11 turmas: 1º ao 8º ano do fundamental e 1º ao 3º do médio, com 20 alunos cada. Outras estruturas educacionais (educação infantil, EJA, técnico) seguem fora do escopo.
 
 ---
 
@@ -42,7 +42,7 @@ O sistema contemplará:
 - cálculo de frequência
 - criação e entrega de tarefas
 - comunicados institucionais
-- conversas privadas assíncronas
+- conversas privadas assíncronas (modelado no banco — `conversations` e `messages` —, sem API nem tela por enquanto)
 - dashboard por perfil
 - controle de acesso (RBAC) por rotas e permissões
 
